@@ -1,0 +1,1 @@
+// Configuraciones generales del proyecto

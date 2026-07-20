@@ -1,0 +1,11 @@
+{
+  "name": "sice-backend",
+  "version": "1.0.0",
+  "description": "Backend del Sistema de Información para la Contratación de Empleados (SICE)",
+  "main": "src/app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Carolina Forero",
+  "license": "ISC"
+}
