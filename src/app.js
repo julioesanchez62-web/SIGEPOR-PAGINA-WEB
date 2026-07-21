@@ -1,16 +1,27 @@
-const express = require("express");
-const dotenv = require("dotenv");
+/**
+ app.js crea la aplicación;
+configura middleware;
+registra rutas;
+exporta app.
+ 
+*/
 
-dotenv.config();
+const express = require("express");
+const usersRouter = require("./modules/users");
+const { errorHandler } = require("./middlewares/error.middleware");
 
 const app = express();
+
 app.use(express.json());
 
 app.get("/", (req, res) => {
-  res.json({ message: "SICE Backend funcionando" });
+  res.status(200).json({
+    message: "SICE API is running",
+  });
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Servidor escuchando en puerto ${PORT}`);
-});
+app.use("/api/users", usersRouter);
+
+app.use(errorHandler);
+
+module.exports = app;
