@@ -1,10 +1,10 @@
 # SICE Backend
 
-Backend del sistema SICE desarrollado con Node.js y Express.
+Backend del sistema SICE desarrollado con Node.js, Express y MySQL.
 
 ## Descripción
 
-Este proyecto proporciona la API REST para gestionar la lógica del backend del sistema, con una estructura modular por funcionalidades.
+API REST modular para el sistema SICE, con capas separadas de rutas, controladores, servicios y repositorios.
 
 ## Requisitos
 
@@ -35,9 +35,11 @@ DB_NAME=sice_db
 PORT=3000
 ```
 
+> Nota: `DB_PORT` y `PORT` son opcionales si se usan los valores por defecto 3306 y 3000.
+
 ## Ejecución
 
-Modo de desarrollo:
+Modo desarrollo:
 
 ```bash
 npm run dev
@@ -51,38 +53,43 @@ npm start
 
 ## Estructura del proyecto
 
-- `src/app.js`: configuración principal de Express
-- `src/server.js`: arranque del servidor y conexión a la base de datos
-- `src/config/`: archivos de configuración global y conexión MySQL
-- `src/modules/`: módulos organizados por funcionalidad
-  - `auth/`: autenticación
-  - `users/`: gestión de usuarios
-- `src/middlewares/`: middlewares globales
-- `src/utils/`: utilidades compartidas
+- `src/app.js`: configuración principal de Express y rutas montadas.
+- `src/server.js`: arranque del servidor y conexión a MySQL.
+- `src/config/mysql.js`: configuración del pool de MySQL y función de conexión.
+- `src/modules/users/`: módulo de usuarios con rutas, controlador, servicio, repositorio y validadores.
+- `src/modules/auth/`: módulo de autenticación con ruta de ejemplo de login.
+- `src/middlewares/error.middleware.js`: middleware global de manejo de errores.
+- `src/utils/`: utilidades compartidas.
 
 ## Endpoints principales
 
+### Salud
+
+- `GET /` → verifica que la API esté activa.
+
 ### Usuarios
 
-- `POST /api/users` → crear un usuario
+- `POST /api/users` → crear un usuario.
+- `GET /api/users` → obtener todos los usuarios.
+- `GET /api/users/:id` → obtener un usuario por ID.
+- `PUT /api/users/:id` → actualizar un usuario.
+- `DELETE /api/users/:id` → eliminación lógica de un usuario.
 
 ### Autenticación
 
-- `GET /api/auth/login` → ruta de ejemplo para login
+- `GET /api/auth/login` → ruta de ejemplo disponible en el módulo `auth`, pero no está montada en la aplicación principal actualmente.
 
-## Archivos de configuración
+## Dependencias principales
 
-### package.json
-
-Este archivo define el nombre del proyecto, los scripts de ejecución, las dependencias de producción y las herramientas de desarrollo necesarias para correr el backend.
-
-### package-lock.json
-
-Este archivo registra la versión exacta de cada dependencia instalada y sirve para que la instalación sea reproducible y consistente entre entornos.
+- `express`: servidor HTTP y routing.
+- `mysql2`: conexión a MySQL con promesas.
+- `dotenv`: carga variables de entorno.
+- `bcrypt`: encriptación de contraseñas.
 
 ## Estado actual
 
-El backend está en una etapa inicial de desarrollo con estructura modular y flujo base para usuarios y autenticación.
+El backend está en desarrollo con estructura modular y soporte básico para gestión de usuarios.
+La conexión MySQL se valida al iniciar el servidor, y el proyecto ya cuenta con un flujo de validación, servicio/repo y manejo de errores.
 
 ## Autor
 
