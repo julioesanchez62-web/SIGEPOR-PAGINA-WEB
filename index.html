@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIGEPOR - Sistema de Gestión Porcina</title>
+    <link rel="stylesheet" href="frontend/assets/css/style.css">
+</head>
+<body>
+<main class="main">
+       <section class="form-section"><!-- Sección Hero Principal -->
+    <div class="hero-section">
+        <div class="hero-content">
+            <div class="logo-hero-container">
+                <div class="logo-frame">
+                    <img src="logo.jpg" alt="SIGEPOR Logo" class="icon-hero"> 
+                </div>
+                <div class="logo-glow"></div>
+                <div class="logo-particles">
+                    <span class="particle">🐷</span>
+                    <span class="particle">🐷</span>
+                    <span class="particle">🐷</span>
+                    <span class="particle">🐷</span>
+                    <span class="particle">🐷</span>
+                </div>
+            </div>
+            <h1></h1>
+            <p class="hero-subtitle"></p>
+            <p class="hero-description">Administra tu negocio porcícola de manera eficiente, moderna y confiable</p>
+            
+            <div class="cta-buttons">
+                <a href="#" onclick="scrollToLogin(); return false;" class="btn-primary btn-cta">ACCEDER AHORA</a>
+                <a href="registro_veterinarios.html" class="btn-secondary btn-cta">CREAR CUENTA</a>
+                <a href="registro_veterinarios.html" class="btn-secondary btn-cta">👨‍⚕️ VETERINARIOS</a>
+            </div>
+        </div>
+
+        <div class="hero-features">
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Análisis y Reportes</h3>
+                <p>Visualiza métricas en tiempo real de tu producción</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🐷</div>
+                <h3>Registro Porcino</h3>
+                <p>Gestiona información completa de tus animales</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔒</div>
+                <h3>Datos Seguros</h3>
+                <p>Protección avanzada de tu información</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sección de Información -->
+    <div class="info-section">
+        <div class="info-container">
+            <h2>¿Por qué elegir SIGEPOR?</h2>
+            
+            <div class="benefits-grid">
+                <div class="benefit">
+                    <h4>✓ Fácil de Usar</h4>
+                    <p>Interfaz intuitiva diseñada para ti un porcicultor colombiano</p>
+                </div>
+                <div class="benefit">
+                    <h4>✓ Eficiente</h4>
+                    <p>Optimiza tu tiempo y recursos en la gestión diaria</p>
+                </div>
+                <div class="benefit">
+                    <h4>✓ Completo</h4>
+                    <p>Todas las herramientas que necesitas en un solo lugar</p>
+                </div>
+                <div class="benefit">
+                    <h4>✓ Confiable</h4>
+                    <p>Sistema robusto respaldado por tecnología moderna</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sección de Login -->
+    <div id="login-section" class="login-section">
+        <div class="login-container">
+            <header>
+                <div class="logo-login-container">
+                    <div class="logo-frame-login">
+                        <img src="logo.jpg" alt="SIGEPOR Logo" class="icon"> 
+                    </div>
+                    <div class="logo-glow-login"></div>
+                </div>
+                <h2>INGRESO DE USUARIO</h2>
+                <p class="login-subtitle">Accede a tu cuenta SIGEPOR</p>
+            </header>
+            
+            <form id="loginForm">
+                <label>Seleccione su tipo de documento</label>
+                <select>
+                    <option>Cédula de Ciudadanía</option>
+                    <option>Tarjeta de Identidad</option>
+                </select>
+
+                <label>Ingrese su número de documento</label>
+                <input type="text" placeholder="Número de documento">
+
+                <label>Ingrese su contraseña</label>
+                <input type="password" placeholder="Contraseña">
+
+                <button type="submit" class="btn-primary">INICIAR SESIÓN</button>
+            </form>
+
+            <div class="links">
+                <a href="restaurar.html" class="link-forgot">¿Olvidaste tu contraseña? Recuperar aquí</a>
+                <a href="registro.html" class="link-create">Crear nueva cuenta</a>
+            </div>
+
+            <!-- Mensaje de error -->
+            <div class="error-msg" id="errorBox">
+                <span class="close-btn">X</span>
+                <p>DATOS INCORRECTOS <br> INGRESARLOS NUEVAMENTE</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pie de página -->
+    <footer class="footer">
+        <p>&copy; 2026 SIGEPOR - Todos los derechos reservados</p>
+    </footer>
+
+    <script src="JS/script.js"></script>
+    <script>
+        function scrollToLogin() {
+            document.getElementById('login-section').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</SECtion>
+</MAIN>
+</body>
+</html>

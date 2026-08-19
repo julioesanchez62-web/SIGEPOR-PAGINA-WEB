@@ -1,6 +1,9 @@
 const express = require("express");
 
+// Controlador que contiene la lógica de negocio para usuarios.
 const usersController = require("./users.controller");
+
+// Validadores para las solicitudes relacionadas con usuarios.
 const {
   validateCreateUser,
   validateUserId,
@@ -8,36 +11,87 @@ const {
   validateStatus,
 } = require("./users.validator");
 
+// Middleware de autenticación y autorización.
+const {
+  authenticateToken,
+  authorizeRoles,
+} = require("../../middlewares/auth.middleware");
+
 const router = express.Router();
+
+// Definición de los roles disponibles en el sistema.
+const ROLE_IDS = {
+  SYSTEM_ADMIN: 1,
+  HR_ANALYST: 2,
+  APPLICANT: 3,
+  HR_DIRECTOR: 4,
+};
+
+// Todas las rutas de usuarios requieren un token JWT válido.
+router.use(authenticateToken);
 
 /**
  * POST /users
  *
- * Valida los datos de creación y crea un nuevo usuario.
+ * Crea un nuevo usuario. Solo el Administrador del sistema
+ * puede acceder a esta ruta.
  */
-router.post("/", validateCreateUser, usersController.createUser);
+router.post(
+  "/",
+  authorizeRoles(ROLE_IDS.SYSTEM_ADMIN),
+  validateCreateUser,
+  usersController.createUser,
+);
+
+/**
+ * GET /users/me
+ *
+ * Devuelve los datos del usuario autenticado según el token.
+ */
+router.get("/me", usersController.getAuthenticatedUser);
 
 /**
  * GET /users
  *
- * Recupera todos los usuarios activos.
+ * Recupera la lista de usuarios que no han sido eliminados.
+ * Los roles permitidos son Administrador del sistema, Analista de
+ * Recursos Humanos y Director de Recursos Humanos.
  */
-router.get("/", usersController.getUsers);
+router.get(
+  "/",
+  authorizeRoles(
+    ROLE_IDS.SYSTEM_ADMIN,
+    ROLE_IDS.HR_ANALYST,
+    ROLE_IDS.HR_DIRECTOR,
+  ),
+  usersController.getUsers,
+);
 
 /**
  * GET /users/:id
  *
- * Valida el ID y obtiene un usuario por su identificador.
+ * Valida el ID de usuario y devuelve los datos de ese usuario.
  */
-router.get("/:id", validateUserId, usersController.getUserById);
+router.get(
+  "/:id",
+  authorizeRoles(
+    ROLE_IDS.SYSTEM_ADMIN,
+    ROLE_IDS.HR_ANALYST,
+    ROLE_IDS.HR_DIRECTOR,
+  ),
+  validateUserId,
+  usersController.getUserById,
+);
 
 /**
  * PUT /users/:id
  *
- * Valida el ID y el cuerpo de la petición para actualizar un usuario.
+ * Actualiza la información de un usuario existente.
+ * Solo puede hacerlo el Administrador del sistema.
  */
 router.put(
   "/:id",
+  authorizeRoles(ROLE_IDS.SYSTEM_ADMIN),
   validateUserId,
   validateUpdateUser,
   usersController.updateUser,
@@ -46,17 +100,23 @@ router.put(
 /**
  * DELETE /users/:id
  *
- * Valida el ID y realiza un borrado lógico del usuario.
+ * Realiza un borrado lógico del usuario identificado por ID.
  */
-router.delete("/:id", validateUserId, usersController.softDelete);
+router.delete(
+  "/:id",
+  authorizeRoles(ROLE_IDS.SYSTEM_ADMIN),
+  validateUserId,
+  usersController.softDelete,
+);
 
 /**
  * PATCH /users/:id/status
  *
- * Valida el ID y el estado para actualizar únicamente el estado de un usuario.
+ * Actualiza solo el estado del usuario.
  */
 router.patch(
   "/:id/status",
+  authorizeRoles(ROLE_IDS.SYSTEM_ADMIN),
   validateUserId,
   validateStatus,
   usersController.updateStatus,

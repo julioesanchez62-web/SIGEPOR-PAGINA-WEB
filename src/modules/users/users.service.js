@@ -185,6 +185,26 @@ async function updateStatus(idUsuario, status) {
   };
 }
 
+/**
+ * Returns the authenticated user's profile.
+ */
+async function getAuthenticatedUser(idUsuario) {
+  const user = await usersRepository.findAuthenticatedUserById(idUsuario);
+
+  if (!user) {
+    const error = new Error("User not found");
+
+    error.statusCode = 404;
+
+    throw error;
+  }
+
+  return {
+    message: "Authenticated user retrieved successfully",
+    data: user,
+  };
+}
+
 module.exports = {
   create,
   findAll,
@@ -192,4 +212,5 @@ module.exports = {
   update,
   softDelete,
   updateStatus,
+  getAuthenticatedUser,
 };

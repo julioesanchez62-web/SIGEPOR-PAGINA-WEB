@@ -102,6 +102,19 @@ async function updateStatus(req, res, next) {
   }
 }
 
+/**
+ * Returns the authenticated user's profile.
+ */
+async function getAuthenticatedUser(req, res, next) {
+  try {
+    const result = await usersService.getAuthenticatedUser(req.user.idUsuario);
+
+    return res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+}
+
 // Exporta las funciones del controlador para que las rutas las utilicen.
 module.exports = {
   createUser,
@@ -110,4 +123,5 @@ module.exports = {
   updateUser,
   softDelete,
   updateStatus,
+  getAuthenticatedUser,
 };

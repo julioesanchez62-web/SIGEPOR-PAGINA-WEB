@@ -1,29 +1,37 @@
-// Importa el framework Express para crear la aplicación web del backend.
+// Importa Express para crear la aplicación.
 const express = require("express");
-// Importa el router de usuarios para registrar sus rutas dentro de la aplicación.
+
+// Importa el router del módulo de usuarios.
 const usersRouter = require("./modules/users");
-// Importa el middleware global que centraliza el manejo de errores.
+
+// Importa el router del módulo de autenticación.
+const authRouter = require("./modules/auth/auth.routes");
+
+// Importa el middleware global de errores.
 const { errorHandler } = require("./middlewares/error.middleware");
 
-// Crea la instancia principal de la aplicación Express.
+// Crea la aplicación principal de Express.
 const app = express();
 
-// Activa el parseo automático de JSON en las solicitudes entrantes.
+// Permite que Express interprete cuerpos enviados en formato JSON.
 app.use(express.json());
 
-// Define una ruta raíz de salud para comprobar que la API está activa.
+// Ruta de salud para comprobar que la API está funcionando.
 app.get("/", (req, res) => {
-  // Responde con un estado 200 y un mensaje indicando que la API está funcionando.
-  res.status(200).json({
+  return res.status(200).json({
     message: "SICE API is running",
   });
 });
 
-// Registra todas las rutas del módulo de usuarios bajo el prefijo /api/users.
+// Registra las rutas del módulo de usuarios.
 app.use("/api/users", usersRouter);
 
-// Registra el middleware de manejo de errores para capturar excepciones del flujo.
+// Registra las rutas del módulo de autenticación.
+app.use("/api/auth", authRouter);
+
+// Registra el middleware global de errores.
+// Debe permanecer después de todas las rutas.
 app.use(errorHandler);
 
-// Exporta la aplicación para que pueda ser iniciada desde el servidor principal.
+// Exporta la aplicación para que server.js pueda iniciarla.
 module.exports = app;

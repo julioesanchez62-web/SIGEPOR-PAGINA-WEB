@@ -200,6 +200,33 @@ async function updateStatus(idUsuario, estado) {
   return findById(idUsuario);
 }
 
+/**
+ * Finds the authenticated user by id.
+ */
+async function findAuthenticatedUserById(idUsuario) {
+  const [rows] = await pool.execute(
+    `
+      SELECT
+        u.id_usuario AS idUsuario,
+        u.nombre,
+        u.correo,
+        u.estado,
+        u.id_rol_fk AS idRol,
+        r.nombre AS rol
+      FROM usuario AS u
+      INNER JOIN rol AS r
+        ON u.id_rol_fk = r.id_rol
+      WHERE
+        u.id_usuario = ?
+        AND u.deleted_at IS NULL
+      LIMIT 1;
+    `,
+    [idUsuario],
+  );
+
+  return rows[0] || null;
+}
+
 // Exporta las funciones disponibles del repositorio de usuarios.
 module.exports = {
   create,
@@ -211,4 +238,5 @@ module.exports = {
   update,
   softDelete,
   updateStatus,
+  findAuthenticatedUserById,
 };

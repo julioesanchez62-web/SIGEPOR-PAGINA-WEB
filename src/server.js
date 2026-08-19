@@ -1,20 +1,21 @@
-// Carga las variables de entorno desde el archivo .env para configurar la aplicación.
+// Carga las variables de entorno desde el archivo .env.
 require("dotenv").config();
 
-// Lista de variables obligatorias que debe definir el entorno para conectar la API.
+// Lista de variables obligatorias para ejecutar la aplicación.
 const requiredEnvironmentVariables = [
   "DB_HOST",
   "DB_USER",
   "DB_PASSWORD",
   "DB_NAME",
+  "JWT_SECRET",
 ];
 
-// Busca si faltan variables de entorno y guarda el nombre de las que no están definidas.
+// Identifica las variables de entorno que no están definidas.
 const missingVariables = requiredEnvironmentVariables.filter(
   (variableName) => !process.env[variableName],
 );
 
-// Si faltan variables obligatorias, muestra un error y finaliza la ejecución.
+// Finaliza la ejecución si falta alguna variable obligatoria.
 if (missingVariables.length > 0) {
   console.error(
     `Missing environment variables: ${missingVariables.join(", ")}`,
@@ -23,31 +24,31 @@ if (missingVariables.length > 0) {
   process.exit(1);
 }
 
-// Importa la aplicación Express configurada en app.js.
+// Importa la aplicación Express configurada.
 const app = require("./app");
-// Importa la función para conectarse a MySQL.
+
+// Importa la función para comprobar la conexión con MySQL.
 const { connectMySQL } = require("./config/mysql");
 
-// Define el puerto en el que la API escuchará, usando el valor del entorno o 3000 por defecto.
+// Define el puerto de ejecución.
 const PORT = process.env.PORT || 3000;
 
-// Función asíncrona que inicia el servidor y valida la conexión con la base de datos.
+/**
+ * Inicia la conexión con MySQL y posteriormente
+ * pone en funcionamiento el servidor HTTP.
+ */
 async function startServer() {
   try {
-    // Establece la conexión con MySQL antes de poner la API en ejecución.
     await connectMySQL();
 
-    // Inicia el servidor HTTP y muestra la URL de acceso.
     app.listen(PORT, () => {
       console.log(`SICE server running on http://localhost:${PORT}`);
     });
   } catch (error) {
-    // Si la conexión o el arranque falla, muestra el error y termina el proceso.
     console.error("Unable to start SICE server");
     console.error(error.message);
     process.exit(1);
   }
 }
 
-// Ejecuta la función de arranque del servidor al cargar el archivo.
 startServer();

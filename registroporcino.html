@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIGEPOR - Registro de Datos Porcinos</title>
+    <link rel="stylesheet" href="frontend/assets/css/style.css">
+</head>
+<body>
+    <div class="main-container">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <img src="logo.jpg" alt="SIGEPOR">
+                </div>
+                <h3>SIGEPOR</h3>
+            </div>
+            <ul>
+                <li><a href="index.html">🏠 Inicio</a></li>
+                <li><a href="registroporcino.html" class="active">🐷 Gestión Porcina</a></li>
+                <li><a href="vacunas.html">🩺 Vacunas</a></li>
+                <li><a href="registro_veterinarios.html">👨‍⚕️ Veterinarios</a></li>
+                <li><a href="javascript:void(0)" onclick="openPanel('reports')">📊 Reportes</a></li>
+                <li><a href="javascript:void(0)" onclick="openPanel('settings')">⚙️ Configuración</a></li>
+                <li><a href="javascript:void(0)" onclick="cerrarSesion()">🔒 Cerrar Sesión</a></li>
+            </ul>
+        </nav>
+
+        <section class="content">
+            <div class="page-header">
+                <div class="header-icon">🐷</div>
+                <div class="header-content">
+                    <h2>GESTIÓN DE INVENTARIO PORCINO</h2>
+                    <p>Administra y registra información detallada de tu rebaño</p>
+                </div>
+            </div>
+
+            <!-- Sección de formulario de registro -->
+            <div class="card-wrapper">
+                <div class="form-section-title">
+                    <span class="section-icon" id="formIcon">➕</span>
+                    <h3 id="formTitle">Registrar Nuevo Porcino</h3>
+                </div>
+
+                <form id="pigForm" class="grid-form">
+                    <div class="field">
+                        <label>Identificación (ID):</label>
+                        <input type="text" id="pigId" placeholder="Ej: P-001" required>
+                    </div>
+                    <div class="field">
+                        <label>Raza:</label>
+                        <select id="pigBreed" required>
+                            <option value="">Seleccione una raza</option>
+                            <option value="Landrace">🐷 Landrace</option>
+                            <option value="Duroc">🐷 Duroc</option>
+                            <option value="Yorkshire">🐷 Yorkshire</option>
+                            <option value="Pietrain">🐷 Pietrain</option>
+                            <option value="Mixta">🐷 Mixta</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Peso (kg):</label>
+                        <input type="number" id="pigWeight" placeholder="0.0" step="0.1" required>
+                    </div>
+                    <div class="field">
+                        <label>Estado de Salud:</label>
+                        <select id="pigHealth" required>
+                            <option value="">Seleccione estado</option>
+                            <option value="Saludable">✓ Saludable</option>
+                            <option value="En Observación">⚠ En Observación</option>
+                            <option value="Enfermo">🏥 Enfermo</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Fecha de Nacimiento:</label>
+                        <input type="date" id="pigBirth" required>
+                    </div>
+                    <div class="field">
+                        <label>Género:</label>
+                        <select id="pigGender" required>
+                            <option value="">Seleccione género</option>
+                            <option value="Macho">Macho</option>
+                            <option value="Hembra">Hembra</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" id="btnSubmitForm" class="btn-add btn-save">🐷 AÑADIR PORCINO</button>
+                </form>
+            </div>
+
+            <!-- Sección de tabla de inventario -->
+            <div class="table-wrapper">
+                <div class="table-header">
+                    <div class="header-icon-table">📋</div>
+                    <h3>Inventario de Porcinos</h3>
+                </div>
+                
+                <div class="table-container">
+                    <table id="pigTable">
+                        <thead>
+                            <tr>
+                                <th>🆔 ID</th>
+                                <th>🐷 Raza</th>
+                                <th>⚖️ Peso (kg)</th>
+                                <th>❤️ Salud</th>
+                                <th>📅 Nacimiento</th>
+                                <th>⚙️ Acción</th> <!-- Columna unificada de botones -->
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Las filas con los botones se inyectan con JS -->
+                        </tbody>
+                    </table>
+                    <div class="table-empty" id="tableEmpty">
+                        <p>📭 Aún no hay porcinos registrados. ¡Añade uno para comenzar!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estadísticas rápidas -->
+            <div class="stats-section">
+                <div class="stat-card">
+                    <div class="stat-icon">🐷</div>
+                    <h4>Total de Porcinos</h4>
+                    <p class="stat-number" id="statTotal">0</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✓</div>
+                    <h4>Saludables</h4>
+                    <p class="stat-number" id="statHealthy">0</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⚠</div>
+                    <h4>En Observación</h4>
+                    <p class="stat-number" id="statObserving">0</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🏥</div>
+                    <h4>Enfermos</h4>
+                    <p class="stat-number" id="statSick">0</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="JS/script.js"></script>
+</body>
+</html>
