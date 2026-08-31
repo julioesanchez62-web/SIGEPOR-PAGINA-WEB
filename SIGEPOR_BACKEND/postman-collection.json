@@ -1,0 +1,611 @@
+{
+  "info": {
+    "_postman_id": "sigepor-backend-users-api",
+    "name": "SIGEPOR Backend - API Usuarios",
+    "description": "Colección de pruebas para endpoint POST /api/users\n\nCasos de prueba QA completos:\n- Creación exitosa\n- Validaciones (nombre, correo, contraseña, idRol)\n- Reglas de negocio (correo duplicado, rol inexistente)\n- Errores de sistema",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "BASE_URL",
+      "value": "http://localhost:3000",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 - HAPPY PATH - Creación Exitosa",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Juan Pérez García\",\n  \"correo\": \"juan.perez@empresa.com\",\n  \"contraseña\": \"MiContraseña123\",\n  \"idRol\": 1\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/users",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "users"]
+        },
+        "description": "✅ CASO 1: Creación exitosa de usuario\n\n**Prequisito:** Rol con id=1 debe existir en BD\n\n**Status esperado:** 201 Created\n**Mensaje esperado:** \"Usuario creado exitosamente\"\n**Capa:** Éxito total\n\n**Validaciones:**\n- Nombre válido y normalizado\n- Correo válido y normalizado\n- Contraseña cifrada\n- Rol existe"
+      }
+    },
+    {
+      "name": "02 - VALIDACIÓN - Nombre Vacío",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"\",\n  \"correo\": \"test@example.com\",\n  \"contraseña\": \"Password123\",\n  \"idRol\": 1\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/users",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "users"]
+        },
+        "description": "❌ CASO 2: Nombre vacío\n\n**Status esperado:** 400 Bad Request\n**Mensaje esperado:** \"El nombre es obligatorio\"\n**Capa donde se detiene:** Validator\n\n**Razón:** nombre.trim() === ''"
+      }
+    },
+    {
+      "name": "03 - VALIDACIÓN - Nombre NULL",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": null,\n  \"correo\": \"test@example.com\",\n  \"contraseña\": \"Password123\",\n  \"idRol\": 1\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/users",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "users"]
+        },
+        "description": "❌ CASO 3: Nombre NULL\n\n**Status esperado:** 400 Bad Request\n**Mensaje esperado:** \"El nombre es obligatorio\"\n**Capa donde se detiene:** Validator\n\n**Razón:** !nombre || nombre === null"
+      }
+    },
+    {
+      "name": "04 - VALIDACIÓN - Nombre No String (número)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": 12345,\n  \"correo\": \"test@example.com\",\n  \"contraseña\": \"Password123\",\n  \"idRol\": 1\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/users",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "users"]
+        },
+        "description": "❌ CASO 4: Nombre es número (no string)\n\n**Status esperado:** 400 Bad Request\n**Mensaje esperado:** \"El nombre es obligatorio\"\n**Capa donde se detiene:** Validator\n\n**Razón:** typeof nombre !== 'string'"
+      }
+    },
+    {
+      "name": "05 - VALIDACIÓN - Nombre > 100 caracteres",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Este es un nombre muy largo que excede los cien caracteres establecidos como límite máximo para evitar problemas de almacenamiento\",\n  \"correo\": \"test@example.com\",\n  \"contraseña\": \"Password123\",\n  \"idRol\": 1\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/users",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "users"]
+        },
+        "description": "❌ CASO 5: Nombre excede 100 caracteres\n\n**Status esperado:** 400 Bad Request\n**Mensaje esperado:** \"El nombre no puede exceder 100 caracteres\"\n**Capa donde se detiene:** Validator\n\n**Razón:** nombreNormalizado.length > 100"
+      }
+    },
+    {
+      "name": "06 - VALIDACIÓN - Correo Vacío",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Juan Pérez\",\n  \"correo\": \"\",\n  \"contraseña\": \"Password123\",\n  \"idRol\": 1\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/users",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "users"]
+        },
+        "description": "❌ CASO 6: Correo vacío\n\n**Status esperado:** 400 Bad Request\n**Mensaje esperado:** \"El correo es obligatorio\"\n**Capa donde se detiene:** Validator\n\n**Razón:** correo.trim() === ''"
+      }
+    },
+    {
+      "name": "07 - VALIDACIÓN - Correo NULL",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Juan Pérez\",\n  \"correo\": null,\n  \"contraseña\": \"Password123\",\n  \"idRol\": 1\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/users",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "users"]
+        },
+        "description": "❌ CASO 7: Correo NULL\n\n**Status esperado:** 400 Bad Request\n**Mensaje esperado:** \"El correo es obligatorio\"\n**Capa donde se detiene:** Validator\n\n**Razón:** !correo || correo === null"
+      }
+    },
+    {
+      "name": "08 - VALIDACIÓN - Correo sin @ (arroba)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Juan Pérez\",\n  \"correo\": \"juanexample.com\",\n  \"contraseña\": \"Password123\",\n  \"idRol\": 1\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/users",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "users"]
+        },
+        "description": "❌ CASO 8: Correo sin arroba (@)\n\n**Status esperado:** 400 Bad Request\n**Mensaje esperado:** \"El correo no tiene formato válido\"\n**Capa donde se detiene:** Validator\n\n**Razón:** Regex: /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/ falla"
+      }
+    },
+    {
+      "name": "09 - VALIDACIÓN - Correo @ sin dominio",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Juan Pérez\",\n  \"correo\": \"juan@\",\n  \"contraseña\": \"Password123\",\n  \"idRol\": 1\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/users",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "users"]
+        },
+        "description": "❌ CASO 9: Correo con @ pero sin dominio\n\n**Status esperado:** 400 Bad Request\n**Mensaje esperado:** \"El correo no tiene formato válido\"\n**Capa donde se detiene:** Validator\n\n**Razón:** Regex falla (falta dominio y extensión)"
+      }
+    },
+    {
+      "name": "10 - VALIDACIÓN - Correo con espacios",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Juan Pérez\",\n  \"correo\": \"juan perez@example.com\",\n  \"contraseña\": \"Password123\",\n  \"idRol\": 1\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/users",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "users"]
+        },
+        "description": "❌ CASO 10: Correo contiene espacios\n\n**Status esperado:** 400 Bad Request\n**Mensaje esperado:** \"El correo no tiene formato válido\"\n**Capa donde se detiene:** Validator\n\n**Razón:** Regex: [^\\s@]+ falla con espacios"
+      }
+    },
+    {
+      "name": "11 - VALIDACIÓN - Correo > 150 caracteres",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Juan Pérez\",\n  \"correo\": \"usuario.muy.largo.con.muchos.caracteres.que.excede.el.limite.establecido.en.150.caracteres.para.evitar.problemas.en.la.base.de.datos.super@ejemplo.com\",\n  \"contraseña\": \"Password123\",\n  \"idRol\": 1\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/users",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "users"]
+        },
+        "description": "❌ CASO 11: Correo excede 150 caracteres\n\n**Status esperado:** 400 Bad Request\n**Mensaje esperado:** \"El correo no puede exceder 150 caracteres\"\n**Capa donde se detiene:** Validator\n\n**Razón:** correoNormalizado.length > 150"
+      }
+    },
+    {
+      "name": "12 - VALIDACIÓN - Contraseña Vacía",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Juan Pérez\",\n  \"correo\": \"juan@example.com\",\n  \"contraseña\": \"\",\n  \"idRol\": 1\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/users",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "users"]
+        },
+        "description": "❌ CASO 12: Contraseña vacía\n\n**Status esperado:** 400 Bad Request\n**Mensaje esperado:** \"La contraseña es obligatoria\"\n**Capa donde se detiene:** Validator\n\n**Razón:** contraseña === ''"
+      }
+    },
+    {
+      "name": "13 - VALIDACIÓN - Contraseña NULL",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Juan Pérez\",\n  \"correo\": \"juan@example.com\",\n  \"contraseña\": null,\n  \"idRol\": 1\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/users",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "users"]
+        },
+        "description": "❌ CASO 13: Contraseña NULL\n\n**Status esperado:** 400 Bad Request\n**Mensaje esperado:** \"La contraseña es obligatoria\"\n**Capa donde se detiene:** Validator\n\n**Razón:** !contraseña || contraseña === null"
+      }
+    },
+    {
+      "name": "14 - VALIDACIÓN - Contraseña < 6 caracteres",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Juan Pérez\",\n  \"correo\": \"juan@example.com\",\n  \"contraseña\": \"Pass1\",\n  \"idRol\": 1\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/users",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "users"]
+        },
+        "description": "❌ CASO 14: Contraseña con menos de 6 caracteres\n\n**Status esperado:** 400 Bad Request\n**Mensaje esperado:** \"La contraseña debe tener mínimo 6 caracteres\"\n**Capa donde se detiene:** Validator\n\n**Razón:** contraseña.length < 6 (5 caracteres)"
+      }
+    },
+    {
+      "name": "15 - VALIDACIÓN - Contraseña exactamente 6 caracteres (VÁLIDA)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Juan Pérez\",\n  \"correo\": \"juan.6chars@example.com\",\n  \"contraseña\": \"Pass12\",\n  \"idRol\": 1\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/users",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "users"]
+        },
+        "description": "✅ CASO 15: Contraseña con exactamente 6 caracteres (VÁLIDA)\n\n**Status esperado:** 201 Created (si rol existe y correo no existe)\n**Capa:** Completa\n\n**Razón:** contraseña.length === 6 es válido\n\n**Prequisito:** Rol id=1 debe existir"
+      }
+    },
+    {
+      "name": "16 - VALIDACIÓN - ID Rol Faltante (OMITIDO)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Juan Pérez\",\n  \"correo\": \"juan@example.com\",\n  \"contraseña\": \"Password123\"\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/users",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "users"]
+        },
+        "description": "❌ CASO 16: ID Rol omitido (faltante)\n\n**Status esperado:** 400 Bad Request\n**Mensaje esperado:** \"El ID del rol es obligatorio\"\n**Capa donde se detiene:** Validator\n\n**Razón:** idRol === undefined"
+      }
+    },
+    {
+      "name": "17 - VALIDACIÓN - ID Rol NULL",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Juan Pérez\",\n  \"correo\": \"juan@example.com\",\n  \"contraseña\": \"Password123\",\n  \"idRol\": null\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/users",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "users"]
+        },
+        "description": "❌ CASO 17: ID Rol NULL\n\n**Status esperado:** 400 Bad Request\n**Mensaje esperado:** \"El ID del rol es obligatorio\"\n**Capa donde se detiene:** Validator\n\n**Razón:** idRol === null"
+      }
+    },
+    {
+      "name": "18 - VALIDACIÓN - ID Rol Vacío String",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Juan Pérez\",\n  \"correo\": \"juan@example.com\",\n  \"contraseña\": \"Password123\",\n  \"idRol\": \"\"\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/users",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "users"]
+        },
+        "description": "❌ CASO 18: ID Rol es string vacío\n\n**Status esperado:** 400 Bad Request\n**Mensaje esperado:** \"El ID del rol es obligatorio\"\n**Capa donde se detiene:** Validator\n\n**Razón:** idRol === ''"
+      }
+    },
+    {
+      "name": "19 - VALIDACIÓN - ID Rol con Texto",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Juan Pérez\",\n  \"correo\": \"juan@example.com\",\n  \"contraseña\": \"Password123\",\n  \"idRol\": \"admin\"\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/users",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "users"]
+        },
+        "description": "❌ CASO 19: ID Rol es texto (no convertible a número)\n\n**Status esperado:** 400 Bad Request\n**Mensaje esperado:** \"El ID del rol debe ser un número\"\n**Capa donde se detiene:** Validator\n\n**Razón:** Number(\"admin\") = NaN → isNaN(NaN) = true"
+      }
+    },
+    {
+      "name": "20 - VALIDACIÓN - ID Rol Decimal",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Juan Pérez\",\n  \"correo\": \"juan@example.com\",\n  \"contraseña\": \"Password123\",\n  \"idRol\": 1.5\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/users",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "users"]
+        },
+        "description": "❌ CASO 20: ID Rol es decimal (no es entero)\n\n**Status esperado:** 400 Bad Request\n**Mensaje esperado:** \"El ID del rol debe ser un número entero\"\n**Capa donde se detiene:** Validator\n\n**Razón:** Number.isInteger(1.5) = false"
+      }
+    },
+    {
+      "name": "21 - VALIDACIÓN - ID Rol Negativo",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Juan Pérez\",\n  \"correo\": \"juan@example.com\",\n  \"contraseña\": \"Password123\",\n  \"idRol\": -1\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/users",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "users"]
+        },
+        "description": "❌ CASO 21: ID Rol es negativo\n\n**Status esperado:** 400 Bad Request\n**Mensaje esperado:** \"El ID del rol debe ser un número positivo\"\n**Capa donde se detiene:** Validator\n\n**Razón:** idRolNumero <= 0"
+      }
+    },
+    {
+      "name": "22 - VALIDACIÓN - ID Rol Cero",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Juan Pérez\",\n  \"correo\": \"juan@example.com\",\n  \"contraseña\": \"Password123\",\n  \"idRol\": 0\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/users",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "users"]
+        },
+        "description": "❌ CASO 22: ID Rol es cero\n\n**Status esperado:** 400 Bad Request\n**Mensaje esperado:** \"El ID del rol debe ser un número positivo\"\n**Capa donde se detiene:** Validator\n\n**Razón:** 0 <= 0 es true"
+      }
+    },
+    {
+      "name": "23 - VALIDACIÓN - ID Rol String Número (Convertible)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Juan Pérez\",\n  \"correo\": \"juan@example.com\",\n  \"contraseña\": \"Password123\",\n  \"idRol\": \"2\"\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/users",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "users"]
+        },
+        "description": "✅ CASO 23: ID Rol es string pero número convertible\n\n**Status esperado:** 201 Created (si rol existe y correo no existe) o 404\n**Capa:** Pasa Validator, puede fallar en Service\n\n**Razón:** Number(\"2\") = 2, Number.isInteger(2) = true ✓\n\n**Prequisito:** Rol con id=2 debe existir"
+      }
+    },
+    {
+      "name": "24 - NEGOCIO - Correo Duplicado (409 Conflict)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Otro Usuario\",\n  \"correo\": \"existente@example.com\",\n  \"contraseña\": \"Password123\",\n  \"idRol\": 1\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/users",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "users"]
+        },
+        "description": "❌ CASO 24: Correo ya registrado (duplicado)\n\n**Prequisito:** Debe existir usuario con correo \"existente@example.com\" en BD\n\n**Status esperado:** 409 Conflict\n**Mensaje esperado:** \"El correo ya está registrado\"\n**Capa donde se detiene:** Service (users.service.js)\n**Línea:** `if (usuarioExistente)` en regla 1\n\n**BD consultada:** 1 SELECT (findUserByEmail)\n**No alcanza:** Repository INSERT, MySQL INSERT"
+      }
+    },
+    {
+      "name": "25 - NEGOCIO - Rol No Existe (404 Not Found)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Juan Pérez\",\n  \"correo\": \"juan.nuevo@example.com\",\n  \"contraseña\": \"Password123\",\n  \"idRol\": 999\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/users",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "users"]
+        },
+        "description": "❌ CASO 25: Rol no existe\n\n**Prequisito:** NO debe existir rol con id=999 en BD\n\n**Status esperado:** 404 Not Found\n**Mensaje esperado:** \"El rol especificado no existe\"\n**Capa donde se detiene:** Service (users.service.js)\n**Línea:** `if (!rolExiste)` en regla 2\n\n**Orden de verificación:**\n1. Verifica correo (OK)\n2. Verifica rol (FAIL)\n\n**BD consultada:** \n- 1 SELECT (findUserByEmail) ✓\n- 1 SELECT (findRoleById) ❌"
+      }
+    },
+    {
+      "name": "26 - SISTEMA - MySQL Desconectado (500)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Juan Pérez\",\n  \"correo\": \"juan@example.com\",\n  \"contraseña\": \"Password123\",\n  \"idRol\": 1\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/users",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "users"]
+        },
+        "description": "❌ CASO 26: MySQL Desconectado\n\n**Escenario:** Servidor MySQL caído o no alcanzable en puerto 3306\n\n**Status esperado:** 500 Internal Server Error\n**Mensaje esperado:** \"Error interno del servidor. Por favor, intenta más tarde.\"\n**Capa donde se detiene:** Repository (users.repository.js)\n\n**Error exacto:** \n- \"connect ECONNREFUSED 127.0.0.1:3306\"\n- O similar error de conexión\n\n**Detalles en terminal:** Stack trace completo del error\n**En Postman:** Solo mensaje genérico (por seguridad)"
+      }
+    },
+    {
+      "name": "27 - SISTEMA - Tabla no Existe (500)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Juan Pérez\",\n  \"correo\": \"juan@example.com\",\n  \"contraseña\": \"Password123\",\n  \"idRol\": 1\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/users",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "users"]
+        },
+        "description": "❌ CASO 27: Tabla 'users' no existe\n\n**Escenario:** Tabla 'users' no fue creada en BD\n\n**Status esperado:** 500 Internal Server Error\n**Mensaje esperado:** \"Error interno del servidor. Por favor, intenta más tarde.\"\n**Capa donde se detiene:** Repository o MySQL\n\n**Error exacto:** \"Table 'sigepor_db.users' doesn't exist\"\n**Código MySQL:** ER_NO_SUCH_TABLE\n\n**Detalles en terminal:** Error MySQL completo"
+      }
+    }
+  ]
+}

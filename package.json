@@ -1,23 +1,5 @@
 {
-  "name": "sice-backend",
-  "version": "1.0.0",
-  "description": "Backend del Sistema de Información para la Contratación de Empleados (SICE)",
-  "main": "src/server.js",
-  "scripts": {
-    "start": "node src/server.js",
-    "dev": "nodemon src/server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "Carolina Forero",
-  "license": "ISC",
   "dependencies": {
-    "bcrypt": "^6.0.0",
-    "dotenv": "^17.4.2",
-    "express": "^5.2.1",
-    "jsonwebtoken": "^9.0.3",
-    "mysql2": "^3.23.1"
-  },
-  "devDependencies": {
-    "nodemon": "^3.1.14"
+    "mysql2": "^3.24.2"
   }
 }
