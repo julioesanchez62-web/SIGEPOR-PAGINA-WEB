@@ -1,53 +1,106 @@
+/**
+ * Controller del módulo de usuarios
+ * 
+ * RESPONSABILIDAD:
+ * - Orquestar el flujo: recibir request → llamar service → responder
+ * - Extraer datos de req.body y req.params
+ * - Responder con códigos HTTP correctos
+ */
+
 const usersService = require('./users.service');
 
-class UsersController {
-  async obtenerTodos(req, res) {
-    try {
-      const usuarios = await usersService.listarUsuarios();
-      res.json({ ok: true, data: usuarios });
-    } catch (error) {
-      res.status(500).json({ ok: false, mensaje: error.message });
-    }
-  }
-
-  async obtenerPorId(req, res) {
-    try {
-      const { id } = req.params;
-      const usuario = await usersService.obtenerUsuarioPorId(id);
-      res.json({ ok: true, data: usuario });
-    } catch (error) {
-      res.status(404).json({ ok: false, mensaje: error.message });
-    }
-  }
-
-  async crear(req, res) {
-    try {
-      const nuevoUsuario = await usersService.registrarUsuario(req.body);
-      res.status(201).json({ ok: true, mensaje: 'Usuario creado exitosamente', data: nuevoUsuario });
-    } catch (error) {
-      res.status(400).json({ ok: false, mensaje: error.message });
-    }
-  }
-
-  async actualizar(req, res) {
-    try {
-      const { id } = req.params;
-      await usersService.actualizarUsuario(id, req.body);
-      res.json({ ok: true, mensaje: 'Usuario actualizado correctamente' });
-    } catch (error) {
-      res.status(400).json({ ok: false, mensaje: error.message });
-    }
-  }
-
-  async eliminar(req, res) {
-    try {
-      const { id } = req.params;
-      await usersService.eliminarUsuario(id);
-      res.json({ ok: true, mensaje: 'Usuario eliminado correctamente' });
-    } catch (error) {
-      res.status(404).json({ ok: false, mensaje: error.message });
-    }
+/**
+ * Crear nuevo usuario
+ * POST /users
+ */
+async function createUser(req, res, next) {
+  try {
+    const { nombre, correo, contraseña, idRol } = req.body;
+    const usuario = await usersService.createUser(nombre, correo, contraseña, idRol);
+    
+    // Entrega confirmación exitosa dinámica al Postman
+    return res.status(201).json({
+      message: 'Usuario creado exitosamente',
+      user: usuario
+    });
+  } catch (error) {
+    next(error);
   }
 }
 
-module.exports = new UsersController();
+/**
+ * Obtener lista de usuarios
+ * GET /users
+ */
+async function getUsers(req, res, next) {
+  try {
+    const usuarios = await usersService.getUsers();
+    return res.status(200).json({
+      message: 'Usuarios obtenidos exitosamente',
+      data: usuarios
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * Obtener usuario por ID
+ * GET /users/:id
+ */
+async function getUserById(req, res, next) {
+  try {
+    const { id } = req.params;
+    const usuario = await usersService.getUserById(id);
+    return res.status(200).json({
+      message: 'Usuario obtenido exitosamente',
+      data: usuario
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * Actualizar usuario por ID
+ * PUT /users/:id
+ */
+async function updateUser(req, res, next) {
+  try {
+    const { id } = req.params;
+    const datosActualizados = req.body;
+    
+    const usuario = await usersService.updateUser(id, datosActualizados);
+
+    return res.status(200).json({
+      message: 'Usuario actualizado exitosamente',
+      data: usuario
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * Eliminar usuario por ID
+ * DELETE /users/:id
+ */
+async function deleteUser(req, res, next) {
+  try {
+    const { id } = req.params;
+    await usersService.deleteUser(id);
+    return res.status(200).json({
+      message: 'Usuario eliminado exitosamente'
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+module.exports = {
+  createUser,
+  getUsers,
+  getUserById,
+  updateUser,
+  deleteUser
+};

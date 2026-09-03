@@ -1,58 +1,152 @@
-const { query } = require('../../config/mysql');
+/**
+ * Repository del módulo de usuarios
+ * 
+ * RESPONSABILIDAD:
+ * - Interactuar directamente con la base de datos (MySQL)
+ * - Ejecutar consultas SQL (SELECT, INSERT, UPDATE, DELETE)
+ * - Retornar datos planos o null si no existe el registro
+ * - Manejar la persistencia de datos
+ * 
+ * NO HACE:
+ * - Validar datos de entrada ❌
+ * - Aplicar reglas de negocio ❌
+ * - Responder peticiones HTTP ❌
+ * - Cifrar contraseñas ❌
+ */
 
-class UsersRepository {
-  async obtenerTodos() {
-    return await query(
-      'SELECT id, nombre, email, usuario, contraseña, fecha_registro, activo FROM usuarios'
+const { pool } = require('../../config/mysql');
+
+/**
+ * Buscar usuario estrictamente por correo electrónico
+ * Corregido: Busca solo en la columna 'email' y remueve espacios en blanco
+ */
+async function findUserByEmail(correo) {
+  try {
+    if (!correo) return null;
+
+    const [rows] = await pool.execute(
+      'SELECT id, nombre, email AS correo, usuario, contraseña, fecha_registro, activo FROM usuarios WHERE email = ? LIMIT 1',
+      [correo.trim()]
     );
-  }
-
-  async obtenerPorId(id) {
-    const rows = await query(
-      'SELECT id, nombre, email, usuario, contraseña, fecha_registro, activo FROM usuarios WHERE id = ?',
-      [id]
-    );
-    return rows[0];
-  }
-
-  async obtenerPorCorreo(correo) {
-    const rows = await query(
-      'SELECT * FROM usuarios WHERE email = ?',
-      [correo]
-    );
-    return rows[0];
-  }
-
-  async crear(datosUsuario) {
-    // Extraemos los datos del validador de Node
-    const { nombre_completo, correo, contraseña } = datosUsuario;
     
-    // Mapeamos los datos a tus columnas reales: nombre, email, usuario, contraseña
-    const result = await query(
-      'INSERT INTO usuarios (nombre, email, usuario, contraseña) VALUES (?, ?, ?, ?)',
-      [
-        nombre_completo, 
-        correo, 
-        correo, // Usamos provisionalmente el correo como nombre de "usuario" para que no quede vacío
-        contraseña
-      ]
-    );
-    return result.insertId;
-  }
-
-  async actualizar(id, datosUsuario) {
-    const { nombre_completo, correo } = datosUsuario;
-    const result = await query(
-      'UPDATE usuarios SET nombre = ?, email = ? WHERE id = ?',
-      [nombre_completo, correo, id]
-    );
-    return result.affectedRows > 0;
-  }
-
-  async eliminar(id) {
-    const result = await query('DELETE FROM usuarios WHERE id = ?', [id]);
-    return result.affectedRows > 0;
+    return rows[0] || null;
+  } catch (error) {
+    console.error('Error en findUserByEmail:', error.message);
+    throw error;
   }
 }
 
-module.exports = new UsersRepository();
+/**
+ * Buscar usuario por ID
+ * Usa 'AS correo' para mapear la columna de la BD a la propiedad esperada
+ */
+async function findUserById(id) {
+  try {
+    const [rows] = await pool.execute(
+      'SELECT id, nombre, email AS correo, usuario, fecha_registro, activo FROM usuarios WHERE id = ? LIMIT 1',
+      [id]
+    );
+    return rows[0] || null;
+  } catch (error) {
+    console.error('Error en findUserById:', error.message);
+    throw error;
+  }
+}
+
+/**
+ * Validar rol (Simulado / placeholder)
+ */
+async function findRoleById(idRol) {
+  try {
+    return { id: idRol, nombre: 'Usuario' };
+  } catch (error) {
+    console.error('Error en findRoleById:', error.message);
+    throw error;
+  }
+}
+
+/**
+ * Crear nuevo usuario en la tabla 'usuarios'
+ */
+async function createUser(userData) {
+  try {
+    const { nombre, correo, email, contraseñaHash } = userData;
+    const correoFinal = correo || email;
+
+    // 1. Ejecutar la inserción en MySQL
+    const [result] = await pool.execute(
+      'INSERT INTO usuarios (nombre, email, usuario, contraseña, fecha_registro, activo) VALUES (?, ?, ?, ?, NOW(), 1)',
+      [nombre, correoFinal, correoFinal, contraseñaHash]
+    );
+
+    // 2. Control de seguridad: Si no se generó un ID, lanzar error explícito
+    if (!result || !result.insertId) {
+      throw new Error('La base de datos no pudo generar un ID válido para el nuevo registro.');
+    }
+
+    // 3. Buscar y retornar el usuario recién insertado con sus datos limpios
+    return await findUserById(result.insertId);
+  } catch (error) {
+    console.error('Error en createUser:', error.message);
+    throw error;
+  }
+}
+
+/**
+ * Obtener todos los usuarios
+ */
+async function getUsers() {
+  try {
+    const [rows] = await pool.execute(
+      'SELECT id, nombre, email AS correo, usuario, fecha_registro, activo FROM usuarios'
+    );
+    return rows;
+  } catch (error) {
+    console.error('Error en getUsers:', error.message);
+    throw error;
+  }
+}
+
+/**
+ * Actualizar datos de usuario
+ */
+async function updateUser(id, datos) {
+  try {
+    const { nombre, correo, email } = datos;
+    const correoFinal = correo || email;
+
+    await pool.execute(
+      'UPDATE usuarios SET nombre = ?, email = ? WHERE id = ?',
+      [nombre, correoFinal, id]
+    );
+
+    return await findUserById(id);
+  } catch (error) {
+    console.error('Error en updateUser:', error.message);
+    throw error;
+  }
+}
+
+/**
+ * Eliminar usuario por ID
+ */
+async function deleteUser(id) {
+  try {
+    await pool.execute('DELETE FROM usuarios WHERE id = ?', [id]);
+    return true;
+  } catch (error) {
+    console.error('Error en deleteUser:', error.message);
+    throw error;
+  }
+}
+
+module.exports = {
+  findUserByEmail,
+  findUserById,
+  findRoleById,
+  createUser,
+  getUsers,
+  updateUser,
+  deleteUser,
+  pool
+};

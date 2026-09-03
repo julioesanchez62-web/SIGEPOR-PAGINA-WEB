@@ -1,33 +1,29 @@
-const express = require('express');
-const app = express();
-const db = require('./config/mysql'); // Importamos el pool de la base de datos
 require('dotenv').config();
 
-const PORT = process.env.PORT || 3001;
+const app = require('./app');
+const { port } = require('./config/env');
+const { connectMySQL } = require('./config/mysql');
 
-// Middleware para entender JSON
-app.use(express.json());
-
-// Función para verificar la conexión a Clever Cloud antes de levantar el servidor
+/**
+ * Iniciar servidor con validación de MySQL (Fail Fast)
+ * 
+ * 1. Valida que MySQL esté disponible
+ * 2. Si falla, detiene el proceso (no inicia sin BD)
+ * 3. Si éxito, inicia Express normalmente
+ */
 async function startServer() {
   try {
-    console.log('🔄 Conectando a MySQL en Clever Cloud...');
-    
-    // Hacemos una consulta de prueba rápida para validar las credenciales del .env
-    await db.query('SELECT 1');
-    console.log('✅ Conexión exitosa a la base de datos en la nube.');
+    console.log('🔄 Connecting to MySQL...');
+    await connectMySQL();
 
-    // Si la base de datos responde, levantamos el servidor express
-    app.listen(PORT, () => {
-      console.log(`🚀 Servidor backend corriendo en el puerto ${PORT}`);
+    app.listen(port, () => {
+      console.log(`🚀 SIGEPOR backend running on port ${port}`);
     });
-
   } catch (error) {
-    console.error('❌ Error crítico al conectar a la base de datos:');
-    console.error(error.message);
-    process.exit(1); // Detiene la aplicación si las credenciales están mal
+    console.error('❌ Failed to start server:', error.message);
+    process.exit(1);
   }
 }
 
-// Iniciar el flujo
 startServer();
+

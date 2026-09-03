@@ -1,6 +1,7 @@
 require('dotenv').config();
 
-const requiredEnv = ['DB_HOST', 'DB_PORT', 'DB_USER', 'DB_PASSWORD', 'DB_NAME'];
+// Se remueve DB_PASSWORD de las variables estrictamente obligatorias
+const requiredEnv = ['DB_HOST', 'DB_PORT', 'DB_USER', 'DB_NAME'];
 const missing = requiredEnv.filter((key) => {
   const value = process.env[key];
   return value === undefined || value === null || value === '';
@@ -11,13 +12,13 @@ if (missing.length > 0) {
 }
 
 module.exports = {
-  port: Number(process.env.PORT || 3000),
+  port: Number(process.env.PORT || 3001),
   nodeEnv: process.env.NODE_ENV || 'development',
   db: {
     host: process.env.DB_HOST,
     port: Number(process.env.DB_PORT),
     user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
+    password: process.env.DB_PASSWORD || '', // Si no existe o es vacía, envía ""
     database: process.env.DB_NAME
   }
 };
