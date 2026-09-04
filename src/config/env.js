@@ -1,15 +1,24 @@
-const dotenv = require('dotenv');
+require('dotenv').config();
 
-dotenv.config();
+// Se remueve DB_PASSWORD de las variables estrictamente obligatorias
+const requiredEnv = ['DB_HOST', 'DB_PORT', 'DB_USER', 'DB_NAME'];
+const missing = requiredEnv.filter((key) => {
+  const value = process.env[key];
+  return value === undefined || value === null || value === '';
+});
+
+if (missing.length > 0) {
+  throw new Error(`Faltan variables de entorno obligatorias: ${missing.join(', ')}`);
+}
 
 module.exports = {
-  port: Number(process.env.PORT || 3000),
+  port: Number(process.env.PORT || 3001),
   nodeEnv: process.env.NODE_ENV || 'development',
   db: {
-    host: process.env.DB_HOST || 'localhost',
-    port: Number(process.env.DB_PORT || 3306),
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || '',
-    database: process.env.DB_NAME || 'sigepor_db'
+    host: process.env.DB_HOST,
+    port: Number(process.env.DB_PORT),
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD || '', // Si no existe o es vacía, envía ""
+    database: process.env.DB_NAME
   }
 };
