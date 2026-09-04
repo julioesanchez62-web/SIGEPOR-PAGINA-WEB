@@ -8,21 +8,6 @@
  * - NO contiene lógica de negocio
  * - NO contiene SQL
  * - Solo define el "flujo de la petición"
- * 
- * FLUJO DE UNA PETICIÓN:
- * Cliente HTTP
- *     ↓
- * users.routes.js recibe POST /users
- *     ↓
- * Ejecuta usersValidator.validateCreateUser (middleware 1)
- *     ├─ ❌ Falla validación → Lanza error 400 → middleware error
- *     └─ ✅ OK → Continúa al siguiente middleware
- *     ↓
- * Ejecuta usersController.createUser (middleware 2)
- *     ├─ ❌ Error en negocio → Lanza error (409, 404, 500)
- *     └─ ✅ OK → Responde 201 JSON
- *     ↓
- * Cliente recibe respuesta
  */
 
 const express = require('express');
@@ -44,6 +29,17 @@ router.post(
 );
 
 /**
+ * POST /login (POST /users/login)
+ * 🔥 NUEVA RUTA PARA EL LOGIN DE USUARIOS
+ * Body: { correo, contraseña }
+ * Respuestas: 200, 400, 401, 500
+ */
+router.post(
+  '/login',
+  usersController.login
+);
+
+/**
  * GET / (GET /users)
  * Obtener lista de usuarios
  */
@@ -62,9 +58,17 @@ router.get('/:id', usersController.getUserById);
 router.put('/:id', usersController.updateUser);
 
 /**
+ * PATCH /:id (PATCH /users/:id)
+ * Actualización parcial (Ej: cambiar estado activo)
+ * 🔥 INTEGRADO Y REVISADO CON ÉXITO
+ */
+router.patch('/:id', usersController.patchUser);
+
+/**
  * DELETE /:id (DELETE /users/:id)
  * Eliminar usuario por ID
  */
 router.delete('/:id', usersController.deleteUser);
 
+// Exportación única oficial del enrutador
 module.exports = router;

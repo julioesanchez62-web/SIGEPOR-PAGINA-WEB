@@ -4,137 +4,173 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SIGEPOR - Sistema de Gestión Porcina</title>
+    <!-- 🔥 CORREGIDO: Se cambia class por rel para que el CSS cargue perfectamente -->
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <main class="main">
-       <section class="form-section"><!-- Sección Hero Principal -->
-    <div class="hero-section">
-        <div class="hero-content">
-            <div class="logo-hero-container">
-                <div class="logo-frame">
-                    <img src="images/logo.jpg" alt="SIGEPOR Logo" class="icon-hero"> 
-                </div>
-                <div class="logo-glow"></div>
-                <div class="logo-particles">
-                    <span class="particle">🐷</span>
-                    <span class="particle">🐷</span>
-                    <span class="particle">🐷</span>
-                    <span class="particle">🐷</span>
-                    <span class="particle">🐷</span>
-                </div>
-            </div>
-            <h1></h1>
-            <p class="hero-subtitle"></p>
-            <p class="hero-description">Administra tu negocio porcícola de manera eficiente, moderna y confiable</p>
-            
-            <div class="cta-buttons">
-                <a href="#" onclick="scrollToLogin(); return false;" class="btn-primary btn-cta">ACCEDER AHORA</a>
-                <a href="registro_veterinarios.html" class="btn-secondary btn-cta">CREAR CUENTA</a>
-                <a href="registro_veterinarios.html" class="btn-secondary btn-cta">👨‍⚕️ VETERINARIOS</a>
-            </div>
-        </div>
-
-        <div class="hero-features">
-            <div class="feature-card">
-                <div class="feature-icon">📊</div>
-                <h3>Análisis y Reportes</h3>
-                <p>Visualiza métricas en tiempo real de tu producción</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">🐷</div>
-                <h3>Registro Porcino</h3>
-                <p>Gestiona información completa de tus animales</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">🔒</div>
-                <h3>Datos Seguros</h3>
-                <p>Protección avanzada de tu información</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Sección de Información -->
-    <div class="info-section">
-        <div class="info-container">
-            <h2>¿Por qué elegir SIGEPOR?</h2>
-            
-            <div class="benefits-grid">
-                <div class="benefit">
-                    <h4>✓ Fácil de Usar</h4>
-                    <p>Interfaz intuitiva diseñada para ti un porcicultor colombiano</p>
-                </div>
-                <div class="benefit">
-                    <h4>✓ Eficiente</h4>
-                    <p>Optimiza tu tiempo y recursos en la gestión diaria</p>
-                </div>
-                <div class="benefit">
-                    <h4>✓ Completo</h4>
-                    <p>Todas las herramientas que necesitas en un solo lugar</p>
-                </div>
-                <div class="benefit">
-                    <h4>✓ Confiable</h4>
-                    <p>Sistema robusto respaldado por tecnología moderna</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Sección de Login -->
-    <div id="login-section" class="login-section">
-        <div class="login-container">
-            <header>
-                <div class="logo-login-container">
-                    <div class="logo-frame-login">
-                        <img src="images/logo.jpg" alt="SIGEPOR Logo" class="icon"> 
+    <section class="form-section">
+        <!-- Sección Hero Principal -->
+        <div class="hero-section">
+            <div class="hero-content">
+                <div class="logo-hero-container">
+                    <div class="logo-frame">
+                        <img src="images/logo.jpg" alt="SIGEPOR Logo" class="icon-hero"> 
                     </div>
-                    <div class="logo-glow-login"></div>
+                    <div class="logo-glow"></div>
+                    <div class="logo-particles">
+                        <span class="particle">🐷</span>
+                        <span class="particle">🐷</span>
+                        <span class="particle">🐷</span>
+                        <span class="particle">🐷</span>
+                        <span class="particle">🐷</span>
+                    </div>
                 </div>
-                <h2>INGRESO DE USUARIO</h2>
-                <p class="login-subtitle">Accede a tu cuenta SIGEPOR</p>
-            </header>
-            
-            <form id="loginForm">
-                <label>Seleccione su tipo de documento</label>
-                <select>
-                    <option>Cédula de Ciudadanía</option>
-                    <option>Tarjeta de Identidad</option>
-                </select>
-
-                <label>Ingrese su número de documento</label>
-                <input type="text" placeholder="Número de documento">
-
-                <label>Ingrese su contraseña</label>
-                <input type="password" placeholder="Contraseña">
-
-                <button type="submit" class="btn-primary">INICIAR SESIÓN</button>
-            </form>
-
-            <div class="links">
-                <a href="restaurar.html" class="link-forgot">¿Olvidaste tu contraseña? Recuperar aquí</a>
-                <a href="registro.html" class="link-create">Crear nueva cuenta</a>
+                <h1></h1>
+                <p class="hero-subtitle"></p>
+                <p class="hero-description">Administra tu negocio porcícola de manera eficiente, moderna y confiable</p>
+                
+                <div class="cta-buttons">
+                    <a href="#" onclick="scrollToLogin(); return false;" class="btn-primary btn-cta">ACCEDER AHORA</a>
+                    <a href="registro_usuarios.html" class="btn-secondary btn-cta">CREAR CUENTA</a>
+                </div>
             </div>
 
-            <!-- Mensaje de error -->
-            <div class="error-msg" id="errorBox">
-                <span class="close-btn">X</span>
-                <p>DATOS INCORRECTOS <br> INGRESARLOS NUEVAMENTE</p>
+            <div class="hero-features">
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Análisis y Reportes</h3>
+                    <p>Visualiza métricas en tiempo real de tu producción</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🐷</div>
+                    <h3>Registro Porcino</h3>
+                    <p>Gestiona información completa de tus animales</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Datos Seguros</h3>
+                    <p>Protección avanzada de tu información</p>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Pie de página -->
-    <footer class="footer">
-        <p>&copy; 2026 SIGEPOR - Todos los derechos reservados</p>
-    </footer>
+        <!-- Sección de Información -->
+        <div class="info-section">
+            <div class="info-container">
+                <h2>¿Por qué elegir SIGEPOR?</h2>
+                
+                <div class="benefits-grid">
+                    <div class="benefit">
+                        <h4>✓ Fácil de Usar</h4>
+                        <p>Interfaz intuitiva diseñada para ti un porcicultor colombiano</p>
+                    </div>
+                    <div class="benefit">
+                        <h4>✓ Eficiente</h4>
+                        <p>Optimiza tu tiempo y recursos en la gestión diaria</p>
+                    </div>
+                    <div class="benefit">
+                        <h4>✓ Completo</h4>
+                        <p>Todas las herramientas que necesitas en un solo lugar</p>
+                    </div>
+                    <div class="benefit">
+                        <h4>✓ Confiable</h4>
+                        <p>Sistema robusto respaldado por tecnología moderna</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección de Login -->
+        <div id="login-section" class="login-section">
+            <div class="login-container">
+                <header>
+                    <div class="logo-login-container">
+                        <div class="logo-frame-login">
+                            <img src="images/logo.jpg" alt="SIGEPOR Logo" class="icon"> 
+                        </div>
+                        <div class="logo-glow-login"></div>
+                    </div>
+                    <h2>INGRESO DE USUARIO</h2>
+                    <p class="login-subtitle">Accede a tu cuenta SIGEPOR</p>
+                </header>
+                
+                <form id="loginForm">
+                    <label>ingrese su usuario o correo </label>
+                    <input type="email" id="loginCorreo" placeholder="Usuario o correo" required>
+
+                    <label>Ingrese su contraseña</label>
+                    <input type="password" id="loginPassword" placeholder="Contraseña" required>
+
+                    <button type="submit" class="btn-primary">INICIAR SESIÓN</button>
+                </form>
+
+                <div class="links">
+                    <a href="restaurar.html" class="link-forgot">¿Olvidaste tu contraseña? Recuperar aquí</a>
+                    <a href="registro_usuarios.html" class="link-create">Crear nueva cuenta</a>
+                </div>
+
+                <!-- Mensaje de error interno -->
+                <div class="error-msg" id="errorBox">
+                    <span class="close-btn" onclick="document.getElementById('errorBox').style.display='none'">X</span>
+                    <p>DATOS INCORRECTOS <br> INGRESARLOS NUEVAMENTE</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pie de página -->
+        <footer class="footer">
+            <p>&copy; 2026 SIGEPOR - Todos los derechos reservados</p>
+        </footer>
+    </section>
+</main>
 
     <script src="JS/script.js"></script>
     <script>
+        // Función de desplazamiento suave original
         function scrollToLogin() {
             document.getElementById('login-section').scrollIntoView({ behavior: 'smooth' });
         }
+
+        // LÓGICA DE AUTENTICACIÓN CON TU SERVER NODE (PORT 3001) Y BCRYPT
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault(); 
+
+            const correoValue = document.getElementById('loginCorreo').value;
+            const contrasenaValue = document.getElementById('loginPassword').value;
+            const errorBox = document.getElementById('errorBox');
+
+            errorBox.style.display = 'none';
+
+            const datosLogin = {
+                correo: correoValue,
+                "contraseña": contrasenaValue
+            };
+
+            try {
+                const respuesta = await fetch('http://localhost:3001/api/users/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(datosLogin)
+                });
+
+                const resultado = await respuesta.json().catch(() => ({}));
+
+                if (respuesta.ok) {
+                    alert('¡Ingreso exitoso! Bienvenido al sistema SIGEPOR.');
+                    window.location.href = 'registroporcino.html'; 
+                } else {
+                    console.warn('Fallo en autenticación:', resultado.message);
+                    errorBox.style.display = 'block';
+                }
+
+            } catch (error) {
+                console.error('Error de red en el proceso de Login:', error);
+                alert('No se pudo establecer conexión con el servidor de SIGEPOR (Puerto 3001). Asegúrate de tenerlo encendido en tu terminal.');
+            }
+        });
     </script>
-</SECtion>
-</MAIN>
 </body>
 </html>

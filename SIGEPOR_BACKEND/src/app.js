@@ -1,3 +1,4 @@
+const cors = require('cors');
 const express = require('express');
 const indexRoutes = require('./routes');
 const errorMiddleware = require('./middlewares/error.middleware');
@@ -18,6 +19,7 @@ const app = express();
  */
 
 // 1. Middlewares globales
+app.use(cors()); // <--- 🔥 ¡ESTA LÍNEA ES LA QUE ACTIVA EL PERMISO PARA EL NAVEGADOR!
 app.use(express.json());
 
 // 2. Rutas

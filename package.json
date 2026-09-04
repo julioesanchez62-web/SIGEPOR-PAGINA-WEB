@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "cors": "^2.8.6",
     "mysql2": "^3.24.2"
   }
 }

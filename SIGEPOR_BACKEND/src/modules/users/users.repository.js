@@ -108,21 +108,36 @@ async function getUsers() {
 }
 
 /**
- * Actualizar datos de usuario
+ * Actualizar datos de usuario de manera dinámica (Compatible con PUT y PATCH)
+ * 🔥 REVISADO Y OPTIMIZADO PARA SOPORTAR AMBOS MÉTODOS SIN DUPLICAR FUNCIONES
  */
 async function updateUser(id, datos) {
   try {
-    const { nombre, correo, email } = datos;
+    const { nombre, correo, email, activo } = datos;
     const correoFinal = correo || email;
 
-    await pool.execute(
-      'UPDATE usuarios SET nombre = ?, email = ? WHERE id = ?',
-      [nombre, correoFinal, id]
-    );
+    // 1. Si viene el campo 'activo' (como en tu PATCH {"activo": 0}), actualizamos esa columna
+    if (activo !== undefined) {
+      await pool.execute(
+        'UPDATE usuarios SET activo = ? WHERE id = ?',
+        [activo, id]
+      );
+    } 
+    // 2. Si vienen los campos de texto normales (como en tu PUT), ejecutamos la consulta clásica
+    else {
+      await pool.execute(
+        'UPDATE usuarios SET nombre = ?, email = ? WHERE id = ?',
+        [nombre, correoFinal, id]
+      );
+    }
 
-    return await findUserById(id);
+    // Retornamos el objeto plano actualizado combinado con el ID de la URL
+    return {
+      id: parseInt(id),
+      ...datos
+    };
   } catch (error) {
-    console.error('Error en updateUser:', error.message);
+    console.error('Error en repository.updateUser (PATCH/PUT):', error.message);
     throw error;
   }
 }
@@ -146,7 +161,7 @@ module.exports = {
   findRoleById,
   createUser,
   getUsers,
-  updateUser,
+  updateUser, // <--- Exportación unificada oficial
   deleteUser,
   pool
 };
