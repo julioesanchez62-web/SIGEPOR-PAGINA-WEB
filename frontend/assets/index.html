@@ -96,8 +96,8 @@
                 </header>
                 
                 <form id="loginForm">
-                    <label>ingrese su usuario o correo </label>
-                    <input type="email" id="loginCorreo" placeholder="Usuario o correo" required>
+                    <label for="loginIdentificador">Ingrese su usuario o correo</label>
+                    <input type="text" id="loginIdentificador" placeholder="Usuario o correo" autocomplete="username" required>
 
                     <label>Ingrese su contraseña</label>
                     <input type="password" id="loginPassword" placeholder="Contraseña" required>
@@ -132,19 +132,22 @@
             document.getElementById('login-section').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // LÓGICA DE AUTENTICACIÓN CON TU SERVER NODE (PORT 3001) Y BCRYPT
+        // 🔒 LÓGICA DE AUTENTICACIÓN REVISADA Y COMPATIBLE DE PUNTA A PUNTA
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault(); 
 
-            const correoValue = document.getElementById('loginCorreo').value;
+            const identificadorValue = document.getElementById('loginIdentificador').value.trim();
+            // 💡 Corregido: Nos aseguramos de apuntar al id exacto del input HTML "loginPassword"
             const contrasenaValue = document.getElementById('loginPassword').value;
             const errorBox = document.getElementById('errorBox');
 
+            // Ocultamos la caja de error al iniciar un nuevo intento
             errorBox.style.display = 'none';
 
+            // Estructura limpia que viaja hacia el controlador Express
             const datosLogin = {
-                correo: correoValue,
-                "contraseña": contrasenaValue
+                identificador: identificadorValue,
+                "contraseña": contrasenaValue // Envía la clave mapeada de forma idéntica al backend
             };
 
             try {
@@ -160,15 +163,22 @@
 
                 if (respuesta.ok) {
                     alert('¡Ingreso exitoso! Bienvenido al sistema SIGEPOR.');
+                    
+                    // Guardamos opcionalmente los datos del usuario en memoria local para validar su sesión después
+                    if(resultado.data) {
+                        localStorage.setItem('usuario_sigepor', JSON.stringify(resultado.data));
+                    }
+                    
+                    // Redirección directa hacia la zona de administración porcina
                     window.location.href = 'registroporcino.html'; 
                 } else {
                     console.warn('Fallo en autenticación:', resultado.message);
-                    errorBox.style.display = 'block';
+                    errorBox.style.display = 'block'; // Muestra el cartel visual de datos incorrectos
                 }
 
             } catch (error) {
                 console.error('Error de red en el proceso de Login:', error);
-                alert('No se pudo establecer conexión con el servidor de SIGEPOR (Puerto 3001). Asegúrate de tenerlo encendido en tu terminal.');
+                alert('No se pudo establecer conexión con el servidor de SIGEPOR (Puerto 3001). Asegúrate de tenerlo encendido en tu terminal de comandos.');
             }
         });
     </script>

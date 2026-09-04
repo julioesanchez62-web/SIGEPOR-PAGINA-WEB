@@ -1,345 +1,180 @@
-# 🎉 RESUMEN FINAL DE MEJORAS - SIGEPOR
+# SIGEPOR
 
-## ✨ Todo Completado Exitosamente
+Sistema web para la gestion de informacion porcina, usuarios, vacunas y veterinarios.
 
-He mejorado de manera integral **todos los archivos HTML** de tu aplicación SIGEPOR, haciéndolos **más atractivos, grandes y profesionales**, especialmente los logos.
+## Estado actual
 
-\---
+El proyecto cuenta con un frontend HTML/CSS/JavaScript y un backend REST desarrollado con Node.js, Express y MySQL.
 
-## 📊 RESUMEN DE CAMBIOS
+### Avances completados
 
-### 🖼️ **Fase 1: Mejora Visual General (Completada)**
+- Pagina principal con presentacion de SIGEPOR, acceso al login y registro de cuenta.
+- Diseno visual responsive para escritorio, tablet y movil.
+- Estilos centralizados en `frontend/assets/css/style.css`.
+- Navegacion lateral en las pantallas internas.
+- Gestion de porcinos con formulario, tabla, estadisticas y persistencia local.
+- Formularios para actualizacion de datos, vacunas y restauracion.
+- Backend organizado por modulos y capas: rutas, validadores, controladores, servicios y repositorios.
+- Conexion a MySQL mediante `mysql2/promise` y pool de conexiones.
+- CORS y parser JSON configurados en Express.
+- Endpoint de verificacion disponible en `GET /health`.
+- CRUD de usuarios disponible mediante la API.
+- Login conectado a MySQL mediante `POST /api/users/login`.
+- El login acepta un usuario o un correo electronico junto con la contrasena.
+- La interfaz guarda los datos basicos del usuario autenticado en `localStorage`.
+- Pruebas automatizadas del backend ejecutadas correctamente.
 
-**Archivos Actualizados:**
+## Estructura del proyecto
 
-* ✅ `index.html` - Página principal transformada en landing page profesional
-* ✅ `registro.html` - Formulario de datos con diseño moderno
-* ✅ `registroporcino.html` - Gestión porcina con interfaz mejorada
-* ✅ `restaurar.html` - Recuperación de contraseña con diseño atractivo
-* ✅ `style.css` - +250 líneas de CSS nuevo
-
-**Mejoras Incluidas:**
-
-* 🎨 Diseño moderno tipo 2026
-* 📱 Responsive en mobile, tablet y desktop
-* 🐷 Temática porcina integrada
-* ✨ Animaciones suaves
-* 📊 Tablas y formularios profesionales
-* 💡 Mejor UX/UI
-
-\---
-
-### 🎯 **Fase 2: Logos Mejorados (Completada)**
-
-**Logo Principal (Hero):**
-
-* 📏 Tamaño: 280×280px (55% más grande)
-* 🎨 Marco decorativo con glassmorphism
-* ✨ Brillo pulsante dinámico
-* 🐷 5 cerdos orbitando
-* ⬆️ Flotación suave
-* 🎯 Hover interactivo
-
-**Otros Logos:**
-
-* Login: 160×160px en marco decorativo
-* Restaurar: 140×140px con brillo
-* Sidebar: 50×50px con gradiente
-
-\---
-
-### 📚 **Fase 3: Documentación Completa (Completada)**
-
-**Archivos de Guía Creados:**
-
-1. ✅ `GUIA\\\\\\\_IMAGENES.md` - Cómo agregar imágenes de cerdos
-2. ✅ `EJEMPLOS\\\\\\\_IMAGENES.html` - Ejemplos de código HTML
-3. ✅ `CAMBIOS\\\\\\\_LOGOS.md` - Detalles técnicos de logos
-4. ✅ `RESUMEN\\\\\\\_LOGOS.md` - Resumen visual de cambios
-5. ✅ `PRUEBA\\\\\\\_LOGOS.html` - Checklist de verificación
-6. ✅ `RESPONSIVE\\\\\\\_LOGOS.md` - Guía de responsive design
-
-\---
-
-## 📈 ESTADÍSTICAS DE MEJORA
-
-### Tamaño de Logo
-
-```
-Antes:  180px
-Después: 280px
-Mejora:  +55%
+```text
+SIGEPOR PAGINA WEB/
+├── backend/                    # Backend legacy del prototipo inicial
+├── database/
+│   └── sigepor_database.sql    # Esquema y datos de referencia del prototipo
+├── frontend/
+│   └── assets/
+│       ├── index.html
+│       ├── registro_usuarios.html
+│       ├── registroporcino.html
+│       ├── vacunas.html
+│       ├── actualizacion_datos.html
+│       ├── restaurar.html
+│       ├── css/style.css
+│       ├── images/
+│       └── js/script.js
+├── SIGEPOR_BACKEND/            # Backend activo
+│   ├── src/
+│   │   ├── app.js
+│   │   ├── server.js
+│   │   ├── config/
+│   │   ├── middlewares/
+│   │   ├── routes/
+│   │   └── modules/users/
+│   ├── test/health.test.js
+│   ├── package.json
+│   └── README.md
+└── README.md
 ```
 
-### Líneas de CSS
+El backend activo es `SIGEPOR_BACKEND`. La carpeta `backend` corresponde a una implementacion anterior y no debe utilizarse para iniciar la aplicacion actual.
 
-```
-Antes:  \\\\\\\~500 líneas
-Después: \\\\\\\~750 líneas
-Nuevo:  +250 líneas
-```
+## Tecnologias
 
-### Animaciones
+- HTML5, CSS3 y JavaScript vanilla.
+- Node.js y CommonJS.
+- Express 4.
+- MySQL 8.
+- `mysql2/promise` para acceso a datos.
+- `bcryptjs` como dependencia preparada para el manejo seguro de contrasenas.
+- `supertest` y Node Test Runner para pruebas.
 
-```
-Antes:  3 animaciones
-Después: 8 animaciones
-Nuevo:  +5 animaciones
-```
+## Configuracion de MySQL
 
-### Páginas Mejoradas
+El backend actual utiliza la base de datos `sigepor`. Crea el archivo `SIGEPOR_BACKEND/.env` con una configuracion equivalente a esta y reemplaza los valores segun tu instalacion:
 
-```
-Antes:  Básicas
-Después: Profesionales
-Estado: 100% completo
-```
-
-\---
-
-## 🎨 CARACTERÍSTICAS NUEVAS
-
-### Animaciones
-
-* ✨ `floatLogo` - Flotación del logo
-* ✨ `glowPulse` - Brillo pulsante
-* ✨ `orbitParticle` - Cerdos en órbita
-* ✨ `floatLogoSmall` - Flotación adaptada
-* ✨ `glowPulseSmall` - Brillo adaptado
-
-### Diseño
-
-* 🎨 Glassmorphism con efecto vidrio
-* 🎨 Gradientes en textos y fondos
-* 🎨 Sombras dinámicas
-* 🎨 Bordes redondeados orgánicos
-
-### Interactividad
-
-* 🎯 Hover effects en logos
-* 🎯 Zoom al pasar mouse
-* 🎯 Transiciones suaves
-* 🎯 Efectos visuales modernos
-
-\---
-
-## 📁 ARCHIVOS MODIFICADOS
-
-### HTML
-
-```
-✅ index.html
-   - Logo hero con partículas
-   - Landing page profesional
-   - Secciones organizadas
-   - Botones CTA mejorados
-
-✅ registro.html
-   - Formulario mejorado
-   - Secciones claras
-   - Logo sidebar
-   - Estilos modernos
-
-✅ registroporcino.html
-   - Gestión porcina avanzada
-   - Tabla de inventario
-   - Estadísticas en tiempo real
-   - Logo sidebar
-
-✅ restaurar.html
-   - Diseño atractivo
-   - Logo con brillo
-   - Formulario seguro
-   - Información de ayuda
+```env
+PORT=3001
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=
+DB_NAME=sigepor
 ```
 
-### CSS
+La tabla utilizada para el login es `usuarios` y contiene, entre otros, estos campos:
 
-```
-✅ style.css
-   - +250 líneas nuevas
-   - 8 animaciones keyframes
-   - 15+ clases nuevas
-   - Media queries responsive
-   - Efectos modernos
+```text
+id, nombre, email, usuario, contrasena, fecha_registro, activo
 ```
 
-### Documentación
+En la base real el nombre de la columna de contrasena es `contraseña`. El repositorio la consulta usando ese nombre y expone los datos publicos mediante alias cuando corresponde.
 
-```
-✅ GUIA\\\\\\\_IMAGENES.md
-✅ EJEMPLOS\\\\\\\_IMAGENES.html
-✅ CAMBIOS\\\\\\\_LOGOS.md
-✅ RESUMEN\\\\\\\_LOGOS.md
-✅ PRUEBA\\\\\\\_LOGOS.html
-✅ RESPONSIVE\\\\\\\_LOGOS.md
-```
+No publiques el archivo `.env` ni incluyas contrasenas reales en el repositorio.
 
-\---
+## Instalacion y ejecucion
 
-## 🚀 CÓMO USAR
+Desde la raiz del proyecto:
 
-### 1\. Verificar Los Cambios
-
-```
-1. Abre index.html en el navegador
-2. Verifica el logo grande en el centro
-3. Observa las animaciones
-4. Prueba el hover interactivo
+```bash
+cd SIGEPOR_BACKEND
+npm install
+npm run dev
 ```
 
-### 2\. Probar en Diferentes Dispositivos
+El servidor queda disponible en:
 
-```
-1. Desktop: Logo grande 280×280px
-2. Tablet: Logo mediano 224×224px (80%)
-3. Mobile: Logo pequeño 168×168px (60%)
+```text
+http://localhost:3001
 ```
 
-### 3\. Personalizar (Opcional)
+Para abrir el frontend, abre `frontend/assets/index.html` con Live Server o sirve la carpeta `frontend/assets` mediante un servidor estatico. El formulario de login realiza la peticion a:
 
-```
-1. Cambiar tamaño: Edita width/height en style.css
-2. Cambiar colores: Edita valores RGBA en style.css
-3. Agregar imágenes: Sigue GUIA\\\\\\\_IMAGENES.md
+```text
+POST http://localhost:3001/api/users/login
 ```
 
-\---
+## Login
 
-## 📋 CHECKLIST DE VERIFICACIÓN
+El frontend envia este formato:
 
-### index.html
-
-* \[ ] Logo principal visible y grande
-* \[ ] Cerdos orbitando alrededor
-* \[ ] Animación de flotación
-* \[ ] Brillo pulsante
-* \[ ] Hover interactivo
-* \[ ] Logo login pequeño
-* \[ ] Página responsive
-
-### registro.html
-
-* \[ ] Logo en sidebar
-* \[ ] Formulario bien estructurado
-* \[ ] Estilos consistentes
-* \[ ] Responsive en mobile
-
-### registroporcino.html
-
-* \[ ] Logo en sidebar
-* \[ ] Tabla de inventario
-* \[ ] Estadísticas visibles
-* \[ ] Responsive en mobile
-
-### restaurar.html
-
-* \[ ] Logo con marco decorativo
-* \[ ] Brillo pulsante
-* \[ ] Flotación suave
-* \[ ] Formulario legible
-
-\---
-
-## 💡 INFORMACIÓN IMPORTANTE
-
-### Rutas de Archivos
-
-Asegúrate de que `logo.jpg` (o `logo.png`) esté en la carpeta raíz:
-
-```
-SIGEPOR/
-├── logo.jpg          ← Aquí debe estar
-├── logo.png          ← o aquí
-├── index.html
-├── style.css
-└── ...
+```json
+{
+  "identificador": "usuario_o_correo",
+  "contraseña": "tu_contraseña"
+}
 ```
 
-### Si Usas logo.png
+El backend busca el valor recibido en las columnas `usuario` y `email`. Respuestas principales:
 
-Cambia en HTML:
+- `200`: credenciales validas.
+- `400`: faltan el identificador o la contrasena.
+- `401`: usuario, correo o contrasena incorrectos.
+- `500`: error interno o de conexion con MySQL.
 
-```html
-<!-- De -->
-<img src="logo.jpg" ...>
+## Endpoints de usuarios
 
-<!-- A -->
-<img src="logo.png" ...>
+La API se monta bajo `/api/users`:
+
+| Metodo | Ruta | Funcion |
+| --- | --- | --- |
+| POST | `/api/users` | Crear usuario |
+| POST | `/api/users/login` | Iniciar sesion |
+| GET | `/api/users` | Consultar usuarios |
+| GET | `/api/users/:id` | Consultar usuario por ID |
+| PUT | `/api/users/:id` | Actualizar usuario |
+| PATCH | `/api/users/:id` | Actualizacion parcial |
+| DELETE | `/api/users/:id` | Eliminar usuario |
+| GET | `/health` | Verificar disponibilidad del backend |
+
+## Pruebas
+
+Ejecuta las pruebas desde `SIGEPOR_BACKEND`:
+
+```bash
+npm test
 ```
 
-### Imágenes de Cerdos
+Tambien se verifico manualmente que:
 
-Para agregar imágenes reales:
+- El backend inicia con la configuracion de MySQL disponible.
+- La ruta `/api/users/login` responde `400` cuando faltan datos.
+- Las credenciales invalidas responden `401`.
+- La consulta de login busca por usuario o correo.
+- El proyecto no presenta errores de sintaxis en los archivos principales del flujo de autenticacion.
 
-1. Lee `GUIA\\\\\\\_IMAGENES.md`
-2. Descarga imágenes de Unsplash/Pexels
-3. Crea carpeta `cerdos/`
-4. Copia ejemplos de `EJEMPLOS\\\\\\\_IMAGENES.html`
+## Pendientes recomendados
 
-\---
+- Aplicar `bcrypt` al crear y actualizar contrasenas; el flujo actual compara el valor almacenado y debe migrarse completamente a hashes.
+- Agregar tokens o sesiones para proteger los endpoints privados.
+- Evitar guardar informacion de autenticacion sensible en `localStorage`.
+- Separar la logica inline de `index.html` en un modulo JavaScript unico.
+- Agregar pruebas de integracion para login valido, login por usuario, login por correo y credenciales invalidas.
+- Completar las vistas de reportes y configuracion.
 
-## 🎓 DOCUMENTACIÓN DISPONIBLE
+## Documentacion adicional
 
-|Archivo|Propósito|
-|-|-|
-|`GUIA\\\\\\\_IMAGENES.md`|Cómo agregar imágenes de cerdos|
-|`EJEMPLOS\\\\\\\_IMAGENES.html`|Ejemplos de código listos para copiar|
-|`CAMBIOS\\\\\\\_LOGOS.md`|Detalles técnicos de los cambios|
-|`RESUMEN\\\\\\\_LOGOS.md`|Resumen visual de mejoras|
-|`PRUEBA\\\\\\\_LOGOS.html`|Checklist de verificación|
-|`RESPONSIVE\\\\\\\_LOGOS.md`|Guía de diseño responsivo|
-
-\---
-
-## ✅ BENEFICIOS
-
-|Aspecto|Mejora|
-|-|-|
-|**Visual**|5/5 ⭐ - Profesional y atractivo|
-|**Funcionalidad**|5/5 ⭐ - Todo funciona perfectamente|
-|**Performance**|5/5 ⭐ - CSS nativo, sin lag|
-|**Responsivo**|5/5 ⭐ - Perfecto en todos los dispositivos|
-|**Documentación**|5/5 ⭐ - Completa y clara|
-
-\---
-
-## 🎯 PRÓXIMOS PASOS (Opcionales)
-
-1. **Agregar imágenes de cerdos reales**
-
-   * Seguir `GUIA\\\\\\\_IMAGENES.md`
-   * Descargar de Unsplash/Pexels
-2. **Agregar más páginas**
-
-   * Reportes
-   * Configuración
-   * Perfil de usuario
-3. **Agregar funcionalidad**
-
-   * Backend con base de datos
-   * Autenticación
-   * APIs REST
-4. **Mejorar aún más**
-
-   * Dark mode
-   * Idiomas múltiples
-   * Búsqueda avanzada
-
-\---
-
-## 🎉 ¡RESULTADO FINAL!
-
-Tu aplicación SIGEPOR ahora tiene:
-
-* ✨ **Logos profesionales y atractivos**
-* 🎨 **Diseño moderno tipo 2026**
-* 📱 **Responsive en todos los dispositivos**
-* ⚡ **Animaciones suaves y profesionales**
-* 📚 **Documentación completa**
-* 🚀 **Listo para producción**
-
-\---
-
-## 
-
+- [Documentacion del backend](SIGEPOR_BACKEND/README.md)
+- [Arquitectura SQL visual](frontend/assets/ARQUITECTURA_SQL.html)
+- [Resumen de mejoras visuales](frontend/assets/RESUMEN_MEJORAS.html)
+- [Ejemplos de imagenes](frontend/assets/EJEMPLOS_IMAGENES.html)
+- [Prueba de logos](frontend/assets/PRUEBA_LOGOS.html)

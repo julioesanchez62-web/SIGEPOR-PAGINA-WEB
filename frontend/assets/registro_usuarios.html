@@ -37,51 +37,48 @@
             </div>
 
             <div class="card-wrapper">
-                <form class="grid-form">
-                    <div class="form-section-title">
-                        <span class="section-icon">📋</span>
-                        <h3>Información Básica</h3>
-                    </div>
+                <form class="grid-form" id="formulario-usuarios">
+    <!-- CAMPO OCULTO PARA EL ID DE USUARIO (Indispensable para Consultar/Actualizar/Borrar) -->
+    <div class="field" style="grid-column: span 2;">
+        <label>ID de Usuario (Para Consultar/Actualizar/Borrar):</label>
+        <input type="number" id="input-id" placeholder="Ej: 1">
+    </div>
 
-                    <div class="field">
-                        <label>Nombres y Apellidos:</label>
-                        <input type="text" placeholder="Ej: Juan Pérez" required>
-                    </div>
-                    <div class="field">
-                        <label>Fecha de Nacimiento:</label>
-                        <input type="date" required>
-                    </div>
-                    <div class="field">
-                        <label>Género:</label>
-                        <div class="radio-group">
-                            <label class="radio-label">
-                                <input type="radio" name="gen" id="m" value="M"> Masculino
-                            </label>
-                            <label class="radio-label">
-                                <input type="radio" name="gen" id="f" value="F"> Femenino
-                            </label>
-                        </div>
-                    </div>
-                    
-                    <div class="form-section-title" style="grid-column: span 2; margin-top: 20px;">
-                        <span class="section-icon">📱</span>
-                        <h3>Información de Contacto</h3>
-                    </div>
+    <div class="form-section-title">
+        <span class="section-icon">📋</span>
+        <h3>Información Básica</h3>
+    </div>
 
-                    <div class="field">
-                        <label>Número de Celular:</label>
-                        <input type="tel" placeholder="10 dígitos" pattern="[0-9]{10}">
-                    </div>
-                    <div class="field">
-                        <label>Correo Electrónico:</label>
-                        <input type="email" placeholder="usuario@ejemplo.com">
-                    </div>
-                    
-                    <div class="form-actions">
-                        <button type="submit" class="btn-save">✓ GUARDAR CAMBIOS</button>
-                        <button type="reset" class="btn-reset">↻ LIMPIAR FORMULARIO</button>
-                    </div>
-                </form>
+    <div class="field">
+        <label>Nombres y Apellidos:</label>
+        <input type="text" id="input-nombre" placeholder="Ej: Juan Pérez" required>
+    </div>
+
+    <div class="form-section-title" style="grid-column: span 2; margin-top: 20px;"></div>
+
+    <div class="field">
+        <label>Correo Electrónico:</label>
+        <input type="email" id="input-correo" placeholder="usuario@ejemplo.com">
+    </div>
+    <div class="field">
+        <label>Usuario:</label>
+        <input type="text" id="input-usuario" placeholder="usuario">
+    </div>
+     <div class="field">
+        <label>Contraseña:</label>
+        <input type="password" id="input-contrasena" placeholder="contraseña">
+    </div>
+    
+    <div class="form-actions">
+        <!-- Quitamos type="submit" para controlar el envío mediante JS de forma segura -->
+        <button type="button" id="btn-guardar" class="btn-save">✓ GUARDAR CAMBIOS</button>
+        <button type="reset" class="btn-reset">↻ LIMPIAR FORMULARIO</button>
+        <button type="button" class="btn-consult" onclick="consultarUsuario()">🔍 CONSULTAR USUARIO</button>
+        <button type="button" class="btn-update" onclick="actualizarUsuario()">✏️ ACTUALIZAR USUARIO</button>
+        <button type="button" class="btn-delete" onclick="borrarUsuario()">🗑️ BORRAR USUARIO</button>
+    </div>
+</form>
+              
             </div>
 
             <!-- Sección de consejos -->
@@ -96,5 +93,146 @@
     </div>
 
     <script src="JS/script.js"></script>
+        <script src="JS/script.js"></script>
+
+    <!-- 🚀 AQUÍ PEGAS LA LÓGICA DE CONEXIÓN CON TU BACKEND 🚀 -->
+    <script>
+        const API_URL = 'http://localhost:3001/api/users'; // URL oficial de tu módulo backend
+
+        // Mapeo de elementos de la interfaz
+        const formulario = document.getElementById('formulario-usuarios');
+        const btnGuardar = document.getElementById('btn-guardar');
+        const inputId = document.getElementById('input-id');
+        const inputNombre = document.getElementById('input-nombre');
+        const inputCorreo = document.getElementById('input-correo');
+        const inputUsuario = document.getElementById('input-usuario');
+        const inputContrasena = document.getElementById('input-contrasena');
+
+        // 🟢 LÓGICA DEL BOTÓN: GUARDAR CAMBIOS
+        btnGuardar.addEventListener('click', async () => {
+            const datosUsuario = {
+                nombre: inputNombre.value.trim(),
+                correo: inputCorreo.value.trim(),
+                usuario: inputUsuario.value.trim(),
+                contraseña: inputContrasena.value,
+                idRol: 2 // Rol de usuario estándar asignado por defecto
+            };
+
+            if (!datosUsuario.nombre || !datosUsuario.correo || !datosUsuario.contraseña) {
+                alert('Por favor, rellene todos los campos obligatorios antes de guardar.');
+                return;
+            }
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(datosUsuario)
+                });
+                const resultado = await response.json();
+
+                if (response.ok) {
+                    alert('¡Éxito! ' + resultado.message);
+                    if (resultado.user && resultado.user.id) {
+                        inputId.value = resultado.user.id; // Coloca el ID asignado por MySQL en pantalla
+                    }
+                } else {
+                    alert('Error: ' + (resultado.message || 'No se pudo guardar el usuario.'));
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Fallo de comunicación: Asegúrate de que tu backend esté corriendo.');
+            }
+        });
+
+        // 🔵 LÓGICA DEL BOTÓN: CONSULTAR USUARIO
+        async function consultarUsuario() {
+            const id = inputId.value.trim();
+            if (!id) {
+                alert('Por favor, ingrese un número de ID en el campo superior para buscar.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/${id}`);
+                const resultado = await response.json();
+
+                if (response.ok) {
+                    inputNombre.value = resultado.data.nombre || '';
+                    inputCorreo.value = resultado.data.correo || '';
+                    inputUsuario.value = resultado.data.usuario || '';
+                    inputContrasena.value = ''; // Por protección no se muestra la clave en texto plano
+                    alert('Datos cargados de forma exitosa desde la base de datos.');
+                } else {
+                    alert('Error: ' + resultado.message);
+                }
+            } catch (error) {
+                console.error(error);
+                alert('No se pudo establecer conexión con el backend.');
+            }
+        }
+
+        // 🔵 LÓGICA DEL BOTÓN: ACTUALIZAR USUARIO
+        async function actualizarUsuario() {
+            const id = inputId.value.trim();
+            if (!id) {
+                alert('Se requiere especificar el ID del usuario que desea actualizar.');
+                return;
+            }
+
+            const datosActualizados = {
+                nombre: inputNombre.value.trim(),
+                correo: inputCorreo.value.trim(),
+                usuario: inputUsuario.value.trim(),
+                contraseña: inputContrasena.value,
+                idRol: 2
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(datosActualizados)
+                });
+                const resultado = await response.json();
+
+                if (response.ok) {
+                    alert('¡Datos de usuario modificados en la base de datos con éxito!');
+                } else {
+                    alert('Error al actualizar: ' + resultado.message);
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Error en la red al intentar actualizar los datos.');
+            }
+        }
+
+        // 🔴 LÓGICA DEL BOTÓN: BORRAR USUARIO
+        async function borrarUsuario() {
+            const id = inputId.value.trim();
+            if (!id) {
+                alert('Debe ingresar el ID del usuario que desea eliminar definitivamente.');
+                return;
+            }
+
+            const confirmar = confirm(`¿Está seguro de eliminar al usuario con ID ${id}? Esta acción borrará el registro de MySQL permanentemente.`);
+            if (!confirmar) return;
+
+            try {
+                const response = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+                const resultado = await response.json();
+
+                if (response.ok) {
+                    alert(resultado.message);
+                    formulario.reset(); // Deja limpio el panel visual automáticamente
+                } else {
+                    alert('Error al borrar: ' + resultado.message);
+                }
+            } catch (error) {
+                console.error(error);
+                alert('No se pudo concretar la solicitud de eliminación.');
+            }
+        }
+    </script>
 </body>
 </html>

@@ -17,75 +17,68 @@
 const { pool } = require('../../config/mysql');
 
 /**
- * Buscar usuario estrictamente por correo electrónico
- * Corregido: Busca solo en la columna 'email' y remueve espacios en blanco
+ * Buscar usuario por correo electrónico o nombre de usuario (para Login)
  */
-async function findUserByEmail(correo) {
+async function findByEmailOrUsername(identificador) {
   try {
-    if (!correo) return null;
+    if (!identificador) return null;
 
     const [rows] = await pool.execute(
-      'SELECT id, nombre, email AS correo, usuario, contraseña, fecha_registro, activo FROM usuarios WHERE email = ? LIMIT 1',
-      [correo.trim()]
+      `SELECT id, nombre, email AS correo, usuario, contraseña, idRol, fecha_registro, activo
+       FROM usuarios
+       WHERE LOWER(TRIM(email)) = LOWER(TRIM(?))
+         OR LOWER(TRIM(usuario)) = LOWER(TRIM(?))
+       LIMIT 1`,
+      [identificador, identificador]
     );
     
     return rows[0] || null;
   } catch (error) {
-    console.error('Error en findUserByEmail:', error.message);
+    console.error('Error en findByEmailOrUsername:', error.message);
     throw error;
   }
 }
 
 /**
+ * 🔵 Lógica para el botón: CONSULTAR USUARIO
  * Buscar usuario por ID
- * Usa 'AS correo' para mapear la columna de la BD a la propiedad esperada
  */
-async function findUserById(id) {
+async function getUserById(id) {
   try {
     const [rows] = await pool.execute(
-      'SELECT id, nombre, email AS correo, usuario, fecha_registro, activo FROM usuarios WHERE id = ? LIMIT 1',
+      'SELECT id, nombre, email AS correo, usuario, idRol, fecha_registro, activo FROM usuarios WHERE id = ? LIMIT 1',
       [id]
     );
     return rows[0] || null;
   } catch (error) {
-    console.error('Error en findUserById:', error.message);
+    console.error('Error en getUserById:', error.message);
     throw error;
   }
 }
 
 /**
- * Validar rol (Simulado / placeholder)
- */
-async function findRoleById(idRol) {
-  try {
-    return { id: idRol, nombre: 'Usuario' };
-  } catch (error) {
-    console.error('Error en findRoleById:', error.message);
-    throw error;
-  }
-}
-
-/**
+ * 🟢 Lógica para el botón: GUARDAR CAMBIOS
  * Crear nuevo usuario en la tabla 'usuarios'
  */
-async function createUser(userData) {
+async function createUser(datos) {
   try {
-    const { nombre, correo, email, contraseñaHash } = userData;
-    const correoFinal = correo || email;
+    const { nombre, correo, contraseña, idRol } = datos;
+    // Usamos el correo también como nombre de usuario por defecto
+    const usuarioPorDefecto = correo.split('@')[0]; 
 
     // 1. Ejecutar la inserción en MySQL
     const [result] = await pool.execute(
-      'INSERT INTO usuarios (nombre, email, usuario, contraseña, fecha_registro, activo) VALUES (?, ?, ?, ?, NOW(), 1)',
-      [nombre, correoFinal, correoFinal, contraseñaHash]
+      'INSERT INTO usuarios (nombre, email, usuario, contraseña, idRol, fecha_registro, activo) VALUES (?, ?, ?, ?, ?, NOW(), 1)',
+      [nombre, correo, usuarioPorDefecto, contraseña, idRol || 2] // Por defecto rol 2 si no se envía
     );
 
-    // 2. Control de seguridad: Si no se generó un ID, lanzar error explícito
+    // 2. Control de seguridad
     if (!result || !result.insertId) {
       throw new Error('La base de datos no pudo generar un ID válido para el nuevo registro.');
     }
 
-    // 3. Buscar y retornar el usuario recién insertado con sus datos limpios
-    return await findUserById(result.insertId);
+    // 3. Buscar y retornar el usuario recién insertado
+    return await getUserById(result.insertId);
   } catch (error) {
     console.error('Error en createUser:', error.message);
     throw error;
@@ -93,56 +86,64 @@ async function createUser(userData) {
 }
 
 /**
- * Obtener todos los usuarios
+ * Obtener todos los usuarios del sistema
  */
-async function getUsers() {
+async function getAllUsers() {
   try {
     const [rows] = await pool.execute(
-      'SELECT id, nombre, email AS correo, usuario, fecha_registro, activo FROM usuarios'
+      'SELECT id, nombre, email AS correo, usuario, idRol, fecha_registro, activo FROM usuarios'
     );
     return rows;
   } catch (error) {
-    console.error('Error en getUsers:', error.message);
+    console.error('Error en getAllUsers:', error.message);
     throw error;
   }
 }
 
 /**
- * Actualizar datos de usuario de manera dinámica (Compatible con PUT y PATCH)
- * 🔥 REVISADO Y OPTIMIZADO PARA SOPORTAR AMBOS MÉTODOS SIN DUPLICAR FUNCIONES
+ * 🔵 Lógica para el botón: ACTUALIZAR USUARIO (Maneja PUT completo)
  */
 async function updateUser(id, datos) {
   try {
-    const { nombre, correo, email, activo } = datos;
-    const correoFinal = correo || email;
+    const { nombre, correo, contraseña, idRol } = datos;
 
-    // 1. Si viene el campo 'activo' (como en tu PATCH {"activo": 0}), actualizamos esa columna
-    if (activo !== undefined) {
-      await pool.execute(
-        'UPDATE usuarios SET activo = ? WHERE id = ?',
-        [activo, id]
-      );
-    } 
-    // 2. Si vienen los campos de texto normales (como en tu PUT), ejecutamos la consulta clásica
-    else {
-      await pool.execute(
-        'UPDATE usuarios SET nombre = ?, email = ? WHERE id = ?',
-        [nombre, correoFinal, id]
-      );
-    }
+    await pool.execute(
+      'UPDATE usuarios SET nombre = ?, email = ?, contraseña = ?, idRol = ? WHERE id = ?',
+      [nombre, correo, contraseña, idRol, id]
+    );
 
-    // Retornamos el objeto plano actualizado combinado con el ID de la URL
-    return {
-      id: parseInt(id),
-      ...datos
-    };
+    return await getUserById(id);
   } catch (error) {
-    console.error('Error en repository.updateUser (PATCH/PUT):', error.message);
+    console.error('Error en repository.updateUser (PUT):', error.message);
     throw error;
   }
 }
 
 /**
+ * Lógica para actualización parcial (Maneja PATCH dinámico)
+ */
+async function patchUser(id, camposCambiados) {
+  try {
+    const keys = Object.keys(camposCambiados);
+    if (keys.length === 0) return await getUserById(id);
+
+    // Construcción dinámica de la consulta SQL para los campos que vengan en el body
+    const asignaciones = keys.map(key => `${key} = ?`).join(', ');
+    const valores = Object.values(camposCambiados);
+    valores.push(id); // Añadimos el id para el WHERE
+
+    const sql = `UPDATE usuarios SET ${asignaciones} WHERE id = ?`;
+    await pool.execute(sql, valores);
+
+    return await getUserById(id);
+  } catch (error) {
+    console.error('Error en repository.patchUser (PATCH):', error.message);
+    throw error;
+  }
+}
+
+/**
+ * 🔴 Lógica para el botón: BORRAR USUARIO
  * Eliminar usuario por ID
  */
 async function deleteUser(id) {
@@ -156,12 +157,12 @@ async function deleteUser(id) {
 }
 
 module.exports = {
-  findUserByEmail,
-  findUserById,
-  findRoleById,
+  findByEmailOrUsername,
+  getUserById,
   createUser,
-  getUsers,
-  updateUser, // <--- Exportación unificada oficial
+  getAllUsers,
+  updateUser,
+  patchUser,
   deleteUser,
   pool
 };
