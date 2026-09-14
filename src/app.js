@@ -23,7 +23,10 @@ app.use(cors()); // <--- 🔥 ¡ESTA LÍNEA ES LA QUE ACTIVA EL PERMISO PARA EL 
 app.use(express.json());
 
 // 2. Rutas
+app.use('/api/porcinos', require('./modules/porcinos/porcinos.routes'));
+app.use('/api/veterinarios', require('./modules/veterinarios/veterinarios.routes'));
 app.use('/', indexRoutes);
+
 
 // 3. Capturador de 404
 app.use((req, res, next) => {
