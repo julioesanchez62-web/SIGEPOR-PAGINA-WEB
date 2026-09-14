@@ -40,7 +40,7 @@ async function findByEmailOrUsername(identificador) {
 }
 
 /**
- * 🔵 Lógica para el botón: CONSULTAR USUARIO
+ * 🔵 Lógica para el botón: CONSULTAR USUARIO  MEJORADO
  * Buscar usuario por ID
  */
 async function getUserById(id) {

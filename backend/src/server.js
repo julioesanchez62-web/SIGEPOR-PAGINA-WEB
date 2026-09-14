@@ -6,10 +6,6 @@ const { connectMySQL } = require('./config/mysql');
 
 /**
  * Iniciar servidor con validación de MySQL (Fail Fast)
- * 
- * 1. Valida que MySQL esté disponible
- * 2. Si falla, detiene el proceso (no inicia sin BD)
- * 3. Si éxito, inicia Express normalmente
  */
 async function startServer() {
   try {
@@ -26,4 +22,3 @@ async function startServer() {
 }
 
 startServer();
-

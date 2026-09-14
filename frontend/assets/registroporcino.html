@@ -7,19 +7,21 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+    <form id="form-porcino">
     <div class="main-container">
         <nav class="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-logo">
-                    <img src="logo.jpg" alt="SIGEPOR">
+                    <img src="images/logo.jpg" alt="SIGEPOR">
                 </div>
                 <h3>SIGEPOR</h3>
             </div>
             <ul>
                 <li><a href="index.html">🏠 Inicio</a></li>
+                <li><a href="registro_usuarios.html">👤 Usuarios</a></li>
                 <li><a href="registroporcino.html" class="active">🐷 Gestión Porcina</a></li>
                 <li><a href="vacunas.html">🩺 Vacunas</a></li>
-                <li><a href="registro_veterinarios.html">👨‍⚕️ Veterinarios</a></li>
+                <li><a href="veterinarios.html">👨‍⚕️ Veterinarios</a></li>                 
                 <li><a href="javascript:void(0)" onclick="openPanel('reports')">📊 Reportes</a></li>
                 <li><a href="javascript:void(0)" onclick="openPanel('settings')">⚙️ Configuración</a></li>
                 <li><a href="javascript:void(0)" onclick="cerrarSesion()">🔒 Cerrar Sesión</a></li>
@@ -72,20 +74,36 @@
                         </select>
                     </div>
                     <div class="field">
-                        <label>Fecha de Nacimiento:</label>
-                        <input type="date" id="pigBirth" required>
+                         <label>Fecha de Nacimiento:</label>
+                         <input type="date" id="pigBirth" required>
                     </div>
-                    <div class="field">
+                   <div class="field">
                         <label>Género:</label>
                         <select id="pigGender" required>
-                            <option value="">Seleccione género</option>
-                            <option value="Macho">Macho</option>
-                            <option value="Hembra">Hembra</option>
+                              <option value="">Seleccione género</option>
+                              <option value="Macho">Macho</option>
+                              <option value="Hembra">Hembra</option>
                         </select>
-                    </div>
+                     </div>
 
-                    <button type="submit" id="btnSubmitForm" class="btn-add btn-save">🐷 AÑADIR PORCINO</button>
-                </form>
+                     <div class="field">
+                        <label>Veterinario:</label>
+                        <select id="veterinario_id" required>
+                              <option value="">Seleccione veterinario</option>
+                        </select>
+                     </div>
+
+                    <button type="submit"  class="btn-add btn-save">🐷 AÑADIR PORCINO</button>
+                        <div class="form-actions">
+        <!-- Quitamos type="submit" para controlar el envío mediante JS de forma segura -->
+        
+        <button type="reset" class="btn-reset">↻ LIMPIAR FORMULARIO</button>
+        <button type="button" class="btn-consult" onclick="consultarPorcino()">🔍 CONSULTAR PORCINO</button>
+        <button type="button" class="btn-update" onclick="actualizarPorcino()">✏️ ACTUALIZAR PORCINO</button>
+        <button type="button" class="btn-delete" onclick="borrarPorcino()">🗑️ BORRAR PORCINO</button>
+    </div>
+    </form>
+                <!-- </form> -->
             </div>
 
             <!-- Sección de tabla de inventario -->
@@ -143,6 +161,191 @@
         </section>
     </div>
 
-    <script src="JS/script.js"></script>
+    <script src="js/registro_porcino.js"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", () => {
+    // Se ejecuta automáticamente al cargar el módulo de gestión porcina
+    cargarVeterinariosEnSelect();
+});
+
+/**
+ * Realiza una petición Fetch a la API de Node.js 
+ * e inserta los datos dentro del select #veterinario_id
+ */
+function cargarVeterinariosEnSelect() {
+    const selectVeterinario = document.getElementById("veterinario_id");
+    
+    // Si tu backend corre en un puerto diferente (ej: 3000), usa la URL completa: 'http://localhost:3000/api/veterinarios'
+    fetch('/api/veterinarios') 
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Error HTTP: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(veterinarios => {
+            // Limpia el select manteniendo únicamente la opción por defecto
+            selectVeterinario.innerHTML = '<option value="">Seleccione veterinario</option>';
+            
+            // Mapea la lista recibida desde el backend de Node.js
+            veterinarios.forEach(vet => {
+                const option = document.createElement("option");
+                
+                // Asigna los atributos basados en las columnas de tu BD
+                option.value = vet.id; 
+                option.textContent = `👨‍⚕️ ${vet.nombre}`;
+                
+                // Si el veterinario está marcado como inactivo (activo == 0), se deshabilita
+                if (vet.activo === 0) {
+                    option.textContent += " (Inactivo)";
+                    option.disabled = true; 
+                }
+                
+                selectVeterinario.appendChild(option);
+            });
+        })
+        .catch(error => {
+            console.error("Error al poblar el menú de veterinarios:", error);
+            // Inserta un aviso visual en el select indicando el fallo de red
+            selectVeterinario.innerHTML = '<option value="">❌ Error al conectar con el servidor</option>';
+        });
+}
+
+
+    const API_URL = 'http://localhost:3001/api/porcinos'; // URL oficial de tu módulo backend
+
+        // Mapeo de elementos de la interfaz
+        const formulario = document.getElementById('form-porcino');
+        const btnGuardar = document.getElementById('btn-guardar');
+        const inputId = document.getElementById('input-id');
+        const inputNombre = document.getElementById('input-nombre-porcino');
+        const inputRaza = document.getElementById('input-raza');
+        const inputEdad = document.getElementById('input-edad');
+        const inputPeso = document.getElementById('input-peso');
+
+        // 🟢 LÓGICA DEL BOTÓN: GUARDAR CAMBIOS
+        btnGuardar.addEventListener('click', async () => {
+            const datosPorcino = {
+                nombre: inputNombre.value.trim(),
+                raza: inputRaza.value.trim(),
+                edad: inputEdad.value.trim(),
+                peso: inputPeso.value.trim()
+            };
+
+            if (!datosPorcino.nombre || !datosPorcino.raza || !datosPorcino.edad || !datosPorcino.peso) {
+                alert('Por favor, rellene todos los campos obligatorios antes de guardar.');
+                return;
+            }
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(datosPorcino)
+                });
+                const resultado = await response.json();
+
+                if (response.ok) {
+                    alert('¡Éxito! ' + resultado.message);
+                    if (resultado.porcino && resultado.porcino.id) {
+                        inputId.value = resultado.porcino.id; // Coloca el ID asignado por MySQL en pantalla
+                    }
+                } else {
+                    alert('Error: ' + (resultado.message || 'No se pudo guardar el usuario.'));
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Fallo de comunicación: Asegúrate de que tu backend esté corriendo.');
+            }
+        });
+
+        // 🔵 LÓGICA DEL BOTÓN: CONSULTAR PORCINO
+        async function consultarPorcino() {
+            const id = inputId.value.trim();
+            if (!id) {
+                alert('Por favor, ingrese un número de ID en el campo superior para buscar.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/${id}`);
+                const resultado = await response.json();
+
+                if (response.ok) {
+                    inputNombre.value = resultado.data.nombre || '';
+                    inputRaza.value = resultado.data.raza || '';
+                    inputEdad.value = resultado.data.edad || '';
+                    inputPeso.value = resultado.data.peso || '';
+                    alert('Datos cargados de forma exitosa desde la base de datos.');
+                } else {
+                    alert('Error: ' + resultado.message);
+                }
+            } catch (error) {
+                console.error(error);
+                alert('No se pudo establecer conexión con el backend.');
+            }
+        }
+
+        // 🔵 LÓGICA DEL BOTÓN: ACTUALIZAR PORCINO
+        async function actualizarPorcino() {
+            const id = inputId.value.trim();
+            if (!id) {
+                alert('Se requiere especificar el ID del porcino que desea actualizar.');
+                return;
+            }
+
+            const datosActualizados = {
+                nombre: inputNombre.value.trim(),
+                raza: inputRaza.value.trim(),
+                edad: inputEdad.value.trim(),
+                peso: inputPeso.value.trim()
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(datosActualizados)
+                });
+                const resultado = await response.json();
+
+                if (response.ok) {
+                    alert('¡Datos del porcino modificados en la base de datos con éxito!');
+                } else {
+                    alert('Error al actualizar: ' + resultado.message);
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Error en la red al intentar actualizar los datos.');
+            }
+        }
+
+        // 🔴 LÓGICA DEL BOTÓN: BORRAR PORCINO
+        async function borrarPorcino () {
+            const id = inputId.value.trim();
+            if (!id) {
+                alert('Debe ingresar el ID del porcino que desea eliminar definitivamente.');
+                return;
+            }
+
+            const confirmar = confirm(`¿Está seguro de eliminar al porcino con ID ${id}? Esta acción borrará el registro de MySQL permanentemente.`);
+            if (!confirmar) return;
+
+            try {
+                const response = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+                const resultado = await response.json();
+
+                if (response.ok) {
+                    alert(resultado.message);
+                    formulario.reset(); // Deja limpio el panel visual automáticamente
+                } else {
+                    alert('Error al borrar: ' + resultado.message);
+                }
+            } catch (error) {
+                console.error(error);
+                alert('No se pudo concretar la solicitud de eliminación.');
+            }
+        }
+    </script>
 </body>
 </html>

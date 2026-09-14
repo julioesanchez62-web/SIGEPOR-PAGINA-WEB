@@ -1,28 +1,44 @@
-# Backend SIGEPOR
+# SIGEPOR Backend
 
-## Conexión con MySQL desde Workbench
+Este proyecto está configurado para seguir una arquitectura modular con Node.js en CommonJS, Express y MySQL usando mysql2/promise.
 
-1. Abre MySQL Workbench.
-2. Crea una conexión local con estos datos:
-   - Host: 127.0.0.1
-   - Port: 3306
-   - User: root
-   - Password: la que tengas configurada en Workbench
-3. Crea la base de datos `sigepor`.
-4. Ejecuta este SQL:
+## Reglas del proyecto
+- Node.js con CommonJS.
+- Express como servidor web.
+- MySQL con mysql2/promise.
+- Módulos por funcionalidad.
+- Separación en Route, Validator, Controller, Service y Repository.
+- Sin lógica de negocio en el Controller.
+- Sin SQL en el Service.
+- Contraseñas cifradas antes de almacenarse.
+- Sin credenciales reales en el código.
+- Cambios pequeños y verificables.
 
-```sql
-CREATE DATABASE IF NOT EXISTS sigepor;
-USE sigepor;
-
-CREATE TABLE IF NOT EXISTS veterinarios (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  nombre VARCHAR(255) NOT NULL,
-  email VARCHAR(255) UNIQUE NOT NULL,
-  usuario VARCHAR(100) UNIQUE NOT NULL,
-  contraseña VARCHAR(255) NOT NULL,
-  fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+## Estructura base
+```text
+src/
+  app.js
+  server.js
+  config/
+    database.js
+    env.js
+  routes/
+    index.js
+  modules/
+    users/
+      user.routes.js
+      user.validator.js
+      user.controller.js
+      user.service.js
+      user.repository.js
 ```
 
-5. Ajusta el archivo `.env` con tus credenciales reales si es necesario.
+## Variables de entorno
+Copia `.env.example` a `.env` y completa los valores requeridos. Nunca guardes credenciales reales en el repositorio.
+
+## Comandos
+```bash
+npm install
+npm run dev
+npm test
+```

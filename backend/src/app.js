@@ -1,33 +1,41 @@
-const express = require('express');
 const cors = require('cors');
-require('dotenv').config();
-
-const authRoutes = require('./routes/auth.routes');
-const usersRoutes = require('./routes/users.routes');
-const porcinosRoutes = require('./routes/porcinos.routes');
+const express = require('express');
+const indexRoutes = require('./routes');
+const errorMiddleware = require('./middlewares/error.middleware');
 
 const app = express();
-const PORT = process.env.PORT || 3001;
 
-app.use(cors());
+/**
+ * ORDEN CORRECTO DE MIDDLEWARES EN EXPRESS
+ * 
+ * 1️⃣ Middlewares globales (body parser, etc.)
+ * 2️⃣ Rutas
+ * 3️⃣ Capturador de 404 (rutas no encontradas)
+ * 4️⃣ Middleware de errores (SIEMPRE al final)
+ * 
+ * ⚠️ El middleware de errores DEBE estar último porque Express
+ * busca middlewares de arriba a abajo y si está antes de las rutas,
+ * nunca las rutas lo verán.
+ */
+
+// 1. Middlewares globales
+app.use(cors()); // <--- 🔥 ¡ESTA LÍNEA ES LA QUE ACTIVA EL PERMISO PARA EL NAVEGADOR!
 app.use(express.json());
-app.use('/api/auth', authRoutes);
-app.use('/api/users', usersRoutes);
-app.use('/api/porcinos', porcinosRoutes);
 
-app.get('/', (req, res) => {
-  res.json({ message: 'API SIGEPOR funcionando' });
+// 2. Rutas
+app.use('/api/porcinos', require('./modules/porcinos/porcinos.routes'));
+app.use('/api/veterinarios', require('./modules/veterinarios/veterinarios.routes'));
+app.use('/', indexRoutes);
+
+
+// 3. Capturador de 404
+app.use((req, res, next) => {
+  const error = new Error('Ruta no encontrada');
+  error.statusCode = 404;
+  next(error);
 });
 
-app.use((err, req, res, next) => {
-  console.error(err);
-  const statusCode = err.statusCode || 500;
-  res.status(statusCode).json({
-    success: false,
-    message: err.message || 'Error interno del servidor'
-  });
-});
+// 4. Middleware de errores (SIEMPRE ÚLTIMO)
+app.use(errorMiddleware);
 
-app.listen(PORT, () => {
-  console.log(`Servidor escuchando en http://localhost:${PORT}`);
-});
+module.exports = app;

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIGEPOR - Registro de Veterinarios</title>
+    <link class="active" rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="main-container">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <img src="images/logo.jpg" alt="SIGEPOR">
+                </div>
+                <h3>SIGEPOR</h3>
+            </div>
+            <ul>
+                <li><a href="index.html">🏠 Inicio</a></li>
+                <li><a href="registro_usuarios.html">👤 Usuarios</a></li>
+                <li><a href="registroporcino.html">🐷 Gestión Porcina</a></li>
+                <li><a href="vacunas.html">🩺 Vacunas</a></li>
+                <li><a href="registro_veterinarios.html" class="active">👨‍⚕️ Veterinarios</a></li>                 
+                <li><a href="javascript:void(0)" onclick="openPanel('reports')">📊 Reportes</a></li>
+                <li><a href="javascript:void(0)" onclick="openPanel('settings')">⚙️ Configuración</a></li>
+                <li><a href="javascript:void(0)" onclick="cerrarSesion()">🔒 Cerrar Sesión</a></li>
+            </ul>
+        </nav>
+
+        <section class="content">
+            <div class="page-header">
+                <div class="header-icon">👨‍⚕️</div>
+                <div class="header-content">
+                    <h2>GESTIÓN DE PERSONAL VETERINARIO</h2>
+                    <p>Administra y registra las credenciales y acceso de los veterinarios</p>
+                </div>
+            </div>
+
+            <!-- Sección de formulario de registro -->
+            <div class="card-wrapper">
+                <div class="form-section-title">
+                    <span class="section-icon" id="formIcon">➕</span>
+                    <h3 id="formTitle">Registrar Nuevo Veterinario</h3>
+                </div>
+
+                <form id="vetForm" class="grid-form">
+                    <div class="field">
+                        <label>ID Veterinario:</label>
+                        <input type="number" id="vetId" placeholder="Ej: 1" required>
+                    </div>
+                    <div class="field">
+                        <label>Nombre Completo:</label>
+                        <input type="text" id="vetNombre" placeholder="Ej: Dr. Carlos Veterinario" required>
+                    </div>
+                    <div class="field">
+                        <label>Correo Electrónico:</label>
+                        <input type="email" id="vetEmail" placeholder="carlos@email.com" required>
+                    </div>
+                    <div class="field">
+                        <label>Nombre de Usuario:</label>
+                        <input type="text" id="vetUsuario" placeholder="Ej: vet123" required>
+                    </div>
+                    <div class="field">
+                        <label>Contraseña:</label>
+                        <input type="password" id="vetContrasena" placeholder="••••••••" required>
+                    </div>
+                    <div class="field">
+                        <label>Fecha de Registro:</label>
+                        <input type="date" id="vetFechaRegistro" required>
+                    </div>
+                    <div class="field">
+                        <label>Estado de Cuenta:</label>
+                        <select id="vetActivo" required>
+                            <option value="">Seleccione estado</option>
+                            <option value="1">🟢 Activo (1)</option>
+                            <option value="0">🔴 Inactivo (0)</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn-add btn-save">👨‍⚕️ AÑADIR VETERINARIO</button>
+                    
+                    <div class="form-actions">
+                        <button type="reset" class="btn-reset">↻ LIMPIAR FORMULARIO</button>
+                        <button type="button" class="btn-consult" onclick="consultarVeterinario()">🔍 CONSULTAR VETERINARIO</button>
+                        <button type="button" class="btn-update" onclick="actualizarVeterinario()">✏️ ACTUALIZAR VETERINARIO</button>
+                        <button type="button" class="btn-delete" onclick="borrarVeterinario()">🗑️ BORRAR VETERINARIO</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Sección de tabla de personal -->
+            <div class="table-wrapper">
+                <div class="table-header">
+                    <div class="header-icon-table">📋</div>
+                    <h3>Lista de Veterinarios en Sistema</h3>
+                </div>
+                
+                <div class="table-container">
+                    <table id="vetTable">
+                        <thead>
+                            <tr>
+                                <th>🆔 ID</th>
+                                <th>👤 Nombre</th>
+                                <th>📧 Email</th>
+                                <th>🔑 Usuario</th>
+                                <th>📅 Registro</th>
+                                <th>⚡ Estado</th>
+                                <th>⚙️ Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Las filas se inyectan dinámicamente con JS -->
+                        </tbody>
+                    </table>
+                    <div class="table-empty" id="tableEmpty">
+                        <p>📭 Aún no hay veterinarios registrados en la base de datos.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estadísticas rápidas -->
+            <div class="stats-section">
+                <div class="stat-card">
+                    <div class="stat-icon">👨‍⚕️</div>
+                    <h4>Total Registrados</h4>
+                    <p class="stat-number" id="statTotalVets">0</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🟢</div>
+                    <h4>Usuarios Activos</h4>
+                    <p class="stat-number" id="statActiveVets">0</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🔴</div>
+                    <h4>Usuarios Inactivos</h4>
+                    <p class="stat-number" id="statInactiveVets">0</p>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+</html>
