@@ -410,3 +410,79 @@ UNLOCK TABLES;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2026-08-30 23:13:21
+
+-- ========================================================
+-- NUEVAS TABLAS DE REQUERIMIENTOS CORE (HU-01 a HU-10)
+-- ========================================================
+
+CREATE TABLE IF NOT EXISTS `eventos_reproductivos` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `porcino_id` INT NOT NULL,
+  `tipo_evento` VARCHAR(50) NOT NULL,
+  `fecha_evento` DATE NOT NULL,
+  `fecha_probable_parto` DATE DEFAULT NULL,
+  `lechones_nacidos` INT DEFAULT '0',
+  `observaciones` TEXT,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `vacunacion` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `porcino_id` INT NOT NULL,
+  `nombre_vacuna` VARCHAR(100) NOT NULL,
+  `fecha_aplicacion` DATE NOT NULL,
+  `estado` VARCHAR(50) NOT NULL DEFAULT 'Aplicada',
+  `dosis` DECIMAL(5,2) NOT NULL DEFAULT '2.00',
+  `proxima_vacuna_dias` INT DEFAULT '14',
+  `notas` TEXT,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `enfermedades` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `porcino_id` INT NOT NULL,
+  `tipo_enfermedad` VARCHAR(100) NOT NULL,
+  `fecha_diagnostico` DATE NOT NULL,
+  `tratamiento` TEXT NOT NULL,
+  `estado` VARCHAR(50) NOT NULL DEFAULT 'En Tratamiento',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `alimentacion` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `tipo_alimento` VARCHAR(100) NOT NULL,
+  `cantidad` DECIMAL(10,2) NOT NULL DEFAULT '0.00',
+  `fecha_suministro` DATE NOT NULL,
+  `proveedor` VARCHAR(100) DEFAULT NULL,
+  `corral` VARCHAR(50) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `corrales` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `nombre` VARCHAR(50) NOT NULL,
+  `capacidad` INT NOT NULL DEFAULT '10',
+  `tipo_alimentacion` VARCHAR(50) NOT NULL,
+  `estado_limpieza` VARCHAR(50) DEFAULT 'Limpio',
+  `ubicacion` VARCHAR(100) DEFAULT 'Granja Principal',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `proveedores` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `nombre` VARCHAR(100) NOT NULL,
+  `telefono` VARCHAR(50) DEFAULT NULL,
+  `email` VARCHAR(100) DEFAULT NULL,
+  `direccion` VARCHAR(150) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `logs_actividad` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `usuario_id` INT DEFAULT NULL,
+  `usuario_nombre` VARCHAR(100) DEFAULT NULL,
+  `accion` VARCHAR(100) NOT NULL,
+  `detalles` TEXT,
+  `fecha` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

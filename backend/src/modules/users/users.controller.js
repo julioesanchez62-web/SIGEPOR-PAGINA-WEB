@@ -58,12 +58,16 @@ async function login(req, res, next) {
     // Respuesta exitosa entregada al cliente HTTP (Postman / Frontend)
     return res.status(200).json({
       message: '¡Autenticación exitosa! Bienvenido al sistema SIGEPOR',
+      token: usuarioValido.token,
       data: {
         id: usuarioValido.id,
         nombre: usuarioValido.nombre,
-        email: usuarioValido.email,
-        idRol: usuarioValido.idRol
-      }
+        email: usuarioValido.email || usuarioValido.correo,
+        idRol: usuarioValido.idRol,
+        rolNombre: usuarioValido.rolNombre,
+        token: usuarioValido.token
+      },
+      user: usuarioValido
     });
   } catch (error) {
     next(error); // Pasa el error al middleware global de errores

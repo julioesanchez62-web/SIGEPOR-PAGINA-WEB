@@ -54,8 +54,13 @@ document.getElementById('loginForm')?.addEventListener('submit', async function(
             if (errorBox) errorBox.style.display = "none";
             alert("¡Bienvenido al sistema SIGEPOR!");
             
-            // Almacenamos la sesión en el navegador
-            localStorage.setItem('usuarioSesion', JSON.stringify(resultado.user || resultado));
+            // Almacenamos la sesión y el token en el navegador
+            const tokenGuardar = resultado.token || (resultado.data && resultado.data.token) || (resultado.user && resultado.user.token);
+            if (tokenGuardar) {
+                localStorage.setItem('token', tokenGuardar);
+                localStorage.setItem('sigepor_token', tokenGuardar);
+            }
+            localStorage.setItem('usuarioSesion', JSON.stringify(resultado.user || resultado.data || resultado));
             window.location.href = "registroporcino.html";
         } else {
             // Si las credenciales fallan en el bypass

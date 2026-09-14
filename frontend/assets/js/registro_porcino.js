@@ -99,6 +99,7 @@ function renderizarTablaPorcinos(porcinos) {
             <td>${p.veterinario_nombre ? `👨‍⚕️ ${p.veterinario_nombre}` : '<em style="color:#888;">Sin asignar</em>'}</td>
             <td>
                 <div class="table-actions" style="display:flex; gap:4px; justify-content:center;">
+                    <button type="button" class="btn-table-action" style="padding:4px 8px; border:none; border-radius:5px; background:#ebf8ff; color:#2b6cb0; cursor:pointer;" onclick="mostrarCodigoQR('${p.identificacion || p.id}', '${p.raza}', '${p.peso}', '${p.estado_salud}')">📱 QR</button>
                     <button type="button" class="btn-table-action btn-table-edit" style="padding:4px 8px; border:none; border-radius:5px; background:#e2e8f0; cursor:pointer;" onclick="cargarParaEditar('${p.identificacion || p.id}')">✏️ Cargar</button>
                     <button type="button" class="btn-table-action btn-table-delete" style="padding:4px 8px; border:none; border-radius:5px; background:#fed7d7; color:#9b2c2c; cursor:pointer;" onclick="eliminarPorcinoDirecto('${p.identificacion || p.id}')">🗑️ Borrar</button>
                 </div>
@@ -327,7 +328,40 @@ function cerrarSesion() {
 }
 
 function openPanel(tipo) {
-    alert(`Panel de ${tipo === 'reports' ? 'Reportes' : 'Configuración'} disponible en el menú principal.`);
+    if (tipo === 'reports') {
+        window.location.href = 'reportes.html';
+    } else {
+        alert('Configuración disponible en el menú principal.');
+    }
+}
+
+// 📱 Generador y Visualizador de Código QR / RFID para Porcinos (HU-01)
+function mostrarCodigoQR(id, raza, peso, estado) {
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`SIGEPOR-PORCINO:${id}|Raza:${raza}|Peso:${peso}kg|Estado:${estado}`)}`;
+    
+    let modal = document.getElementById('qr-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'qr-modal';
+        modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; z-index:99999;';
+        document.body.appendChild(modal);
+    }
+    
+    modal.innerHTML = `
+        <div style="background:white; padding:30px; border-radius:15px; text-align:center; max-width:350px; position:relative; box-shadow:0 10px 25px rgba(0,0,0,0.3);">
+            <button onclick="document.getElementById('qr-modal').style.display='none'" style="position:absolute; top:10px; right:15px; border:none; background:none; font-size:1.4rem; cursor:pointer;">×</button>
+            <h3 style="margin-top:0; color:#2b6cb0;">📱 Etiqueta QR / RFID</h3>
+            <p style="margin:5px 0 15px; color:#4a5568; font-weight:bold;">Porcino #${id}</p>
+            <img src="${qrUrl}" alt="Código QR Porcino" style="border:4px solid #e2e8f0; border-radius:10px; padding:5px; background:white;">
+            <div style="margin-top:15px; font-size:0.85rem; color:#718096; text-align:left; background:#f7fafc; padding:10px; border-radius:8px;">
+                <div><strong>Raza:</strong> ${raza}</div>
+                <div><strong>Peso:</strong> ${peso} kg</div>
+                <div><strong>Estado:</strong> ${estado}</div>
+            </div>
+            <button onclick="window.print()" style="margin-top:15px; padding:8px 16px; background:#3182ce; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">🖨️ Imprimir Etiqueta</button>
+        </div>
+    `;
+    modal.style.display = 'flex';
 }
 
 // Inicialización automática

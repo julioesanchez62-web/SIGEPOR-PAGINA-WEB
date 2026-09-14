@@ -9,31 +9,64 @@
  * - NO ejecuta SQL directamente
  */
 
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const usersRepository = require('./users.repository');
+const { JWT_SECRET, ROLES } = require('../../middlewares/auth.middleware');
 
 /**
  * 🟢 Lógica para: GUARDAR CAMBIOS
- * Crear un nuevo usuario en el sistema
+ * Crear un nuevo usuario en el sistema con contraseña encriptada (Bcrypt)
  */
 async function createUser(nombre, correo, contraseña, idRol) {
-  // Aquí podrías agregar lógica de negocio en el futuro, como encriptar contraseñas
-  return await usersRepository.createUser({ nombre, correo, contraseña, idRol });
+  // Encriptamos la contraseña antes de guardar en MySQL
+  const salt = await bcrypt.genSalt(10);
+  const hashContrasena = await bcrypt.hash(contraseña, salt);
+
+  return await usersRepository.createUser({
+    nombre,
+    correo,
+    contraseña: hashContrasena,
+    idRol: idRol || 2
+  });
 }
 
 /**
- * Lógica para iniciar sesión
- * 🔥 FUNCIÓN INTEGRADA CON ÉXITO
+ * Lógica para iniciar sesión con Bcrypt y generación de Token JWT
  */
 async function loginUser(identificador, contraseña) {
-  // Busca el usuario utilizando el repositorio correspondiente
   const usuario = await usersRepository.findByEmailOrUsername(identificador);
-  
   if (!usuario) return null;
 
-  // Validación temporal de contraseña en texto plano (luego puedes migrar a bcrypt)
-  if (usuario.contraseña !== contraseña) return null;
+  const contrasenaBD = usuario.contraseña || usuario.password;
 
-  return usuario;
+  let passwordMatch = false;
+  if (contrasenaBD && (contrasenaBD.startsWith('$2a$') || contrasenaBD.startsWith('$2b$'))) {
+    passwordMatch = await bcrypt.compare(contraseña, contrasenaBD);
+  } else {
+    passwordMatch = (contraseña === contrasenaBD);
+  }
+
+  if (!passwordMatch) return null;
+
+  // Generación de Token JWT para control de sesión y RBAC
+  const tokenPayload = {
+    id: usuario.id,
+    nombre: usuario.nombre,
+    email: usuario.correo || usuario.email,
+    idRol: usuario.idRol || 2,
+    rolNombre: ROLES[usuario.idRol] || 'Empleado'
+  };
+
+  const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: '24h' });
+
+  const { contraseña: _, password: __, ...userClean } = usuario;
+
+  return {
+    ...userClean,
+    token,
+    rolNombre: ROLES[usuario.idRol] || 'Empleado'
+  };
 }
 
 /**
@@ -45,7 +78,6 @@ async function getAllUsers() {
 
 /**
  * 🔵 Lógica para: CONSULTAR USUARIO
- * Buscar un usuario específico mediante su ID único
  */
 async function getUserById(id) {
   return await usersRepository.getUserById(id);
@@ -53,9 +85,12 @@ async function getUserById(id) {
 
 /**
  * 🔵 Lógica para: ACTUALIZAR USUARIO
- * Modificar los datos completos de un usuario existente
  */
 async function updateUser(id, datosActualizados) {
+  if (datosActualizados.contraseña && !datosActualizados.contraseña.startsWith('$2a$')) {
+    const salt = await bcrypt.genSalt(10);
+    datosActualizados.contraseña = await bcrypt.hash(datosActualizados.contraseña, salt);
+  }
   return await usersRepository.updateUser(id, datosActualizados);
 }
 

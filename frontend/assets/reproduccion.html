@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIGEPOR - Gestión Reproductiva (HU-02)</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="main-container">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <img src="images/logo.jpg" alt="SIGEPOR">
+                </div>
+                <h3>SIGEPOR</h3>
+            </div>
+            <ul>
+                <li><a href="index.html">🏠 Inicio</a></li>
+                <li><a href="registro_usuarios.html">👤 Usuarios</a></li>
+                <li><a href="registroporcino.html">🐷 Gestión Porcina</a></li>
+                <li><a href="reproduccion.html" class="active">🍼 Reproducción</a></li>
+                <li><a href="vacunas.html">🩺 Vacunas</a></li>
+                <li><a href="inventario.html">📦 Inventario</a></li>
+                <li><a href="veterinarios.html">👨‍⚕️ Veterinarios</a></li>                 
+                <li><a href="reportes.html">📊 Reportes & Alertas</a></li>
+                <li><a href="javascript:void(0)" onclick="cerrarSesion()">🔒 Cerrar Sesión</a></li>
+            </ul>
+        </nav>
+
+        <section class="content">
+            <div class="page-header">
+                <div class="header-icon">🍼</div>
+                <div class="header-content">
+                    <h2>TRAZABILIDAD Y EVENTOS REPRODUCTIVOS</h2>
+                    <p>Registro de cubriciones, gestaciones (cálculo a 114 días), partos y destetes</p>
+                </div>
+            </div>
+
+            <!-- Formulario de Evento Reproductivo -->
+            <div class="card-wrapper">
+                <div class="form-section-title">
+                    <span class="section-icon">💘</span>
+                    <h3>Registrar Evento Reproductivo</h3>
+                </div>
+
+                <form id="reproForm" class="grid-form">
+                    <div class="field">
+                        <label>Porcino / Cerda Reproductora:</label>
+                        <select id="porcino_id" required>
+                            <option value="">Cargando porcinos...</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Tipo de Evento:</label>
+                        <select id="tipo_evento" required>
+                            <option value="Cubrición">💘 Cubrición (Monta / Inseminación)</option>
+                            <option value="Parto">🍼 Parto</option>
+                            <option value="Destete">🐖 Destete</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Fecha del Evento:</label>
+                        <input type="date" id="fecha_evento" required>
+                    </div>
+                    <div class="field">
+                        <label>Fecha Probable de Parto (Autocalculado a 114 días):</label>
+                        <input type="date" id="fecha_probable_parto">
+                    </div>
+                    <div class="field">
+                        <label>Lechones Nacidos (Solo para Parto):</label>
+                        <input type="number" id="lechones_nacidos" placeholder="0" min="0">
+                    </div>
+                    <div class="field">
+                        <label>Observaciones:</label>
+                        <input type="text" id="observaciones" placeholder="Ej: Camada saludable, macho inseminador Duroc...">
+                    </div>
+
+                    <button type="submit" class="btn-save btn-add">💾 REGISTRAR EVENTO REPRODUCTIVO</button>
+                </form>
+            </div>
+
+            <!-- Tabla de Eventos -->
+            <div class="table-wrapper">
+                <div class="table-header">
+                    <div class="header-icon-table">📋</div>
+                    <h3>Historial Reproductivo en MySQL</h3>
+                </div>
+                
+                <div class="table-container">
+                    <table id="reproTable">
+                        <thead>
+                            <tr>
+                                <th>🆔 Porcino</th>
+                                <th>💖 Evento</th>
+                                <th>📅 Fecha Evento</th>
+                                <th>🍼 Parto Estimado</th>
+                                <th>🐷 Lechones</th>
+                                <th>📝 Observaciones</th>
+                                <th>⚙️ Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Filas dinámicas -->
+                        </tbody>
+                    </table>
+                    <div class="table-empty" id="tableEmpty" style="display: none;">
+                        <p>📭 Aún no hay eventos reproductivos registrados. ¡Registra la primera cubrición!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estadísticas -->
+            <div class="stats-section">
+                <div class="stat-card">
+                    <div class="stat-icon">🍼</div>
+                    <h4>Total Registros</h4>
+                    <p class="stat-number" id="statTotalRepro">0</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">💘</div>
+                    <h4>Cubriciones</h4>
+                    <p class="stat-number" id="statCubriciones">0</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🍼</div>
+                    <h4>Partos Registrados</h4>
+                    <p class="stat-number" id="statPartos">0</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🐖</div>
+                    <h4>Destetes</h4>
+                    <p class="stat-number" id="statDestetes">0</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="js/script.js"></script>
+    <script src="js/offline_sync.js"></script>
+    <script src="js/auth_guard.js"></script>
+    <script src="js/reproduccion.js"></script>
+</body>
+</html>

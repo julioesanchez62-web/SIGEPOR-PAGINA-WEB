@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIGEPOR - Alertas, Reportes y Trazabilidad (HU-07 a HU-10)</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .export-btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .btn-export-csv {
+            background-color: #38a169;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-export-json {
+            background-color: #3182ce;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <img src="images/logo.jpg" alt="SIGEPOR">
+                </div>
+                <h3>SIGEPOR</h3>
+            </div>
+            <ul>
+                <li><a href="index.html">🏠 Inicio</a></li>
+                <li><a href="registro_usuarios.html">👤 Usuarios</a></li>
+                <li><a href="registroporcino.html">🐷 Gestión Porcina</a></li>
+                <li><a href="reproduccion.html">🍼 Reproducción</a></li>
+                <li><a href="vacunas.html">🩺 Vacunas</a></li>
+                <li><a href="inventario.html">📦 Inventario</a></li>
+                <li><a href="veterinarios.html">👨‍⚕️ Veterinarios</a></li>                 
+                <li><a href="reportes.html" class="active">📊 Reportes & Alertas</a></li>
+                <li><a href="javascript:void(0)" onclick="cerrarSesion()">🔒 Cerrar Sesión</a></li>
+            </ul>
+        </nav>
+
+        <section class="content">
+            <div class="page-header">
+                <div class="header-icon">📊</div>
+                <div class="header-content">
+                    <h2>PANEL DE REPORTES, ALERTAS Y TRAZABILIDAD</h2>
+                    <p>Alertas automáticas (HU-07), exportación CSV/JSON (HU-08) e historial productivo (HU-09)</p>
+                </div>
+            </div>
+
+            <!-- 🔔 HU-07: Centro de Alertas Automáticas -->
+            <div class="card-wrapper" style="margin-bottom: 25px;">
+                <div class="form-section-title">
+                    <span class="section-icon">🔔</span>
+                    <h3>Centro de Alertas del Sistema</h3>
+                </div>
+                <div id="alertsContainer">
+                    <p>Cargando alertas del sistema...</p>
+                </div>
+            </div>
+
+            <!-- 📊 HU-08: Exportación de Reportes en CSV y JSON -->
+            <div class="card-wrapper" style="margin-bottom: 25px;">
+                <div class="form-section-title">
+                    <span class="section-icon">💾</span>
+                    <h3>Exportar Datos Oficiales (Formatos CSV y JSON)</h3>
+                </div>
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:15px;">
+                    <div style="background:#f7fafc; padding:15px; border-radius:10px; border:1px solid #e2e8f0;">
+                        <h4>🐷 Inventario Porcino</h4>
+                        <div class="export-btn-group">
+                            <button class="btn-export-csv" onclick="exportarDatosModulo('porcinos', 'csv')">📄 Descargar CSV</button>
+                            <button class="btn-export-json" onclick="exportarDatosModulo('porcinos', 'json')">⚙️ Descargar JSON</button>
+                        </div>
+                    </div>
+                    <div style="background:#f7fafc; padding:15px; border-radius:10px; border:1px solid #e2e8f0;">
+                        <h4>🩺 Registro de Vacunas</h4>
+                        <div class="export-btn-group">
+                            <button class="btn-export-csv" onclick="exportarDatosModulo('vacunas', 'csv')">📄 Descargar CSV</button>
+                            <button class="btn-export-json" onclick="exportarDatosModulo('vacunas', 'json')">⚙️ Descargar JSON</button>
+                        </div>
+                    </div>
+                    <div style="background:#f7fafc; padding:15px; border-radius:10px; border:1px solid #e2e8f0;">
+                        <h4>📦 Inventario Alimentos</h4>
+                        <div class="export-btn-group">
+                            <button class="btn-export-csv" onclick="exportarDatosModulo('inventario', 'csv')">📄 Descargar CSV</button>
+                            <button class="btn-export-json" onclick="exportarDatosModulo('inventario', 'json')">⚙️ Descargar JSON</button>
+                        </div>
+                    </div>
+                    <div style="background:#f7fafc; padding:15px; border-radius:10px; border:1px solid #e2e8f0;">
+                        <h4>👤 Usuarios Registrados</h4>
+                        <div class="export-btn-group">
+                            <button class="btn-export-csv" onclick="exportarDatosModulo('usuarios', 'csv')">📄 Descargar CSV</button>
+                            <button class="btn-export-json" onclick="exportarDatosModulo('usuarios', 'json')">⚙️ Descargar JSON</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 📜 HU-09: Trazabilidad e Historial Productivo -->
+            <div class="card-wrapper">
+                <div class="form-section-title">
+                    <span class="section-icon">📜</span>
+                    <h3>Historial Productivo y Trazabilidad por Porcino</h3>
+                </div>
+                <div style="display:flex; gap:10px; margin-bottom:15px;">
+                    <input type="text" id="searchPigHistory" placeholder="Ingrese ID o Código del Porcino (Ej: P-001)" style="flex:1; padding:10px; border-radius:8px; border:1px solid #cbd5e0;">
+                    <button type="button" class="btn-save" style="padding:10px 20px;" onclick="buscarTrazabilidadPorcino()">🔍 BUSCAR HISTORIAL</button>
+                </div>
+                <div id="timelineContainer">
+                    <p style="color:#718096;">Ingrese el código de un porcino arriba para visualizar su ficha clínica, vacunas, enfermedades y eventos reproductivos.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="js/script.js"></script>
+    <script src="js/offline_sync.js"></script>
+    <script src="js/auth_guard.js"></script>
+    <script src="js/reportes.js"></script>
+</body>
+</html>
