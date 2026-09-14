@@ -1,4 +1,10 @@
 {
+  "name": "sigepor-app",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node backend/src/server.js",
+    "dev": "nodemon backend/src/server.js"
+  },
   "dependencies": {
     "cors": "^2.8.6",
     "mysql2": "^3.24.2"

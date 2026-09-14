@@ -3,8 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIGEPOR - Registro de Veterinarios</title>
+    <title>SIGEPOR - Gestión de Veterinarios</title>
     <link class="active" rel="stylesheet" href="css/style.css">
+    <style>
+        .badge-status {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .badge-active {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .badge-inactive {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .table-actions {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+        }
+        .btn-table-action {
+            border: none;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+        .btn-table-action:hover {
+            opacity: 0.85;
+        }
+        .btn-table-edit {
+            background-color: #e2e8f0;
+            color: #2b6cb0;
+        }
+        .btn-table-delete {
+            background-color: #fed7d7;
+            color: #9b2c2c;
+        }
+    </style>
 </head>
 <body>
     <div class="main-container">
@@ -20,7 +64,7 @@
                 <li><a href="registro_usuarios.html">👤 Usuarios</a></li>
                 <li><a href="registroporcino.html">🐷 Gestión Porcina</a></li>
                 <li><a href="vacunas.html">🩺 Vacunas</a></li>
-                <li><a href="registro_veterinarios.html" class="active">👨‍⚕️ Veterinarios</a></li>                 
+                <li><a href="veterinarios.html" class="active">👨‍⚕️ Veterinarios</a></li>                 
                 <li><a href="javascript:void(0)" onclick="openPanel('reports')">📊 Reportes</a></li>
                 <li><a href="javascript:void(0)" onclick="openPanel('settings')">⚙️ Configuración</a></li>
                 <li><a href="javascript:void(0)" onclick="cerrarSesion()">🔒 Cerrar Sesión</a></li>
@@ -32,7 +76,7 @@
                 <div class="header-icon">👨‍⚕️</div>
                 <div class="header-content">
                     <h2>GESTIÓN DE PERSONAL VETERINARIO</h2>
-                    <p>Administra y registra las credenciales y acceso de los veterinarios</p>
+                    <p>Administra y registra las credenciales y acceso de los veterinarios conectados a MySQL</p>
                 </div>
             </div>
 
@@ -45,8 +89,8 @@
 
                 <form id="vetForm" class="grid-form">
                     <div class="field">
-                        <label>ID Veterinario:</label>
-                        <input type="number" id="vetId" placeholder="Ej: 1" required>
+                        <label>ID Veterinario (Opcional al crear, obligatorio al buscar/actualizar/borrar):</label>
+                        <input type="number" id="vetId" placeholder="Autogenerado o ingrese ID">
                     </div>
                     <div class="field">
                         <label>Nombre Completo:</label>
@@ -62,7 +106,7 @@
                     </div>
                     <div class="field">
                         <label>Contraseña:</label>
-                        <input type="password" id="vetContrasena" placeholder="••••••••" required>
+                        <input type="password" id="vetContrasena" placeholder="••••••••">
                     </div>
                     <div class="field">
                         <label>Fecha de Registro:</label>
@@ -71,16 +115,15 @@
                     <div class="field">
                         <label>Estado de Cuenta:</label>
                         <select id="vetActivo" required>
-                            <option value="">Seleccione estado</option>
                             <option value="1">🟢 Activo (1)</option>
                             <option value="0">🔴 Inactivo (0)</option>
                         </select>
                     </div>
 
-                    <button type="submit" class="btn-add btn-save">👨‍⚕️ AÑADIR VETERINARIO</button>
+                    <button type="submit" id="btnSubmitVet" class="btn-add btn-save">👨‍⚕️ AÑADIR VETERINARIO</button>
                     
                     <div class="form-actions">
-                        <button type="reset" class="btn-reset">↻ LIMPIAR FORMULARIO</button>
+                        <button type="button" class="btn-reset" onclick="limpiarFormulario()">↻ LIMPIAR FORMULARIO</button>
                         <button type="button" class="btn-consult" onclick="consultarVeterinario()">🔍 CONSULTAR VETERINARIO</button>
                         <button type="button" class="btn-update" onclick="actualizarVeterinario()">✏️ ACTUALIZAR VETERINARIO</button>
                         <button type="button" class="btn-delete" onclick="borrarVeterinario()">🗑️ BORRAR VETERINARIO</button>
@@ -92,7 +135,7 @@
             <div class="table-wrapper">
                 <div class="table-header">
                     <div class="header-icon-table">📋</div>
-                    <h3>Lista de Veterinarios en Sistema</h3>
+                    <h3>Lista de Veterinarios en Base de Datos (MySQL)</h3>
                 </div>
                 
                 <div class="table-container">
@@ -105,14 +148,14 @@
                                 <th>🔑 Usuario</th>
                                 <th>📅 Registro</th>
                                 <th>⚡ Estado</th>
-                                <th>⚙️ Acción</th>
+                                <th>⚙️ Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             <!-- Las filas se inyectan dinámicamente con JS -->
                         </tbody>
                     </table>
-                    <div class="table-empty" id="tableEmpty">
+                    <div class="table-empty" id="tableEmpty" style="display: none;">
                         <p>📭 Aún no hay veterinarios registrados en la base de datos.</p>
                     </div>
                 </div>
@@ -138,5 +181,320 @@
             </div>
         </section>
     </div>
+
+    <!-- ========================================== -->
+    <!-- 🚀 LÓGICA JAVASCRIPT CONECTADA CON BACKEND -->
+    <!-- ========================================== -->
+    <script>
+        const API_URL = 'http://localhost:3001/api/veterinarios';
+
+        const vetForm = document.getElementById('vetForm');
+        const inputId = document.getElementById('vetId');
+        const inputNombre = document.getElementById('vetNombre');
+        const inputEmail = document.getElementById('vetEmail');
+        const inputUsuario = document.getElementById('vetUsuario');
+        const inputContrasena = document.getElementById('vetContrasena');
+        const inputFechaRegistro = document.getElementById('vetFechaRegistro');
+        const selectActivo = document.getElementById('vetActivo');
+        const tableBody = document.querySelector('#vetTable tbody');
+        const tableEmpty = document.getElementById('tableEmpty');
+
+        const statTotal = document.getElementById('statTotalVets');
+        const statActive = document.getElementById('statActiveVets');
+        const statInactive = document.getElementById('statInactiveVets');
+
+        // Establecer fecha de hoy por defecto
+        function establecerFechaHoy() {
+            const hoy = new Date().toISOString().slice(0, 10);
+            inputFechaRegistro.value = hoy;
+        }
+
+        // 1️⃣ Cargar lista de veterinarios desde MySQL
+        async function cargarVeterinarios() {
+            try {
+                const response = await fetch(API_URL);
+                const result = await response.json();
+
+                if (response.ok && result.status === 'success') {
+                    const veterinarios = result.data || [];
+                    renderizarTabla(veterinarios);
+                    actualizarEstadisticas(result.stats || {
+                        total: veterinarios.length,
+                        activos: veterinarios.filter(v => Number(v.activo) === 1).length,
+                        inactivos: veterinarios.filter(v => Number(v.activo) === 0).length
+                    });
+                } else {
+                    console.error('Error al obtener veterinarios:', result.message);
+                }
+            } catch (error) {
+                console.error('Error de conexión:', error);
+            }
+        }
+
+        // Renderizar filas de la tabla
+        function renderizarTabla(veterinarios) {
+            tableBody.innerHTML = '';
+
+            if (!veterinarios || veterinarios.length === 0) {
+                tableEmpty.style.display = 'block';
+                return;
+            }
+
+            tableEmpty.style.display = 'none';
+
+            veterinarios.forEach(vet => {
+                const tr = document.createElement('tr');
+                const esActivo = Number(vet.activo) === 1;
+                const badge = esActivo 
+                    ? '<span class="badge-status badge-active">🟢 Activo</span>' 
+                    : '<span class="badge-status badge-inactive">🔴 Inactivo</span>';
+
+                tr.innerHTML = `
+                    <td><strong>#${vet.id}</strong></td>
+                    <td>${vet.nombre}</td>
+                    <td>${vet.email}</td>
+                    <td>${vet.usuario}</td>
+                    <td>${vet.fecha_registro || '-'}</td>
+                    <td>${badge}</td>
+                    <td>
+                        <div class="table-actions">
+                            <button type="button" class="btn-table-action btn-table-edit" onclick="seleccionarParaEditar(${vet.id})">✏️ Cargar</button>
+                            <button type="button" class="btn-table-action btn-table-delete" onclick="eliminarVeterinarioDirecto(${vet.id})">🗑️ Borrar</button>
+                        </div>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        // Actualizar tarjetas de estadísticas
+        function actualizarEstadisticas(stats) {
+            statTotal.textContent = stats.total || 0;
+            statActive.textContent = stats.activos || 0;
+            statInactive.textContent = stats.inactivos || 0;
+        }
+
+        // 2️⃣ Guardar nuevo veterinario (POST)
+        vetForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const datos = {
+                id: inputId.value.trim() ? parseInt(inputId.value.trim(), 10) : undefined,
+                nombre: inputNombre.value.trim(),
+                email: inputEmail.value.trim(),
+                usuario: inputUsuario.value.trim(),
+                contraseña: inputContrasena.value || '123456',
+                fecha_registro: inputFechaRegistro.value || new Date().toISOString().slice(0, 10),
+                activo: parseInt(selectActivo.value, 10)
+            };
+
+            if (!datos.nombre || !datos.email || !datos.usuario) {
+                alert('⚠️ Por favor completa los campos obligatorios (Nombre, Email y Usuario).');
+                return;
+            }
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(datos)
+                });
+                const result = await response.json();
+
+                if (response.ok && result.status === 'success') {
+                    alert('🎉 ' + result.message);
+                    limpiarFormulario();
+                    cargarVeterinarios();
+                } else {
+                    alert('⚠️ Error al registrar: ' + (result.message || 'No se pudo guardar el registro.'));
+                }
+            } catch (error) {
+                console.error(error);
+                alert('❌ Error de comunicación con el backend de SIGEPOR.');
+            }
+        });
+
+        // 3️⃣ Consultar veterinario por ID (GET /:id)
+        async function consultarVeterinario() {
+            let id = inputId.value.trim();
+            if (!id) {
+                id = prompt('Ingrese el ID del veterinario que desea consultar:');
+                if (!id) return;
+                inputId.value = id;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/${id}`);
+                const result = await response.json();
+
+                if (response.ok && result.status === 'success') {
+                    const vet = result.data;
+                    inputId.value = vet.id;
+                    inputNombre.value = vet.nombre;
+                    inputEmail.value = vet.email;
+                    inputUsuario.value = vet.usuario;
+                    inputContrasena.value = '';
+                    inputFechaRegistro.value = vet.fecha_registro || '';
+                    selectActivo.value = vet.activo;
+
+                    document.getElementById('formTitle').textContent = `Consultando Veterinario #${vet.id}`;
+                    document.getElementById('formIcon').textContent = '🔍';
+                    alert(`✅ Veterinario #${vet.id} (${vet.nombre}) cargado correctamente.`);
+                } else {
+                    alert('⚠️ ' + (result.message || 'Veterinario no encontrado.'));
+                }
+            } catch (error) {
+                console.error(error);
+                alert('❌ Error al consultar con la base de datos.');
+            }
+        }
+
+        // 4️⃣ Actualizar veterinario (PUT /:id)
+        async function actualizarVeterinario() {
+            const id = inputId.value.trim();
+            if (!id) {
+                alert('⚠️ Debe especificar el ID del veterinario que desea actualizar.');
+                return;
+            }
+
+            const datos = {
+                nombre: inputNombre.value.trim(),
+                email: inputEmail.value.trim(),
+                usuario: inputUsuario.value.trim(),
+                contraseña: inputContrasena.value ? inputContrasena.value : undefined,
+                fecha_registro: inputFechaRegistro.value,
+                activo: parseInt(selectActivo.value, 10)
+            };
+
+            if (!datos.nombre || !datos.email || !datos.usuario) {
+                alert('⚠️ Los campos Nombre, Email y Usuario son obligatorios para actualizar.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(datos)
+                });
+                const result = await response.json();
+
+                if (response.ok && result.status === 'success') {
+                    alert('✅ ' + result.message);
+                    limpiarFormulario();
+                    cargarVeterinarios();
+                } else {
+                    alert('⚠️ Error al actualizar: ' + (result.message || 'No se pudo actualizar.'));
+                }
+            } catch (error) {
+                console.error(error);
+                alert('❌ Error al comunicarse con el servidor.');
+            }
+        }
+
+        // 5️⃣ Borrar veterinario por ID (DELETE /:id)
+        async function borrarVeterinario() {
+            let id = inputId.value.trim();
+            if (!id) {
+                id = prompt('Ingrese el ID del veterinario que desea eliminar:');
+                if (!id) return;
+            }
+
+            const confirmar = confirm(`¿Está seguro de eliminar definitivamente al veterinario #${id}? Esta acción eliminará el registro de MySQL.`);
+            if (!confirmar) return;
+
+            try {
+                const response = await fetch(`${API_URL}/${id}`, {
+                    method: 'DELETE'
+                });
+                const result = await response.json();
+
+                if (response.ok && result.status === 'success') {
+                    alert('🗑️ ' + result.message);
+                    limpiarFormulario();
+                    cargarVeterinarios();
+                } else {
+                    alert('⚠️ Error al eliminar: ' + (result.message || 'No se pudo eliminar.'));
+                }
+            } catch (error) {
+                console.error(error);
+                alert('❌ Error de conexión al eliminar.');
+            }
+        }
+
+        // Seleccionar directamente desde la tabla para editar
+        async function seleccionarParaEditar(id) {
+            try {
+                const response = await fetch(`${API_URL}/${id}`);
+                const result = await response.json();
+                if (response.ok && result.status === 'success') {
+                    const vet = result.data;
+                    inputId.value = vet.id;
+                    inputNombre.value = vet.nombre;
+                    inputEmail.value = vet.email;
+                    inputUsuario.value = vet.usuario;
+                    inputContrasena.value = '';
+                    inputFechaRegistro.value = vet.fecha_registro || '';
+                    selectActivo.value = vet.activo;
+
+                    document.getElementById('formTitle').textContent = `Editar Veterinario #${vet.id}`;
+                    document.getElementById('formIcon').textContent = '✏️';
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        // Eliminar directamente desde la tabla
+        async function eliminarVeterinarioDirecto(id) {
+            const confirmar = confirm(`¿Desea eliminar al veterinario con ID #${id}?`);
+            if (!confirmar) return;
+
+            try {
+                const response = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+                const result = await response.json();
+                if (response.ok && result.status === 'success') {
+                    alert('🗑️ ' + result.message);
+                    cargarVeterinarios();
+                } else {
+                    alert('⚠️ ' + (result.message || 'No se pudo eliminar.'));
+                }
+            } catch (error) {
+                console.error(error);
+                alert('❌ Error al eliminar veterinario.');
+            }
+        }
+
+        // Limpiar formulario y restaurar estados
+        function limpiarFormulario() {
+            vetForm.reset();
+            inputId.value = '';
+            establecerFechaHoy();
+            selectActivo.value = '1';
+            document.getElementById('formTitle').textContent = 'Registrar Nuevo Veterinario';
+            document.getElementById('formIcon').textContent = '➕';
+        }
+
+        // Cerrar sesión
+        function cerrarSesion() {
+            if (confirm('¿Desea cerrar la sesión actual?')) {
+                localStorage.removeItem('usuarioSesion');
+                localStorage.removeItem('veterinarioActivo');
+                window.location.href = 'index.html';
+            }
+        }
+
+        // Panel genérico
+        function openPanel(tipo) {
+            alert(`Panel de ${tipo === 'reports' ? 'Reportes' : 'Configuración'} disponible en el módulo general.`);
+        }
+
+        // Inicialización al cargar la página
+        document.addEventListener('DOMContentLoaded', () => {
+            establecerFechaHoy();
+            cargarVeterinarios();
+        });
+    </script>
 </body>
 </html>

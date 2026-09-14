@@ -125,62 +125,12 @@
     </section>
 </main>
 
-    <script src="JS/script.js"></script>
+    <script src="js/script.js"></script>
     <script>
-        // Función de desplazamiento suave original
+        // Función de desplazamiento suave
         function scrollToLogin() {
-            document.getElementById('login-section').scrollIntoView({ behavior: 'smooth' });
+            document.getElementById('login-section')?.scrollIntoView({ behavior: 'smooth' });
         }
-
-        // 🔒 LÓGICA DE AUTENTICACIÓN REVISADA Y COMPATIBLE DE PUNTA A PUNTA
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault(); 
-
-            const identificadorValue = document.getElementById('loginIdentificador').value.trim();
-            // 💡 Corregido: Nos aseguramos de apuntar al id exacto del input HTML "loginPassword"
-            const contrasenaValue = document.getElementById('loginPassword').value;
-            const errorBox = document.getElementById('errorBox');
-
-            // Ocultamos la caja de error al iniciar un nuevo intento
-            errorBox.style.display = 'none';
-
-            // Estructura limpia que viaja hacia el controlador Express
-            const datosLogin = {
-                identificador: identificadorValue,
-                "contraseña": contrasenaValue // Envía la clave mapeada de forma idéntica al backend
-            };
-
-            try {
-                const respuesta = await fetch('http://localhost:3001/api/users/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(datosLogin)
-                });
-
-                const resultado = await respuesta.json().catch(() => ({}));
-
-                if (respuesta.ok) {
-                    alert('¡Ingreso exitoso! Bienvenido al sistema SIGEPOR.');
-                    
-                    // Guardamos opcionalmente los datos del usuario en memoria local para validar su sesión después
-                    if(resultado.data) {
-                        localStorage.setItem('usuario_sigepor', JSON.stringify(resultado.data));
-                    }
-                    
-                    // Redirección directa hacia la zona de administración porcina
-                    window.location.href = 'registroporcino.html'; 
-                } else {
-                    console.warn('Fallo en autenticación:', resultado.message);
-                    errorBox.style.display = 'block'; // Muestra el cartel visual de datos incorrectos
-                }
-
-            } catch (error) {
-                console.error('Error de red en el proceso de Login:', error);
-                alert('No se pudo establecer conexión con el servidor de SIGEPOR (Puerto 3001). Asegúrate de tenerlo encendido en tu terminal de comandos.');
-            }
-        });
     </script>
 </body>
 </html>

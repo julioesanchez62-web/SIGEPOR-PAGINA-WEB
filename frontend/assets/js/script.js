@@ -5,7 +5,8 @@ document.getElementById('loginForm')?.addEventListener('submit', async function(
     e.preventDefault();
 
     // 1. Captura segura de los inputs
-    const inputUser = document.getElementById('loginUser') || 
+    const inputUser = document.getElementById('loginIdentificador') ||
+                      document.getElementById('loginUser') || 
                       document.getElementById('username') || 
                       document.querySelector('input[type="text"]') ||
                       document.querySelector('input[type="email"]');

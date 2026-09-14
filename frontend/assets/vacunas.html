@@ -250,22 +250,19 @@
         <nav class="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-logo">
-                    <img src="logo.jpg" alt="SIGEPOR">
+                    <img src="images/logo.jpg" alt="SIGEPOR">
                 </div>
                 <h3>SIGEPOR</h3>
             </div>
             <ul>
                 <li><a href="index.html">🏠 Inicio</a></li>
+                <li><a href="registro_usuarios.html">👤 Usuarios</a></li>
                 <li><a href="registroporcino.html">🐷 Gestión Porcina</a></li>
                 <li><a href="vacunas.html" class="active">🩺 Vacunas</a></li>
-                <li><a href="registro_veterinarios.html">👨‍⚕️ Veterinarios</a></li>
+                <li><a href="veterinarios.html">👨‍⚕️ Veterinarios</a></li>
                 <li><a href="javascript:void(0)" onclick="openPanel('reports')">📊 Reportes</a></li>
                 <li><a href="javascript:void(0)" onclick="openPanel('settings')">⚙️ Configuración</a></li>
                 <li><a href="javascript:void(0)" onclick="cerrarSesion()">🔒 Cerrar Sesión</a></li>
-                <li><a href="#">📊 Reportes</a></li>
-                <li><a href="#">⚙️ Configuración</a></li>
-                <li><a href="vacunas.html"> Veterinarios</a></li>
-                <li><a href="index.html">🔒 Cerrar Sesión</a></li>
             </ul>
         </nav>
 
@@ -384,7 +381,7 @@
             const token = localStorage.getItem('token');
             if (!token) {
                 alert('Debe iniciar sesión primero');
-                window.location.href = 'registro_veterinarios.html';
+                window.location.href = 'veterinarios.html';
                 return;
             }
 
@@ -553,7 +550,7 @@
             if (confirm('¿Desea cerrar sesión?')) {
                 localStorage.removeItem('token');
                 localStorage.removeItem('veterinarioActivo');
-                window.location.href = 'registro_veterinarios.html';
+                window.location.href = 'veterinarios.html';
             }
         }
         

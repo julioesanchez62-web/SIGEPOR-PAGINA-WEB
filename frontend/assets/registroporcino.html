@@ -3,11 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIGEPOR - Registro de Datos Porcinos</title>
+    <title>SIGEPOR - Gestión Porcina</title>
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        .badge-status {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .table-actions {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+        }
+        .btn-table-action {
+            border: none;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+        .btn-table-action:hover {
+            opacity: 0.85;
+        }
+        .btn-table-edit {
+            background-color: #e2e8f0;
+            color: #2b6cb0;
+        }
+        .btn-table-delete {
+            background-color: #fed7d7;
+            color: #9b2c2c;
+        }
+    </style>
 </head>
 <body>
-    <form id="form-porcino">
     <div class="main-container">
         <nav class="sidebar">
             <div class="sidebar-header">
@@ -33,7 +66,7 @@
                 <div class="header-icon">🐷</div>
                 <div class="header-content">
                     <h2>GESTIÓN DE INVENTARIO PORCINO</h2>
-                    <p>Administra y registra información detallada de tu rebaño</p>
+                    <p>Administra y registra información detallada de tu rebaño en MySQL</p>
                 </div>
             </div>
 
@@ -46,7 +79,7 @@
 
                 <form id="pigForm" class="grid-form">
                     <div class="field">
-                        <label>Identificación (ID):</label>
+                        <label>Identificación / Código (ID):</label>
                         <input type="text" id="pigId" placeholder="Ej: P-001" required>
                     </div>
                     <div class="field">
@@ -74,62 +107,61 @@
                         </select>
                     </div>
                     <div class="field">
-                         <label>Fecha de Nacimiento:</label>
-                         <input type="date" id="pigBirth" required>
+                        <label>Fecha de Nacimiento:</label>
+                        <input type="date" id="pigBirth" required>
                     </div>
-                   <div class="field">
+                    <div class="field">
                         <label>Género:</label>
                         <select id="pigGender" required>
-                              <option value="">Seleccione género</option>
-                              <option value="Macho">Macho</option>
-                              <option value="Hembra">Hembra</option>
+                            <option value="">Seleccione género</option>
+                            <option value="Macho">Macho</option>
+                            <option value="Hembra">Hembra</option>
                         </select>
-                     </div>
-
-                     <div class="field">
-                        <label>Veterinario:</label>
-                        <select id="veterinario_id" required>
-                              <option value="">Seleccione veterinario</option>
+                    </div>
+                    <div class="field">
+                        <label>Veterinario Asignado:</label>
+                        <select id="veterinario_id">
+                            <option value="">Seleccione veterinario</option>
                         </select>
-                     </div>
+                    </div>
 
-                    <button type="submit"  class="btn-add btn-save">🐷 AÑADIR PORCINO</button>
-                        <div class="form-actions">
-        <!-- Quitamos type="submit" para controlar el envío mediante JS de forma segura -->
-        
-        <button type="reset" class="btn-reset">↻ LIMPIAR FORMULARIO</button>
-        <button type="button" class="btn-consult" onclick="consultarPorcino()">🔍 CONSULTAR PORCINO</button>
-        <button type="button" class="btn-update" onclick="actualizarPorcino()">✏️ ACTUALIZAR PORCINO</button>
-        <button type="button" class="btn-delete" onclick="borrarPorcino()">🗑️ BORRAR PORCINO</button>
-    </div>
-    </form>
-                <!-- </form> -->
+                    <button type="submit" id="btnSubmitForm" class="btn-add btn-save">🐷 AÑADIR PORCINO</button>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn-reset" onclick="limpiarFormularioPorcino()">↻ LIMPIAR FORMULARIO</button>
+                        <button type="button" class="btn-consult" onclick="consultarPorcino()">🔍 CONSULTAR PORCINO</button>
+                        <button type="button" class="btn-update" onclick="actualizarPorcino()">✏️ ACTUALIZAR PORCINO</button>
+                        <button type="button" class="btn-delete" onclick="borrarPorcino()">🗑️ BORRAR PORCINO</button>
+                    </div>
+                </form>
             </div>
 
             <!-- Sección de tabla de inventario -->
             <div class="table-wrapper">
                 <div class="table-header">
                     <div class="header-icon-table">📋</div>
-                    <h3>Inventario de Porcinos</h3>
+                    <h3>Inventario de Porcinos en Base de Datos</h3>
                 </div>
                 
                 <div class="table-container">
                     <table id="pigTable">
                         <thead>
                             <tr>
-                                <th>🆔 ID</th>
+                                <th>🆔 Código / ID</th>
                                 <th>🐷 Raza</th>
-                                <th>⚖️ Peso (kg)</th>
-                                <th>❤️ Salud</th>
+                                <th>⚖️ Peso</th>
+                                <th>❤️ Estado de Salud</th>
                                 <th>📅 Nacimiento</th>
-                                <th>⚙️ Acción</th> <!-- Columna unificada de botones -->
+                                <th>⚧ Género</th>
+                                <th>👨‍⚕️ Veterinario</th>
+                                <th>⚙️ Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <!-- Las filas con los botones se inyectan con JS -->
+                            <!-- Las filas se inyectan con JS -->
                         </tbody>
                     </table>
-                    <div class="table-empty" id="tableEmpty">
+                    <div class="table-empty" id="tableEmpty" style="display: none;">
                         <p>📭 Aún no hay porcinos registrados. ¡Añade uno para comenzar!</p>
                     </div>
                 </div>
@@ -161,191 +193,7 @@
         </section>
     </div>
 
+    <!-- Script de Gestión Porcina -->
     <script src="js/registro_porcino.js"></script>
-    <script>
-    document.addEventListener("DOMContentLoaded", () => {
-    // Se ejecuta automáticamente al cargar el módulo de gestión porcina
-    cargarVeterinariosEnSelect();
-});
-
-/**
- * Realiza una petición Fetch a la API de Node.js 
- * e inserta los datos dentro del select #veterinario_id
- */
-function cargarVeterinariosEnSelect() {
-    const selectVeterinario = document.getElementById("veterinario_id");
-    
-    // Si tu backend corre en un puerto diferente (ej: 3000), usa la URL completa: 'http://localhost:3000/api/veterinarios'
-    fetch('/api/veterinarios') 
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`Error HTTP: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(veterinarios => {
-            // Limpia el select manteniendo únicamente la opción por defecto
-            selectVeterinario.innerHTML = '<option value="">Seleccione veterinario</option>';
-            
-            // Mapea la lista recibida desde el backend de Node.js
-            veterinarios.forEach(vet => {
-                const option = document.createElement("option");
-                
-                // Asigna los atributos basados en las columnas de tu BD
-                option.value = vet.id; 
-                option.textContent = `👨‍⚕️ ${vet.nombre}`;
-                
-                // Si el veterinario está marcado como inactivo (activo == 0), se deshabilita
-                if (vet.activo === 0) {
-                    option.textContent += " (Inactivo)";
-                    option.disabled = true; 
-                }
-                
-                selectVeterinario.appendChild(option);
-            });
-        })
-        .catch(error => {
-            console.error("Error al poblar el menú de veterinarios:", error);
-            // Inserta un aviso visual en el select indicando el fallo de red
-            selectVeterinario.innerHTML = '<option value="">❌ Error al conectar con el servidor</option>';
-        });
-}
-
-
-    const API_URL = 'http://localhost:3001/api/porcinos'; // URL oficial de tu módulo backend
-
-        // Mapeo de elementos de la interfaz
-        const formulario = document.getElementById('form-porcino');
-        const btnGuardar = document.getElementById('btn-guardar');
-        const inputId = document.getElementById('input-id');
-        const inputNombre = document.getElementById('input-nombre-porcino');
-        const inputRaza = document.getElementById('input-raza');
-        const inputEdad = document.getElementById('input-edad');
-        const inputPeso = document.getElementById('input-peso');
-
-        // 🟢 LÓGICA DEL BOTÓN: GUARDAR CAMBIOS
-        btnGuardar.addEventListener('click', async () => {
-            const datosPorcino = {
-                nombre: inputNombre.value.trim(),
-                raza: inputRaza.value.trim(),
-                edad: inputEdad.value.trim(),
-                peso: inputPeso.value.trim()
-            };
-
-            if (!datosPorcino.nombre || !datosPorcino.raza || !datosPorcino.edad || !datosPorcino.peso) {
-                alert('Por favor, rellene todos los campos obligatorios antes de guardar.');
-                return;
-            }
-
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(datosPorcino)
-                });
-                const resultado = await response.json();
-
-                if (response.ok) {
-                    alert('¡Éxito! ' + resultado.message);
-                    if (resultado.porcino && resultado.porcino.id) {
-                        inputId.value = resultado.porcino.id; // Coloca el ID asignado por MySQL en pantalla
-                    }
-                } else {
-                    alert('Error: ' + (resultado.message || 'No se pudo guardar el usuario.'));
-                }
-            } catch (error) {
-                console.error(error);
-                alert('Fallo de comunicación: Asegúrate de que tu backend esté corriendo.');
-            }
-        });
-
-        // 🔵 LÓGICA DEL BOTÓN: CONSULTAR PORCINO
-        async function consultarPorcino() {
-            const id = inputId.value.trim();
-            if (!id) {
-                alert('Por favor, ingrese un número de ID en el campo superior para buscar.');
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_URL}/${id}`);
-                const resultado = await response.json();
-
-                if (response.ok) {
-                    inputNombre.value = resultado.data.nombre || '';
-                    inputRaza.value = resultado.data.raza || '';
-                    inputEdad.value = resultado.data.edad || '';
-                    inputPeso.value = resultado.data.peso || '';
-                    alert('Datos cargados de forma exitosa desde la base de datos.');
-                } else {
-                    alert('Error: ' + resultado.message);
-                }
-            } catch (error) {
-                console.error(error);
-                alert('No se pudo establecer conexión con el backend.');
-            }
-        }
-
-        // 🔵 LÓGICA DEL BOTÓN: ACTUALIZAR PORCINO
-        async function actualizarPorcino() {
-            const id = inputId.value.trim();
-            if (!id) {
-                alert('Se requiere especificar el ID del porcino que desea actualizar.');
-                return;
-            }
-
-            const datosActualizados = {
-                nombre: inputNombre.value.trim(),
-                raza: inputRaza.value.trim(),
-                edad: inputEdad.value.trim(),
-                peso: inputPeso.value.trim()
-            };
-
-            try {
-                const response = await fetch(`${API_URL}/${id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(datosActualizados)
-                });
-                const resultado = await response.json();
-
-                if (response.ok) {
-                    alert('¡Datos del porcino modificados en la base de datos con éxito!');
-                } else {
-                    alert('Error al actualizar: ' + resultado.message);
-                }
-            } catch (error) {
-                console.error(error);
-                alert('Error en la red al intentar actualizar los datos.');
-            }
-        }
-
-        // 🔴 LÓGICA DEL BOTÓN: BORRAR PORCINO
-        async function borrarPorcino () {
-            const id = inputId.value.trim();
-            if (!id) {
-                alert('Debe ingresar el ID del porcino que desea eliminar definitivamente.');
-                return;
-            }
-
-            const confirmar = confirm(`¿Está seguro de eliminar al porcino con ID ${id}? Esta acción borrará el registro de MySQL permanentemente.`);
-            if (!confirmar) return;
-
-            try {
-                const response = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
-                const resultado = await response.json();
-
-                if (response.ok) {
-                    alert(resultado.message);
-                    formulario.reset(); // Deja limpio el panel visual automáticamente
-                } else {
-                    alert('Error al borrar: ' + resultado.message);
-                }
-            } catch (error) {
-                console.error(error);
-                alert('No se pudo concretar la solicitud de eliminación.');
-            }
-        }
-    </script>
 </body>
 </html>

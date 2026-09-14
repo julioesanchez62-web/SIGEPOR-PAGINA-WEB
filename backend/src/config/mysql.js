@@ -52,6 +52,38 @@ async function connectMySQL() {
     }
 
     console.log('✓ MySQL connected successfully');
+
+    // Inicialización automática de tablas esenciales si no existen
+    await pool.execute(`
+      CREATE TABLE IF NOT EXISTS veterinarios (
+        id INT NOT NULL AUTO_INCREMENT,
+        nombre VARCHAR(100) NOT NULL,
+        email VARCHAR(100) NOT NULL,
+        usuario VARCHAR(50) NOT NULL,
+        contraseña VARCHAR(255) NOT NULL,
+        fecha_registro DATE NOT NULL,
+        activo TINYINT(1) NOT NULL DEFAULT '1',
+        PRIMARY KEY (id),
+        UNIQUE KEY email_UNIQUE (email),
+        UNIQUE KEY usuario_UNIQUE (usuario)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
+
+    await pool.execute(`
+      CREATE TABLE IF NOT EXISTS porcinos (
+        id INT NOT NULL AUTO_INCREMENT,
+        identificacion VARCHAR(50) NOT NULL,
+        raza VARCHAR(50) NOT NULL,
+        peso DECIMAL(10,2) NOT NULL,
+        estado_salud VARCHAR(50) NOT NULL,
+        fecha_nacimiento DATE NOT NULL,
+        genero VARCHAR(20) NOT NULL,
+        veterinario_id INT DEFAULT NULL,
+        fecha_registro DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
+
     return true;
   } catch (error) {
     console.error('✗ MySQL connection failed:', error.message);

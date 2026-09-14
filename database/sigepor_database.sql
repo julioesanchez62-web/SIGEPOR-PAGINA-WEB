@@ -244,18 +244,18 @@ DROP TABLE IF EXISTS `usuarios`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `usuarios` (
-  `id_usuario` int NOT NULL AUTO_INCREMENT,
-  `nombre_completo` varchar(50) NOT NULL,
-  `correo` varchar(100) DEFAULT NULL,
-  `direccion` varchar(45) NOT NULL,
-  `telefono` varchar(45) DEFAULT NULL,
-  `id_rol` int DEFAULT NULL,
-  `contraseña` varchar(255) DEFAULT NULL,
-  PRIMARY KEY (`id_usuario`),
-  UNIQUE KEY `correo` (`correo`),
-  KEY `fk_usuarios_roles` (`id_rol`),
-  CONSTRAINT `fk_usuarios_roles` FOREIGN KEY (`id_rol`) REFERENCES `roles` (`id_rol`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  `id` int NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `usuario` varchar(100) NOT NULL,
+  `contraseña` varchar(255) NOT NULL,
+  `idRol` int DEFAULT '2',
+  `fecha_registro` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `activo` tinyint(1) NOT NULL DEFAULT '1',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `email` (`email`),
+  UNIQUE KEY `usuario` (`usuario`)
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -264,7 +264,12 @@ CREATE TABLE `usuarios` (
 
 LOCK TABLES `usuarios` WRITE;
 /*!40000 ALTER TABLE `usuarios` DISABLE KEYS */;
-INSERT INTO `usuarios` VALUES (1,'Carlos Pérez','carlos@example.com','Calle 10 # 5-20','3001234567',1,'$2a$10$NKdwSOR4IhTJLI6FWHSyU.PHeJYPfP1SDvEnwLzk3rW9cpFOx1cxu'),(2,'Julio Sanchez','julio@example.com','Carrera 70 # 3-32','3109867543',2,'$2a$10$fJPE72Jjj21NIJsRi6Z0wuKeoqVUsxGlwHVDMJLf7UDn6frC9va7S');
+INSERT INTO `usuarios` VALUES 
+(2,'laura actualizado 2','laura@actualizado.com','laura.gomez@correo.com','123456',2,'2026-09-03 00:01:42',1),
+(6,'Laura Perez','laura@correo.com','laura@correo.com','$2a$10$Juajsfl/ENX5xue5arDOOZYmiBPLnIwv...',2,'2026-09-03 00:20:11',1),
+(7,'juan actualizado','juan@actualizado.com','luis.rod@correo.com','$2a$10$EQ7D1VYMNMy.wgVFZ.jcupeGWHydD...',2,'2026-09-03 00:21:30',1),
+(8,'diego actualizado','rozo@ana.com','diego.m@correo.com','$2a$10$h30gDQ61LFz189HZc/sDfus7xLxSOSCI...',2,'2026-09-03 00:25:42',1),
+(11,'julio seguridad','seguridad@gmail.com','seguridad@gmail.com','$2a$10$KIUPKrXzg69mpuQj9QKCeAFuOGPUk...',2,'2026-09-04 00:32:19',1);
 /*!40000 ALTER TABLE `usuarios` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -296,6 +301,72 @@ CREATE TABLE `vacunacion` (
 LOCK TABLES `vacunacion` WRITE;
 /*!40000 ALTER TABLE `vacunacion` DISABLE KEYS */;
 /*!40000 ALTER TABLE `vacunacion` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `veterinarios`
+--
+
+DROP TABLE IF EXISTS `veterinarios`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `veterinarios` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `nombre` varchar(100) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `usuario` varchar(50) NOT NULL,
+  `contraseña` varchar(255) NOT NULL,
+  `fecha_registro` date NOT NULL,
+  `activo` tinyint(1) NOT NULL DEFAULT '1',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `email_UNIQUE` (`email`),
+  UNIQUE KEY `usuario_UNIQUE` (`usuario`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `veterinarios`
+--
+
+LOCK TABLES `veterinarios` WRITE;
+/*!40000 ALTER TABLE `veterinarios` DISABLE KEYS */;
+INSERT INTO `veterinarios` VALUES 
+(1,'Dr. Carlos Veterinario','carlos.vet@sigepor.com','carlosvet','123456','2026-03-01',1),
+(2,'Dra. María Gómez','maria.vet@sigepor.com','mariav','123456','2026-03-10',1),
+(3,'Dr. Andrés López','andres.vet@sigepor.com','andresl','123456','2026-03-12',0);
+/*!40000 ALTER TABLE `veterinarios` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `porcinos`
+--
+
+DROP TABLE IF EXISTS `porcinos`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `porcinos` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `identificacion` varchar(50) NOT NULL,
+  `raza` varchar(50) NOT NULL,
+  `peso` decimal(10,2) NOT NULL,
+  `estado_salud` varchar(50) NOT NULL,
+  `fecha_nacimiento` date NOT NULL,
+  `genero` varchar(20) NOT NULL,
+  `veterinario_id` int DEFAULT NULL,
+  `fecha_registro` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `fk_porcinos_veterinarios` (`veterinario_id`),
+  CONSTRAINT `fk_porcinos_veterinarios` FOREIGN KEY (`veterinario_id`) REFERENCES `veterinarios` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `porcinos`
+--
+
+LOCK TABLES `porcinos` WRITE;
+/*!40000 ALTER TABLE `porcinos` DISABLE KEYS */;
+/*!40000 ALTER TABLE `porcinos` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --

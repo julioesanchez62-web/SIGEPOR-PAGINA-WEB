@@ -99,7 +99,11 @@ async function getUserById(req, res, next) {
       });
     }
     
-    return res.status(200).json(usuario);
+    return res.status(200).json({
+      status: 'success',
+      data: usuario,
+      ...usuario
+    });
   } catch (error) {
     next(error);
   }

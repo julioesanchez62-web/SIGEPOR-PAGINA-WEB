@@ -11,7 +11,7 @@
         <nav class="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-logo">
-                    <img src="logo.jpg" alt="SIGEPOR">
+                    <img src="images/logo.jpg" alt="SIGEPOR">
                 </div>
                 <h3>SIGEPOR</h3>
             </div>
@@ -19,7 +19,7 @@
                 <li><a href="index.html">🏠 Inicio</a></li>
                 <li><a href="registroporcino.html">🐷 Gestión Porcina</a></li>
                 <li><a href="vacunas.html">🩺 Vacunas</a></li>
-                <li><a href="registro_veterinarios.html">👨‍⚕️ Veterinarios</a></li>
+                <li><a href="veterinarios.html">👨‍⚕️ Veterinarios</a></li>
                 <li><a href="registro_usuarios.html">👤 Usuarios</a></li>
                 <li><a href="javascript:void(0)" onclick="openPanel('reports')">📊 Reportes</a></li>
                 <li><a href="javascript:void(0)" onclick="openPanel('settings')">⚙️ Configuración</a></li>
@@ -93,8 +93,7 @@
         </section>
     </div>
 
-    <script src="JS/script.js"></script>
-        <script src="JS/script.js"></script>
+    <script src="js/script.js"></script>
 
     <!-- 🚀 AQUÍ PEGAS LA LÓGICA DE CONEXIÓN CON TU BACKEND 🚀 -->
     <script>
@@ -159,9 +158,10 @@
                 const resultado = await response.json();
 
                 if (response.ok) {
-                    inputNombre.value = resultado.data.nombre || '';
-                    inputCorreo.value = resultado.data.correo || '';
-                    inputUsuario.value = resultado.data.usuario || '';
+                    const userObj = resultado.data || resultado;
+                    inputNombre.value = userObj.nombre || '';
+                    inputCorreo.value = userObj.correo || userObj.email || '';
+                    inputUsuario.value = userObj.usuario || '';
                     inputContrasena.value = ''; // Por protección no se muestra la clave en texto plano
                     alert('Datos cargados de forma exitosa desde la base de datos.');
                 } else {
