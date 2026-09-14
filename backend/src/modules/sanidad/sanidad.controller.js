@@ -77,8 +77,28 @@ async function eliminarEnfermedad(req, res, next) {
   }
 }
 
+async function getEstadisticasResumen(req, res, next) {
+  try {
+    const vacunas = await service.getVacunas();
+    const aplicadas = vacunas.filter(v => v.estado === 'Aplicada').length;
+    const pendientes = vacunas.filter(v => v.estado === 'Pendiente').length;
+    const retrasadas = vacunas.filter(v => v.estado === 'Retrasada').length;
+
+    return res.status(200).json({
+      status: 'success',
+      total: vacunas.length,
+      aplicadas,
+      pendientes,
+      retrasadas
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   getVacunas,
+  getEstadisticasResumen,
   registrarVacuna,
   eliminarVacuna,
   getEnfermedades,

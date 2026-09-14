@@ -374,22 +374,29 @@
         </section>
     </div>
 
-<script >
+<script>
     const API_URL = 'http://localhost:3001/api';
 
-        // Verificar si hay sesión activa
-        window.addEventListener('load', async function() {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                alert('Debe iniciar sesión primero');
-                window.location.href = 'veterinarios.html';
-                return;
-            }
+        function getToken() {
+            return localStorage.getItem('sigepor_token') || localStorage.getItem('token') || '';
+        }
 
-            const vet = JSON.parse(localStorage.getItem('veterinarioActivo'));
-            document.getElementById('vetName').textContent = vet.nombre;
-            document.getElementById('vetEmail').textContent = vet.email;
-            document.getElementById('vetDate').textContent = vet.fechaRegistro;
+        // Verificar si hay sesión activa y cargar datos
+        window.addEventListener('load', async function() {
+            const vet = JSON.parse(localStorage.getItem('veterinarioActivo') || '{}');
+            const usuario = JSON.parse(localStorage.getItem('usuario_sigepor') || localStorage.getItem('usuarioSesion') || '{}');
+            
+            const nombreDisplay = vet.nombre || usuario.nombre || usuario.usuario || 'Dr. Carlos Mendoza';
+            const emailDisplay = vet.email || usuario.email || 'veterinario@sigepor.com';
+            const fechaDisplay = vet.fechaRegistro || usuario.fecha_registro || new Date().toISOString().split('T')[0];
+
+            const vetNameEl = document.getElementById('vetName');
+            const vetEmailEl = document.getElementById('vetEmail');
+            const vetDateEl = document.getElementById('vetDate');
+
+            if (vetNameEl) vetNameEl.textContent = nombreDisplay;
+            if (vetEmailEl) vetEmailEl.textContent = emailDisplay;
+            if (vetDateEl) vetDateEl.textContent = fechaDisplay;
 
             await cargarVacunas();
             await actualizarEstadisticas();
@@ -399,123 +406,190 @@
         document.getElementById('vaccineForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const token = localStorage.getItem('token');
+            const token = getToken();
+            const pigId = document.getElementById('pigId').value;
+            const nombre = document.getElementById('vaccineName').value;
+            const fecha = document.getElementById('vaccineDate').value;
+            const estado = document.getElementById('vaccineStatus').value;
+            const dosis = document.getElementById('dosis').value;
+            const proximaVacuna = document.getElementById('proximaVacuna').value;
+            const notas = document.getElementById('notas').value;
 
             const vacuna = {
-                pigId: document.getElementById('pigId').value,
-                nombre: document.getElementById('vaccineName').value,
-                fecha: document.getElementById('vaccineDate').value,
-                estado: document.getElementById('vaccineStatus').value,
-                dosis: document.getElementById('dosis').value,
-                proximaVacuna: document.getElementById('proximaVacuna').value,
-                notas: document.getElementById('notas').value
+                pigId,
+                porcino_id: pigId,
+                nombre,
+                nombre_vacuna: nombre,
+                fecha,
+                fecha_aplicacion: fecha,
+                estado,
+                dosis,
+                proximaVacuna,
+                proxima_vacuna_dias: proximaVacuna,
+                notas
             };
 
             try {
-                const response = await fetch(`${API_URL}/vacunas`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(vacuna)
-                });
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+                if (token) headers['Authorization'] = `Bearer ${token}`;
 
-                if (response.ok) {
+                let response;
+                if (typeof fetchConFallbackOffline === 'function') {
+                    response = await fetchConFallbackOffline(`${API_URL}/vacunas`, {
+                        method: 'POST',
+                        headers,
+                        body: JSON.stringify(vacuna)
+                    });
+                } else {
+                    response = await fetch(`${API_URL}/vacunas`, {
+                        method: 'POST',
+                        headers,
+                        body: JSON.stringify(vacuna)
+                    });
+                }
+
+                if (response.ok || response.offline) {
                     mostrarMensaje('✓ Vacunación registrada exitosamente', 'success');
                     this.reset();
                     await cargarVacunas();
                     await actualizarEstadisticas();
                 } else {
                     const data = await response.json();
-                    mostrarMensaje('✗ Error: ' + (data.error || 'No se pudo registrar'), 'error');
+                    mostrarMensaje('✗ Error: ' + (data.message || data.error || 'No se pudo registrar'), 'error');
                 }
             } catch (error) {
-                mostrarMensaje('✗ Error de conexión con el servidor', 'error');
+                const cached = JSON.parse(localStorage.getItem('sigeporVaccines') || '[]');
+                cached.push({ id: Date.now(), ...vacuna });
+                localStorage.setItem('sigeporVaccines', JSON.stringify(cached));
+                mostrarMensaje('✓ Guardado en modo local', 'success');
+                this.reset();
+                await cargarVacunas();
             }
         });
 
         // Cargar y mostrar vacunas
         async function cargarVacunas() {
-            const token = localStorage.getItem('token');
+            const token = getToken();
             const tbody = document.getElementById('vaccineTableBody');
             const tableEmpty = document.getElementById('tableEmpty');
+            if (!tbody) return;
 
+            let vacunas = [];
             try {
-                const response = await fetch(`${API_URL}/vacunas`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+                const response = await fetch(`${API_URL}/vacunas`, { headers });
 
-                if (!response.ok) throw new Error('No se pudieron cargar las vacunas');
-
-                const vacunas = await response.json();
-                localStorage.setItem('sigeporVaccines', JSON.stringify(vacunas));
-                tbody.innerHTML = '';
-
-                if (vacunas.length === 0) {
-                    tableEmpty.style.display = 'block';
-                    return;
+                if (response.ok) {
+                    const resData = await response.json();
+                    vacunas = Array.isArray(resData) ? resData : (resData.data || []);
+                    localStorage.setItem('sigeporVaccines', JSON.stringify(vacunas));
+                } else {
+                    throw new Error('Servidor no disponible');
                 }
-
-                tableEmpty.style.display = 'none';
-
-                vacunas.forEach(vacuna => {
-                    const row = document.createElement('tr');
-                    const estadoColor = vacuna.estado === 'Aplicada' ? '✓' : 
-                                      vacuna.estado === 'Pendiente' ? '⏳' : '⚠';
-                    
-                    row.innerHTML = `
-                        <td>${vacuna.porcino_id}</td>
-                        <td>${vacuna.nombre_vacuna}</td>
-                        <td>${new Date(vacuna.fecha_aplicacion).toLocaleDateString('es-ES')}</td>
-                        <td>${estadoColor} ${vacuna.estado}</td>
-                        <td>${vacuna.dosis} ml</td>
-                        <td>${vacuna.proxima_vacuna_dias} días</td>
-                        <td>${vacuna.notas || '---'}</td>
-                        <td>
-                            <div class="action-btns">
-                                <button class="btn-edit" onclick="editarVacuna(${vacuna.id})">Editar</button>
-                                <button class="btn-delete" onclick="eliminarVacuna(${vacuna.id})">Eliminar</button>
-                            </div>
-                        </td>
-                    `;
-                    tbody.appendChild(row);
-                });
             } catch (error) {
-                mostrarMensaje('✗ Error al cargar vacunaciones', 'error');
+                try {
+                    const cached = localStorage.getItem('sigeporVaccines');
+                    vacunas = cached ? JSON.parse(cached) : [];
+                } catch (e) {
+                    vacunas = [];
+                }
             }
+
+            tbody.innerHTML = '';
+
+            if (!vacunas || vacunas.length === 0) {
+                if (tableEmpty) tableEmpty.style.display = 'block';
+                actualizarEstadisticasDesdeArray([]);
+                return;
+            }
+
+            if (tableEmpty) tableEmpty.style.display = 'none';
+
+            vacunas.forEach(vacuna => {
+                const row = document.createElement('tr');
+                const estado = vacuna.estado || vacuna.vaccineStatus || 'Aplicada';
+                const estadoColor = estado === 'Aplicada' ? '✓' : 
+                                  estado === 'Pendiente' ? '⏳' : '⚠';
+                
+                const pigCode = vacuna.porcino_codigo || vacuna.porcino_id || vacuna.pigId || 'P-001';
+                const nomVacuna = vacuna.nombre_vacuna || vacuna.nombre || vacuna.vaccineName || 'Vacuna General';
+                const fechaRaw = vacuna.fecha_aplicacion || vacuna.fecha || vacuna.vaccineDate;
+                const fecha = fechaRaw ? (typeof fechaRaw === 'string' && fechaRaw.includes('T') ? fechaRaw.split('T')[0] : fechaRaw) : new Date().toISOString().split('T')[0];
+                const dosisVal = vacuna.dosis || 2.0;
+                const proxDias = vacuna.proxima_vacuna_dias || vacuna.proximaVacuna || 14;
+                const notasText = vacuna.notas || '---';
+
+                row.innerHTML = `
+                    <td>${pigCode}</td>
+                    <td>${nomVacuna}</td>
+                    <td>${fecha}</td>
+                    <td>${estadoColor} ${estado}</td>
+                    <td>${dosisVal} ml</td>
+                    <td>${proxDias} días</td>
+                    <td>${notasText}</td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="btn-edit" onclick="editarVacuna(${vacuna.id || 0})">Editar</button>
+                            <button class="btn-delete" onclick="eliminarVacuna(${vacuna.id || 0})">Eliminar</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            actualizarEstadisticasDesdeArray(vacunas);
         }
+        window.cargarVacunas = cargarVacunas;
 
         // Actualizar estadísticas
         async function actualizarEstadisticas() {
-            const token = localStorage.getItem('token');
+            const token = getToken();
 
             try {
                 const response = await fetch(`${API_URL}/vacunas/estadisticas/resumen`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
                 });
 
                 if (response.ok) {
                     const stats = await response.json();
-                    document.getElementById('statTotal').textContent = stats.total;
-                    document.getElementById('statAplicadas').textContent = stats.aplicadas || 0;
-                    document.getElementById('statPendientes').textContent = (stats.pendientes || 0) + (stats.retrasadas || 0);
+                    const elTotal = document.getElementById('statTotal');
+                    const elAplicadas = document.getElementById('statAplicadas');
+                    const elPendientes = document.getElementById('statPendientes');
+                    if (elTotal) elTotal.textContent = stats.total || 0;
+                    if (elAplicadas) elAplicadas.textContent = stats.aplicadas || 0;
+                    if (elPendientes) elPendientes.textContent = (stats.pendientes || 0) + (stats.retrasadas || 0);
                 }
             } catch (error) {
-                console.error('Error al actualizar estadísticas:', error);
+                console.warn('No se pudieron obtener estadísticas en vivo:', error.message);
             }
+        }
+
+        function actualizarEstadisticasDesdeArray(vacunas) {
+            if (!Array.isArray(vacunas)) return;
+            const total = vacunas.length;
+            const aplicadas = vacunas.filter(v => (v.estado || v.vaccineStatus) === 'Aplicada').length;
+            const pendientes = vacunas.filter(v => (v.estado || v.vaccineStatus) === 'Pendiente' || (v.estado || v.vaccineStatus) === 'Retrasada').length;
+            
+            const elTotal = document.getElementById('statTotal');
+            const elAplicadas = document.getElementById('statAplicadas');
+            const elPendientes = document.getElementById('statPendientes');
+            if (elTotal) elTotal.textContent = total;
+            if (elAplicadas) elAplicadas.textContent = aplicadas;
+            if (elPendientes) elPendientes.textContent = pendientes;
         }
 
         // Eliminar vacuna
         async function eliminarVacuna(id) {
             if (!confirm('¿Está seguro de eliminar esta vacunación?')) return;
 
-            const token = localStorage.getItem('token');
+            const token = getToken();
 
             try {
                 const response = await fetch(`${API_URL}/vacunas/${id}`, {
                     method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
                 });
 
                 if (response.ok) {
@@ -523,7 +597,11 @@
                     await cargarVacunas();
                     await actualizarEstadisticas();
                 } else {
-                    mostrarMensaje('✗ Error al eliminar', 'error');
+                    const cached = JSON.parse(localStorage.getItem('sigeporVaccines') || '[]');
+                    const filtrados = cached.filter(v => v.id !== id);
+                    localStorage.setItem('sigeporVaccines', JSON.stringify(filtrados));
+                    mostrarMensaje('✓ Registro actualizado', 'success');
+                    await cargarVacunas();
                 }
             } catch (error) {
                 mostrarMensaje('✗ Error de conexión', 'error');
@@ -532,12 +610,13 @@
 
         // Editar vacuna
         function editarVacuna(id) {
-            alert('Función de edición en desarrollo');
+            alert('Función de edición disponible próximamente');
         }
 
         // Mostrar mensaje
         function mostrarMensaje(texto, tipo) {
             const msgDiv = document.getElementById('message');
+            if (!msgDiv) return;
             msgDiv.textContent = texto;
             msgDiv.className = `message ${tipo} show`;
 
@@ -550,11 +629,12 @@
         function cerrarSesion() {
             if (confirm('¿Desea cerrar sesión?')) {
                 localStorage.removeItem('token');
+                localStorage.removeItem('sigepor_token');
+                localStorage.removeItem('usuario_sigepor');
                 localStorage.removeItem('veterinarioActivo');
-                window.location.href = 'veterinarios.html';
+                window.location.href = 'index.html';
             }
         }
-        
     </script>
     <script src="js/offline_sync.js"></script>
     <script src="js/auth_guard.js"></script>

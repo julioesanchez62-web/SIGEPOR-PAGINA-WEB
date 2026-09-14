@@ -30,6 +30,16 @@ test('GET /api/sanidad/vacunas returns status response', async () => {
   assert.ok([200, 500].includes(response.status));
 });
 
+test('GET /api/vacunas returns status response', async () => {
+  const response = await request(app).get('/api/vacunas');
+  assert.ok([200, 500].includes(response.status));
+});
+
+test('GET /api/vacunas/estadisticas/resumen returns status response', async () => {
+  const response = await request(app).get('/api/vacunas/estadisticas/resumen');
+  assert.ok([200, 500].includes(response.status));
+});
+
 test('GET /api/inventario/alimentos returns status response', async () => {
   const response = await request(app).get('/api/inventario/alimentos');
   assert.ok([200, 500].includes(response.status));

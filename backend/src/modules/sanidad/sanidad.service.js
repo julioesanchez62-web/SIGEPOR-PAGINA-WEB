@@ -10,11 +10,18 @@ async function createVacuna(datos) {
     error.statusCode = 400;
     throw error;
   }
+  let pigIdRaw = datos.porcino_id || datos.pigId;
+  let parsedPorcinoId = pigIdRaw;
+  if (typeof pigIdRaw === 'string') {
+    const cleanNum = parseInt(pigIdRaw.replace(/\D/g, ''), 10);
+    if (!isNaN(cleanNum) && cleanNum > 0) parsedPorcinoId = cleanNum;
+  }
+
   return await repo.createVacuna({
-    porcino_id: datos.porcino_id || datos.pigId,
+    porcino_id: parsedPorcinoId,
     nombre_vacuna: datos.nombre_vacuna || datos.nombre || datos.vaccineName,
     fecha_aplicacion: datos.fecha_aplicacion || datos.fecha || datos.vaccineDate,
-    estado: datos.estado || datos.vaccineStatus || 'Aplicada',
+    estado: datos.estado || datos.vaccineStatus || datos.estadoVacuna || 'Aplicada',
     dosis: parseFloat(datos.dosis || 2.0),
     proxima_vacuna_dias: parseInt(datos.proxima_vacuna_dias || datos.proximaVacuna || 14, 10),
     notas: datos.notas || ''
