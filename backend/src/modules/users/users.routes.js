@@ -34,10 +34,7 @@ router.post(
  * Body: { correo, contraseña }
  * Respuestas: 200, 400, 401, 500
  */
-router.post(
-  '/login',
-  usersController.login
-);
+router.post('/login',usersController.login);
 
 /**
  * GET / (GET /users)

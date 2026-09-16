@@ -1,48 +1,40 @@
 const express = require('express');
-
-// Importar los archivos de rutas de todos los módulos del sistema
-const authRoutes = require('../modules/auth/auth.routes');
-const usersRoutes = require('../modules/users/users.routes');
-const veterinariosRoutes = require('../modules/veterinarios/veterinarios.routes');
-const porcinosRoutes = require('../modules/porcinos/porcinos.routes');
-const reproduccionRoutes = require('../modules/reproduccion/reproduccion.routes');
-const sanidadRoutes = require('../modules/sanidad/sanidad.routes');
-const inventarioRoutes = require('../modules/inventario/inventario.routes');
-const reportesRoutes = require('../modules/reportes/reportes.routes');
-
 const router = express.Router();
 
-// Health check
-router.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok', message: 'SIGEPOR backend is running' });
-});
+// Importar Controllers
+const userController = require('../controllers/user.controller');
+// const authController = require('../controllers/auth.controller');
+// const inventoryController = require('../controllers/inventory.controller');
+// const healthController = require('../controllers/health.controller');
 
-// Módulos principales con alias de seguridad (con y sin /api/)
-router.use('/api/auth', authRoutes);
-router.use('/auth', authRoutes);
+/* ==========================================================================
+   1. RUTAS PÚBLICAS Y DE PRUEBA
+   ========================================================================== */
+router.get('/health', (req, res) => res.json({ status: 'OK', message: 'SIGEPOR API running' }));
 
-router.use('/api/users', usersRoutes);
-router.use('/users', usersRoutes);
+/* ==========================================================================
+   2. DESACTIVADO TEMPORALMENTE: AUTENTICACIÓN GLOBAL
+   ========================================================================== */
+// router.use(verifyToken); <-- Comentado para no requerir token en ninguna ruta
 
-router.use('/api/veterinarios', veterinariosRoutes);
-router.use('/veterinarios', veterinariosRoutes);
+/* ==========================================================================
+   3. RUTAS LIBRES (Sin verificación de token ni roles)
+   ========================================================================== */
 
-router.use('/api/porcinos', porcinosRoutes);
-router.use('/porcinos', porcinosRoutes);
+// --- MÓDULO DE USUARIOS ---
+router.post('/users', userController.createUser);
+router.get('/users', userController.getUsers);
+router.delete('/users/:id', userController.deleteUser);
+router.get('/perfil', userController.getProfile);
 
-router.use('/api/reproduccion', reproduccionRoutes);
-router.use('/reproduccion', reproduccionRoutes);
+/* 
+// --- MÓDULO DE CONTROL SALUD ---
+router.post('/salud', healthController.createHealthRecord);
+router.get('/salud', healthController.getHealthRecords);
 
-router.use('/api/sanidad', sanidadRoutes);
-router.use('/sanidad', sanidadRoutes);
-
-router.use('/api/vacunas', sanidadRoutes);
-router.use('/vacunas', sanidadRoutes);
-
-router.use('/api/inventario', inventarioRoutes);
-router.use('/inventario', inventarioRoutes);
-
-router.use('/api/reportes', reportesRoutes);
-router.use('/reportes', reportesRoutes);
+// --- MÓDULO DE INVENTARIO ---
+router.get('/inventario', inventoryController.getInventory);
+router.post('/inventario', inventoryController.addInventory);
+*/
 
 module.exports = router;

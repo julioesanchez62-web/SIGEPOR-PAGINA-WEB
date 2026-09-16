@@ -19,6 +19,7 @@ const ROLES = {
  * Verificar token JWT de la solicitud
  */
 function verifyToken(req, res, next) {
+  // Las rutas públicas como /login o /health no requieren este middleware en la definición de la ruta
   const authHeader = req.headers['authorization'] || req.headers['x-access-token'];
   let token = null;
 
@@ -28,15 +29,12 @@ function verifyToken(req, res, next) {
     token = authHeader;
   }
 
+  // Si no se proporciona token, rechazar acceso
   if (!token) {
-    const isPublicPath = req.path.includes('/login') || req.path.includes('/health');
-    if (isPublicPath) {
-      return next();
-    }
-    
-    // Para compatibilidad retroactiva si no se envía token
-    req.user = { id: 0, nombre: 'Invitado', idRol: 2, rolNombre: 'Empleado' };
-    return next();
+    return res.status(401).json({
+      status: 'fail',
+      message: 'Acceso denegado. Se requiere un token de autenticación.'
+    });
   }
 
   try {
