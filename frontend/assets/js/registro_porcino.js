@@ -1,8 +1,9 @@
 /**
- * JavaScript para Gestión de Porcinos (Conectado a MySQL Workbench mediante Node.js Backend)
+ * JavaScript para Gestión de Porcinos (Sincronización Bidireccional HU-03 & MySQL)
  */
 
 const API_BASE_PORCINOS = 'http://localhost:3001/api/porcinos';
+const LOCAL_KEY_PORCINOS = 'sigeporPigs';
 
 const pigForm = document.getElementById('pigForm');
 const inputPigId = document.getElementById('pigId');
@@ -27,46 +28,63 @@ async function cargarVeterinariosEnSelect() {
 
     try {
         const respuesta = await fetch(`${API_BASE_PORCINOS}/veterinarios`);
-        const resultado = await respuesta.json();
-
-        if (resultado.status === 'success' && Array.isArray(resultado.data)) {
-            selectVeterinario.innerHTML = '<option value="">Seleccione veterinario</option>';
-            resultado.data.forEach(vet => {
-                const option = document.createElement('option');
-                option.value = vet.id;
-                const inactivo = Number(vet.activo) === 0;
-                option.textContent = `👨‍⚕️ ${vet.nombre}${inactivo ? ' (Inactivo)' : ''}`;
-                if (inactivo) option.disabled = true;
-                selectVeterinario.appendChild(option);
-            });
+        if (respuesta.ok) {
+            const resultado = await respuesta.json();
+            if (resultado.status === 'success' && Array.isArray(resultado.data)) {
+                localStorage.setItem('sigepor_cache_veterinarios', JSON.stringify(resultado.data));
+                poblarSelectVeterinarios(resultado.data);
+                return;
+            }
         }
     } catch (error) {
-        console.error('Error al cargar lista de veterinarios:', error);
+        console.warn('Cargando veterinarios desde memoria local:', error.message);
     }
+
+    const cached = JSON.parse(localStorage.getItem('sigepor_cache_veterinarios') || '[]');
+    poblarSelectVeterinarios(cached);
 }
 
-// 2. Cargar porcinos desde MySQL y renderizar tabla y estadísticas
+function poblarSelectVeterinarios(lista) {
+    if (!selectVeterinario) return;
+    selectVeterinario.innerHTML = '<option value="">Seleccione veterinario</option>';
+    lista.forEach(vet => {
+        const option = document.createElement('option');
+        option.value = vet.id;
+        const inactivo = Number(vet.activo) === 0;
+        option.textContent = `👨‍⚕️ ${vet.nombre}${inactivo ? ' (Inactivo)' : ''}`;
+        if (inactivo) option.disabled = true;
+        selectVeterinario.appendChild(option);
+    });
+}
+
+// 2. Cargar porcinos (Sincronización MySQL <-> localStorage)
 async function cargarPorcinos() {
+    let porcinos = [];
     try {
         const respuesta = await fetch(API_BASE_PORCINOS);
-        const resultado = await respuesta.json();
-
-        if (respuesta.ok && resultado.status === 'success') {
-            const porcinos = resultado.data || [];
-            renderizarTablaPorcinos(porcinos);
-            actualizarEstadisticas(resultado.stats || {
-                total: porcinos.length,
-                saludables: porcinos.filter(p => p.estado_salud === 'Saludable').length,
-                observacion: porcinos.filter(p => p.estado_salud === 'En Observación').length,
-                enfermos: porcinos.filter(p => p.estado_salud === 'Enfermo').length
-            });
+        if (respuesta.ok) {
+            const resultado = await respuesta.json();
+            if (resultado.status === 'success') {
+                porcinos = resultado.data || [];
+                localStorage.setItem(LOCAL_KEY_PORCINOS, JSON.stringify(porcinos));
+            }
         } else {
-            console.error('Error al obtener lista de porcinos:', resultado.message);
+            throw new Error('Servidor no disponible');
         }
     } catch (error) {
-        console.error('Error de conexión al cargar porcinos:', error);
+        console.warn('Cargando lista porcina desde localStorage (Modo Offline)');
+        try {
+            const cached = localStorage.getItem(LOCAL_KEY_PORCINOS);
+            porcinos = cached ? JSON.parse(cached) : [];
+        } catch (e) {
+            porcinos = [];
+        }
     }
+
+    renderizarTablaPorcinos(porcinos);
+    actualizarEstadisticasCalculadas(porcinos);
 }
+window.cargarPorcinos = cargarPorcinos;
 
 function renderizarTablaPorcinos(porcinos) {
     if (!pigTableBody) return;
@@ -83,25 +101,27 @@ function renderizarTablaPorcinos(porcinos) {
         const tr = document.createElement('tr');
         
         let healthBadge = `<span style="padding: 3px 8px; border-radius: 10px; font-weight:600; font-size:0.85rem; background: #d4edda; color: #155724;">✓ Saludable</span>`;
-        if (p.estado_salud === 'En Observación') {
+        if (p.estado_salud === 'En Observación' || p.health === 'En Observación') {
             healthBadge = `<span style="padding: 3px 8px; border-radius: 10px; font-weight:600; font-size:0.85rem; background: #fff3cd; color: #856404;">⚠ En Observación</span>`;
-        } else if (p.estado_salud === 'Enfermo') {
+        } else if (p.estado_salud === 'Enfermo' || p.health === 'Enfermo') {
             healthBadge = `<span style="padding: 3px 8px; border-radius: 10px; font-weight:600; font-size:0.85rem; background: #f8d7da; color: #721c24;">🏥 Enfermo</span>`;
         }
 
+        const pigIdCode = p.identificacion || p.id;
+
         tr.innerHTML = `
-            <td><strong>#${p.id} (${p.identificacion || p.id})</strong></td>
-            <td>🐷 ${p.raza}</td>
-            <td>${p.peso} kg</td>
+            <td><strong>#${p.id || pigIdCode} (${pigIdCode})</strong></td>
+            <td>🐷 ${p.raza || p.breed || ''}</td>
+            <td>${p.peso || p.weight || 0} kg</td>
             <td>${healthBadge}</td>
-            <td>${p.fecha_nacimiento}</td>
-            <td>${p.genero || '-'}</td>
+            <td>${p.fecha_nacimiento || p.birth || '-'}</td>
+            <td>${p.genero || p.gender || '-'}</td>
             <td>${p.veterinario_nombre ? `👨‍⚕️ ${p.veterinario_nombre}` : '<em style="color:#888;">Sin asignar</em>'}</td>
             <td>
                 <div class="table-actions" style="display:flex; gap:4px; justify-content:center;">
-                    <button type="button" class="btn-table-action" style="padding:4px 8px; border:none; border-radius:5px; background:#ebf8ff; color:#2b6cb0; cursor:pointer;" onclick="mostrarCodigoQR('${p.identificacion || p.id}', '${p.raza}', '${p.peso}', '${p.estado_salud}')">📱 QR</button>
-                    <button type="button" class="btn-table-action btn-table-edit" style="padding:4px 8px; border:none; border-radius:5px; background:#e2e8f0; cursor:pointer;" onclick="cargarParaEditar('${p.identificacion || p.id}')">✏️ Cargar</button>
-                    <button type="button" class="btn-table-action btn-table-delete" style="padding:4px 8px; border:none; border-radius:5px; background:#fed7d7; color:#9b2c2c; cursor:pointer;" onclick="eliminarPorcinoDirecto('${p.identificacion || p.id}')">🗑️ Borrar</button>
+                    <button type="button" class="btn-table-action" style="padding:4px 8px; border:none; border-radius:5px; background:#ebf8ff; color:#2b6cb0; cursor:pointer;" onclick="mostrarCodigoQR('${pigIdCode}', '${p.raza || p.breed}', '${p.peso || p.weight}', '${p.estado_salud || p.health}')">📱 QR</button>
+                    <button type="button" class="btn-table-action btn-table-edit" style="padding:4px 8px; border:none; border-radius:5px; background:#e2e8f0; cursor:pointer;" onclick="cargarParaEditar('${pigIdCode}')">✏️ Cargar</button>
+                    <button type="button" class="btn-table-action btn-table-delete" style="padding:4px 8px; border:none; border-radius:5px; background:#fed7d7; color:#9b2c2c; cursor:pointer;" onclick="eliminarPorcinoDirecto('${pigIdCode}')">🗑️ Borrar</button>
                 </div>
             </td>
         `;
@@ -109,14 +129,20 @@ function renderizarTablaPorcinos(porcinos) {
     });
 }
 
-function actualizarEstadisticas(stats) {
-    if (statTotal) statTotal.textContent = stats.total || 0;
-    if (statHealthy) statHealthy.textContent = stats.saludables || 0;
-    if (statObserving) statObserving.textContent = stats.observacion || 0;
-    if (statSick) statSick.textContent = stats.enfermos || 0;
+function actualizarEstadisticasCalculadas(porcinos) {
+    const list = Array.isArray(porcinos) ? porcinos : [];
+    const total = list.length;
+    const saludables = list.filter(p => (p.estado_salud || p.health) === 'Saludable').length;
+    const observacion = list.filter(p => (p.estado_salud || p.health) === 'En Observación').length;
+    const enfermos = list.filter(p => (p.estado_salud || p.health) === 'Enfermo').length;
+
+    if (statTotal) statTotal.textContent = total;
+    if (statHealthy) statHealthy.textContent = saludables;
+    if (statObserving) statObserving.textContent = observacion;
+    if (statSick) statSick.textContent = enfermos;
 }
 
-// 3. Guardar porcino nuevo (POST)
+// 3. Guardar porcino nuevo (POST) con respaldo offline
 if (pigForm) {
     pigForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -137,15 +163,32 @@ if (pigForm) {
         }
 
         try {
-            const respuesta = await fetch(API_BASE_PORCINOS, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(datos)
-            });
+            const respuesta = typeof fetchConFallbackOffline === 'function'
+                ? await fetchConFallbackOffline(API_BASE_PORCINOS, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(datos)
+                })
+                : await fetch(API_BASE_PORCINOS, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(datos)
+                });
+
             const resultado = await respuesta.json();
 
-            if (respuesta.ok && resultado.status === 'success') {
-                alert('🎉 ' + resultado.message);
+            // Guardado optimista en localStorage
+            const cached = JSON.parse(localStorage.getItem(LOCAL_KEY_PORCINOS) || '[]');
+            const index = cached.findIndex(p => (p.identificacion || String(p.id)) === datos.identificacion);
+            if (index >= 0) {
+                cached[index] = { ...cached[index], ...datos };
+            } else {
+                cached.push({ id: datos.identificacion, ...datos });
+            }
+            localStorage.setItem(LOCAL_KEY_PORCINOS, JSON.stringify(cached));
+
+            if (respuesta.ok || respuesta.offline) {
+                alert('🎉 ' + (resultado.message || 'Porcino guardado con éxito.'));
                 limpiarFormularioPorcino();
                 cargarPorcinos();
             } else {
@@ -153,7 +196,7 @@ if (pigForm) {
             }
         } catch (error) {
             console.error(error);
-            alert('❌ No hay comunicación con el servidor backend de SIGEPOR.');
+            alert('❌ No hay comunicación con el servidor backend. Se mantendrá el registro en memoria.');
         }
     });
 }
@@ -169,28 +212,39 @@ async function consultarPorcino() {
 
     try {
         const respuesta = await fetch(`${API_BASE_PORCINOS}/${id}`);
-        const resultado = await respuesta.json();
-
-        if (respuesta.ok && resultado.status === 'success') {
-            const p = resultado.data;
-            inputPigId.value = p.identificacion || p.id;
-            selectPigBreed.value = p.raza || '';
-            inputPigWeight.value = p.peso || '';
-            selectPigHealth.value = p.estado_salud || '';
-            inputPigBirth.value = p.fecha_nacimiento || '';
-            selectPigGender.value = p.genero || '';
-            selectVeterinario.value = p.veterinario_id || '';
-
-            document.getElementById('formTitle').textContent = `Consultando Porcino (${p.identificacion || p.id})`;
-            document.getElementById('formIcon').textContent = '🔍';
-            alert(`✅ Datos del porcino '${p.identificacion || p.id}' cargados con éxito.`);
-        } else {
-            alert('⚠️ ' + (resultado.message || 'Porcino no encontrado.'));
+        if (respuesta.ok) {
+            const resultado = await respuesta.json();
+            if (resultado.status === 'success') {
+                cargardatosEnFormulario(resultado.data);
+                alert(`✅ Datos del porcino '${id}' cargados con éxito desde MySQL.`);
+                return;
+            }
         }
     } catch (error) {
-        console.error(error);
-        alert('❌ Error al consultar con la base de datos.');
+        console.warn('Buscando en cache local:', error);
     }
+
+    const cached = JSON.parse(localStorage.getItem(LOCAL_KEY_PORCINOS) || '[]');
+    const encontrado = cached.find(p => (p.identificacion || String(p.id)) === id);
+    if (encontrado) {
+        cargardatosEnFormulario(encontrado);
+        alert(`✅ Datos del porcino '${id}' cargados desde caché local.`);
+    } else {
+        alert('⚠️ Porcino no encontrado.');
+    }
+}
+
+function cargardatosEnFormulario(p) {
+    inputPigId.value = p.identificacion || p.id;
+    selectPigBreed.value = p.raza || p.breed || '';
+    inputPigWeight.value = p.peso || p.weight || '';
+    selectPigHealth.value = p.estado_salud || p.health || '';
+    inputPigBirth.value = p.fecha_nacimiento || p.birth || '';
+    selectPigGender.value = p.genero || p.gender || '';
+    selectVeterinario.value = p.veterinario_id || '';
+
+    document.getElementById('formTitle').textContent = `Editar Porcino (${p.identificacion || p.id})`;
+    document.getElementById('formIcon').textContent = '✏️';
 }
 
 // 5. Actualizar datos de porcino (PUT)
@@ -212,15 +266,30 @@ async function actualizarPorcino() {
     };
 
     try {
-        const respuesta = await fetch(`${API_BASE_PORCINOS}/${id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(datos)
-        });
+        const respuesta = typeof fetchConFallbackOffline === 'function'
+            ? await fetchConFallbackOffline(`${API_BASE_PORCINOS}/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datos)
+            })
+            : await fetch(`${API_BASE_PORCINOS}/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datos)
+            });
+
         const resultado = await respuesta.json();
 
-        if (respuesta.ok && resultado.status === 'success') {
-            alert('✅ ' + resultado.message);
+        // Actualización optimista local
+        const cached = JSON.parse(localStorage.getItem(LOCAL_KEY_PORCINOS) || '[]');
+        const idx = cached.findIndex(p => (p.identificacion || String(p.id)) === id);
+        if (idx >= 0) {
+            cached[idx] = { ...cached[idx], ...datos };
+            localStorage.setItem(LOCAL_KEY_PORCINOS, JSON.stringify(cached));
+        }
+
+        if (respuesta.ok || respuesta.offline) {
+            alert('✅ ' + (resultado.message || 'Porcino actualizado.'));
             limpiarFormularioPorcino();
             cargarPorcinos();
         } else {
@@ -228,7 +297,7 @@ async function actualizarPorcino() {
         }
     } catch (error) {
         console.error(error);
-        alert('❌ Error al comunicarse con el backend.');
+        alert('❌ Error de comunicación con el backend.');
     }
 }
 
@@ -240,17 +309,23 @@ async function borrarPorcino() {
         if (!id) return;
     }
 
-    const confirmar = confirm(`¿Está seguro de eliminar definitivamente al porcino '${id}' de MySQL?`);
+    const confirmar = confirm(`¿Está seguro de eliminar definitivamente al porcino '${id}'?`);
     if (!confirmar) return;
 
     try {
-        const respuesta = await fetch(`${API_BASE_PORCINOS}/${id}`, {
-            method: 'DELETE'
-        });
+        const respuesta = typeof fetchConFallbackOffline === 'function'
+            ? await fetchConFallbackOffline(`${API_BASE_PORCINOS}/${id}`, { method: 'DELETE' })
+            : await fetch(`${API_BASE_PORCINOS}/${id}`, { method: 'DELETE' });
+
         const resultado = await respuesta.json();
 
-        if (respuesta.ok && resultado.status === 'success') {
-            alert('🗑️ ' + resultado.message);
+        // Borrado optimista local
+        const cached = JSON.parse(localStorage.getItem(LOCAL_KEY_PORCINOS) || '[]');
+        const filtrados = cached.filter(p => (p.identificacion || String(p.id)) !== id);
+        localStorage.setItem(LOCAL_KEY_PORCINOS, JSON.stringify(filtrados));
+
+        if (respuesta.ok || respuesta.offline) {
+            alert('🗑️ ' + (resultado.message || 'Porcino eliminado.'));
             limpiarFormularioPorcino();
             cargarPorcinos();
         } else {
@@ -258,56 +333,18 @@ async function borrarPorcino() {
         }
     } catch (error) {
         console.error(error);
-        alert('❌ Error al intentar eliminar.');
+        alert('❌ Error al intentar eliminar porcino.');
     }
 }
 
-// Cargar en formulario para editar
 async function cargarParaEditar(id) {
-    try {
-        const respuesta = await fetch(`${API_BASE_PORCINOS}/${id}`);
-        const resultado = await respuesta.json();
-
-        if (respuesta.ok && resultado.status === 'success') {
-            const p = resultado.data;
-            inputPigId.value = p.identificacion || p.id;
-            selectPigBreed.value = p.raza || '';
-            inputPigWeight.value = p.peso || '';
-            selectPigHealth.value = p.estado_salud || '';
-            inputPigBirth.value = p.fecha_nacimiento || '';
-            selectPigGender.value = p.genero || '';
-            selectVeterinario.value = p.veterinario_id || '';
-
-            document.getElementById('formTitle').textContent = `Editar Porcino (${p.identificacion || p.id})`;
-            document.getElementById('formIcon').textContent = '✏️';
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-    } catch (error) {
-        console.error(error);
-    }
+    inputPigId.value = id;
+    await consultarPorcino();
 }
 
-// Eliminar directamente desde botón de la tabla
 async function eliminarPorcinoDirecto(id) {
-    const confirmar = confirm(`¿Desea eliminar al porcino '${id}' de la base de datos?`);
-    if (!confirmar) return;
-
-    try {
-        const respuesta = await fetch(`${API_BASE_PORCINOS}/${id}`, {
-            method: 'DELETE'
-        });
-        const resultado = await respuesta.json();
-
-        if (respuesta.ok && resultado.status === 'success') {
-            alert('🗑️ ' + resultado.message);
-            cargarPorcinos();
-        } else {
-            alert('⚠️ ' + (resultado.message || 'No se pudo eliminar.'));
-        }
-    } catch (error) {
-        console.error(error);
-        alert('❌ Error al eliminar porcino.');
-    }
+    inputPigId.value = id;
+    await borrarPorcino();
 }
 
 // Limpiar formulario
@@ -318,7 +355,6 @@ function limpiarFormularioPorcino() {
     document.getElementById('formIcon').textContent = '➕';
 }
 
-// Cerrar Sesión
 function cerrarSesion() {
     if (confirm('¿Desea cerrar la sesión actual?')) {
         localStorage.removeItem('usuarioSesion');
@@ -335,7 +371,6 @@ function openPanel(tipo) {
     }
 }
 
-// 📱 Generador y Visualizador de Código QR / RFID para Porcinos (HU-01)
 function mostrarCodigoQR(id, raza, peso, estado) {
     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`SIGEPOR-PORCINO:${id}|Raza:${raza}|Peso:${peso}kg|Estado:${estado}`)}`;
     
@@ -364,9 +399,7 @@ function mostrarCodigoQR(id, raza, peso, estado) {
     modal.style.display = 'flex';
 }
 
-// Inicialización automática
 document.addEventListener('DOMContentLoaded', () => {
     cargarVeterinariosEnSelect();
     cargarPorcinos();
 });
-

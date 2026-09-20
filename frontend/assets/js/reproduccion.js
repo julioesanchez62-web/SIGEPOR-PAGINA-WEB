@@ -1,9 +1,10 @@
 /**
- * SIGEPOR - Gestión de Eventos Reproductivos (HU-02)
+ * SIGEPOR - Gestión de Eventos Reproductivos (HU-02 & HU-03 Offline Sync)
  */
 
 const API_REPRODUCCION = 'http://localhost:3001/api/reproduccion';
 const API_PORCINOS = 'http://localhost:3001/api/porcinos';
+const LOCAL_KEY_REPRODUCCION = 'sigeporReproduccion';
 
 const reproForm = document.getElementById('reproForm');
 const selectPorcino = document.getElementById('porcino_id');
@@ -16,48 +17,69 @@ const reproTableBody = document.querySelector('#reproTable tbody');
 
 async function cargarPorcinosHembra() {
     if (!selectPorcino) return;
+    let lista = [];
     try {
         const res = await fetch(API_PORCINOS);
-        const result = await res.json();
-        if (res.ok && result.data) {
-            selectPorcino.innerHTML = '<option value="">Seleccione Cerda / Porcino</option>';
-            result.data.forEach(p => {
-                const opt = document.createElement('option');
-                opt.value = p.id;
-                opt.textContent = `🐷 #${p.id} (${p.identificacion || p.id}) - ${p.raza} (${p.genero || 'Hembra'})`;
-                selectPorcino.appendChild(opt);
-            });
+        if (res.ok) {
+            const result = await res.json();
+            lista = result.data || [];
+            localStorage.setItem('sigeporPigs', JSON.stringify(lista));
+        } else {
+            throw new Error('Sin red');
         }
     } catch (err) {
-        console.error(err);
+        const cached = localStorage.getItem('sigeporPigs');
+        lista = cached ? JSON.parse(cached) : [];
     }
+
+    selectPorcino.innerHTML = '<option value="">Seleccione Cerda / Porcino</option>';
+    lista.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.id;
+        opt.textContent = `🐷 #${p.id} (${p.identificacion || p.id}) - ${p.raza || p.breed || ''} (${p.genero || 'Hembra'})`;
+        selectPorcino.appendChild(opt);
+    });
 }
 
 async function cargarEventosReproductivos() {
+    let lista = [];
     try {
         const token = localStorage.getItem('sigepor_token') || localStorage.getItem('token');
         const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
         const res = await fetch(API_REPRODUCCION, { headers });
-        const result = await res.json();
-
-        if (res.ok && result.data) {
-            renderizarTablaRepro(result.data);
-            actualizarStatsRepro(result.stats || {});
+        if (res.ok) {
+            const result = await res.json();
+            lista = result.data || [];
+            localStorage.setItem(LOCAL_KEY_REPRODUCCION, JSON.stringify(lista));
+        } else {
+            throw new Error('Servidor offline');
         }
     } catch (err) {
-        console.error(err);
+        console.warn('Cargando eventos reproductivos desde memoria local');
+        try {
+            const cached = localStorage.getItem(LOCAL_KEY_REPRODUCCION);
+            lista = cached ? JSON.parse(cached) : [];
+        } catch (e) {
+            lista = [];
+        }
     }
+
+    renderizarTablaRepro(lista);
+    actualizarStatsReproCalculadas(lista);
 }
+window.cargarEventosReproductivos = cargarEventosReproductivos;
 
 function renderizarTablaRepro(lista) {
     if (!reproTableBody) return;
     reproTableBody.innerHTML = '';
 
+    const tableEmpty = document.getElementById('tableEmpty');
+
     if (!lista || lista.length === 0) {
-        document.getElementById('tableEmpty').style.display = 'block';
+        if (tableEmpty) tableEmpty.style.display = 'block';
         return;
     }
-    document.getElementById('tableEmpty').style.display = 'none';
+    if (tableEmpty) tableEmpty.style.display = 'none';
 
     lista.forEach(item => {
         const tr = document.createElement('tr');
@@ -81,11 +103,17 @@ function renderizarTablaRepro(lista) {
     });
 }
 
-function actualizarStatsRepro(stats) {
-    if (document.getElementById('statTotalRepro')) document.getElementById('statTotalRepro').textContent = stats.total || 0;
-    if (document.getElementById('statCubriciones')) document.getElementById('statCubriciones').textContent = stats.cubriciones || 0;
-    if (document.getElementById('statPartos')) document.getElementById('statPartos').textContent = stats.partos || 0;
-    if (document.getElementById('statDestetes')) document.getElementById('statDestetes').textContent = stats.destetes || 0;
+function actualizarStatsReproCalculadas(lista) {
+    const list = Array.isArray(lista) ? lista : [];
+    const total = list.length;
+    const cubriciones = list.filter(i => i.tipo_evento === 'Cubrición').length;
+    const partos = list.filter(i => i.tipo_evento === 'Parto').length;
+    const destetes = list.filter(i => i.tipo_evento === 'Destete').length;
+
+    if (document.getElementById('statTotalRepro')) document.getElementById('statTotalRepro').textContent = total;
+    if (document.getElementById('statCubriciones')) document.getElementById('statCubriciones').textContent = cubriciones;
+    if (document.getElementById('statPartos')) document.getElementById('statPartos').textContent = partos;
+    if (document.getElementById('statDestetes')) document.getElementById('statDestetes').textContent = destetes;
 }
 
 if (reproForm) {
@@ -102,7 +130,9 @@ if (reproForm) {
         }
 
         const datos = {
+            id: Date.now(),
             porcino_id: porcinoVal,
+            porcino_codigo: porcinoVal,
             tipo_evento: selectTipoEvento.value,
             fecha_evento: inputFechaEvento.value,
             fecha_probable_parto: inputFechaParto.value || undefined,
@@ -117,8 +147,13 @@ if (reproForm) {
 
             const result = await res.json();
 
-            if (res.ok) {
-                alert('🎉 ' + (result.message || 'Evento reproductivo registrado con éxito en MySQL.'));
+            // Guardar en cache local siempre
+            const cached = JSON.parse(localStorage.getItem(LOCAL_KEY_REPRODUCCION) || '[]');
+            cached.push(datos);
+            localStorage.setItem(LOCAL_KEY_REPRODUCCION, JSON.stringify(cached));
+
+            if (res.ok || res.offline) {
+                alert('🎉 ' + (result.message || 'Evento reproductivo registrado con éxito.'));
                 reproForm.reset();
                 cargarEventosReproductivos();
             } else {
@@ -126,7 +161,12 @@ if (reproForm) {
             }
         } catch (err) {
             console.error('Error enviando evento reproductivo:', err);
-            alert('❌ Error de comunicación con el servidor SIGEPOR (http://localhost:3001). Verifique que el backend esté iniciado con `npm start`.');
+            const cached = JSON.parse(localStorage.getItem(LOCAL_KEY_REPRODUCCION) || '[]');
+            cached.push(datos);
+            localStorage.setItem(LOCAL_KEY_REPRODUCCION, JSON.stringify(cached));
+            alert('✓ Guardado en modo local.');
+            reproForm.reset();
+            cargarEventosReproductivos();
         }
     });
 }
@@ -136,14 +176,23 @@ async function eliminarEventoRepro(id) {
     try {
         const token = localStorage.getItem('sigepor_token') || localStorage.getItem('token');
         const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-        const res = await fetch(`${API_REPRODUCCION}/${id}`, { method: 'DELETE', headers });
-        const result = await res.json();
-        if (res.ok) {
-            alert('🗑️ ' + result.message);
-            cargarEventosReproductivos();
-        }
+
+        const res = typeof fetchConFallbackOffline === 'function'
+            ? await fetchConFallbackOffline(`${API_REPRODUCCION}/${id}`, { method: 'DELETE', headers })
+            : await fetch(`${API_REPRODUCCION}/${id}`, { method: 'DELETE', headers });
+
+        const cached = JSON.parse(localStorage.getItem(LOCAL_KEY_REPRODUCCION) || '[]');
+        const filtrados = cached.filter(i => Number(i.id) !== Number(id));
+        localStorage.setItem(LOCAL_KEY_REPRODUCCION, JSON.stringify(filtrados));
+
+        alert('🗑️ Registro eliminado.');
+        cargarEventosReproductivos();
     } catch (err) {
-        alert('❌ Error al eliminar.');
+        const cached = JSON.parse(localStorage.getItem(LOCAL_KEY_REPRODUCCION) || '[]');
+        const filtrados = cached.filter(i => Number(i.id) !== Number(id));
+        localStorage.setItem(LOCAL_KEY_REPRODUCCION, JSON.stringify(filtrados));
+        alert('🗑️ Registro eliminado en caché local.');
+        cargarEventosReproductivos();
     }
 }
 

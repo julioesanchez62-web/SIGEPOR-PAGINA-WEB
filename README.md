@@ -178,3 +178,49 @@ Tambien se verifico manualmente que:
 - [Resumen de mejoras visuales](frontend/assets/RESUMEN_MEJORAS.html)
 - [Ejemplos de imagenes](frontend/assets/EJEMPLOS_IMAGENES.html)
 - [Prueba de logos](frontend/assets/PRUEBA_LOGOS.html)
+
+##actualizacion 20sep2026 
+1. Núcleo del Motor Offline (frontend/assets/js/offline_sync.js)
+Procesamiento de Cola Saliente (processOfflineQueue): Al reconectarse a Internet o al backend, recorre la cola sigepor_offline_queue enviando secuencialmente a la API MySQL cada solicitud pendiente (POST, PUT, DELETE).
+Sincronización Entrante y Refresco Global (refrescarUIActual): Al finalizar la sincronización saliente o detectar conexión activa, dispara la recarga de la UI y los arreglos de memoria de la página en uso.
+Insignia de Red Flotante (renderSyncBadge): Notifica en tiempo real el estado actual (🟢 En línea, 🟠 Modo Offline (X guardados localmente), ⚡ X pendientes por sincronizar, 🔄 Sincronizando...) e incluye botón "Sincronizar Ya".
+Helper fetchConFallbackOffline: Permite realizar solicitudes de mutación transparentes, encolando automáticamente si la red falla o está fuera de línea.
+2. Módulos Integrados
+🐷 Módulo de Porcinos (
+registro_porcino.js
+)
+Lectura híbrida en cargarPorcinos(): Carga desde MySQL cuando hay conexión y actualiza el caché sigeporPigs. Si falla la red, lee directamente de sigeporPigs.
+Registro (POST), edición (PUT) y eliminación (DELETE) con actualización optimista inmediata de la tabla y estadísticas, registrando cambios en la cola offline si no hay señal.
+Caché local de veterinarios (sigepor_cache_veterinarios) para autocompletar el selector sin red.
+🩺 Módulo de Vacunas (
+vacunas.html
+)
+Inclusión del script offline_sync.js.
+Registro y eliminación sincronizados con sigeporVaccines en localStorage.
+Recálculo de estadísticas locales (Total, Aplicadas, Pendientes) a partir del caché local cuando el servidor no responde.
+📦 Módulo de Inventario (
+inventario.js
+)
+Sincronización de stock de alimento balanceado mediante el caché sigeporInventario.
+Operaciones de adición y eliminación con fallback offline y actualización de tarjetas de total en kilos.
+🍼 Módulo de Eventos Reproductivos (
+reproduccion.js
+)
+Almacenamiento en caché de eventos reproductivos (sigeporReproduccion).
+Registro offline de cubriciones, partos (con lechones nacidos) y destetes, recalculando contadores en pantalla.
+👨‍⚕️ Módulo de Veterinarios (
+veterinarios.html
+)
+Integración de offline_sync.js.
+Registro, consulta por ID, actualización y eliminación de personal veterinario con respaldo en sigeporVeterinarios.
+👤 Módulo de Usuarios (
+registro_usuarios.html
+)
+Integración de offline_sync.js.
+Guardado, búsqueda, edición y borrado de perfiles de usuario con fallback local en sigeporUsuarios.
+📊 Módulo de Reportes & Trazabilidad (
+reportes.js
+)
+cargarAlertasSistema(): En caso de no tener señal, genera alertas automáticas a partir de los datos en caché (sigeporPigs, sigeporVaccines, sigeporReproduccion).
+exportarDatosModulo(): Permite descargar reportes CSV y JSON extraídos directamente de la memoria del navegador cuando el backend está inalcanzable.
+buscarTrazabilidadPorcino(): Consulta e imprime la ficha técnica e historial productivo buscando en la base local si no hay conexión a MySQL.

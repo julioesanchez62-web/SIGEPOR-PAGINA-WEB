@@ -374,7 +374,8 @@
         </section>
     </div>
 
-<script>
+    <script src="js/offline_sync.js"></script>
+    <script>
     const API_URL = 'http://localhost:3001/api';
 
         function getToken() {
@@ -416,6 +417,7 @@
             const notas = document.getElementById('notas').value;
 
             const vacuna = {
+                id: Date.now(),
                 pigId,
                 porcino_id: pigId,
                 nombre,
@@ -430,25 +432,25 @@
             };
 
             try {
-                const headers = {
-                    'Content-Type': 'application/json'
-                };
+                const headers = { 'Content-Type': 'application/json' };
                 if (token) headers['Authorization'] = `Bearer ${token}`;
 
-                let response;
-                if (typeof fetchConFallbackOffline === 'function') {
-                    response = await fetchConFallbackOffline(`${API_URL}/vacunas`, {
+                let response = typeof fetchConFallbackOffline === 'function'
+                    ? await fetchConFallbackOffline(`${API_URL}/vacunas`, {
+                        method: 'POST',
+                        headers,
+                        body: JSON.stringify(vacuna)
+                    })
+                    : await fetch(`${API_URL}/vacunas`, {
                         method: 'POST',
                         headers,
                         body: JSON.stringify(vacuna)
                     });
-                } else {
-                    response = await fetch(`${API_URL}/vacunas`, {
-                        method: 'POST',
-                        headers,
-                        body: JSON.stringify(vacuna)
-                    });
-                }
+
+                // Guardar en cache local siempre
+                const cached = JSON.parse(localStorage.getItem('sigeporVaccines') || '[]');
+                cached.push(vacuna);
+                localStorage.setItem('sigeporVaccines', JSON.stringify(cached));
 
                 if (response.ok || response.offline) {
                     mostrarMensaje('✓ Vacunación registrada exitosamente', 'success');
@@ -461,7 +463,7 @@
                 }
             } catch (error) {
                 const cached = JSON.parse(localStorage.getItem('sigeporVaccines') || '[]');
-                cached.push({ id: Date.now(), ...vacuna });
+                cached.push(vacuna);
                 localStorage.setItem('sigeporVaccines', JSON.stringify(cached));
                 mostrarMensaje('✓ Guardado en modo local', 'success');
                 this.reset();
@@ -560,10 +562,14 @@
                     if (elTotal) elTotal.textContent = stats.total || 0;
                     if (elAplicadas) elAplicadas.textContent = stats.aplicadas || 0;
                     if (elPendientes) elPendientes.textContent = (stats.pendientes || 0) + (stats.retrasadas || 0);
+                    return;
                 }
             } catch (error) {
                 console.warn('No se pudieron obtener estadísticas en vivo:', error.message);
             }
+
+            const cached = JSON.parse(localStorage.getItem('sigeporVaccines') || '[]');
+            actualizarEstadisticasDesdeArray(cached);
         }
 
         function actualizarEstadisticasDesdeArray(vacunas) {
@@ -585,26 +591,26 @@
             if (!confirm('¿Está seguro de eliminar esta vacunación?')) return;
 
             const token = getToken();
+            const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
 
             try {
-                const response = await fetch(`${API_URL}/vacunas/${id}`, {
-                    method: 'DELETE',
-                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-                });
+                const response = typeof fetchConFallbackOffline === 'function'
+                    ? await fetchConFallbackOffline(`${API_URL}/vacunas/${id}`, { method: 'DELETE', headers })
+                    : await fetch(`${API_URL}/vacunas/${id}`, { method: 'DELETE', headers });
 
-                if (response.ok) {
-                    mostrarMensaje('✓ Vacunación eliminada', 'success');
-                    await cargarVacunas();
-                    await actualizarEstadisticas();
-                } else {
-                    const cached = JSON.parse(localStorage.getItem('sigeporVaccines') || '[]');
-                    const filtrados = cached.filter(v => v.id !== id);
-                    localStorage.setItem('sigeporVaccines', JSON.stringify(filtrados));
-                    mostrarMensaje('✓ Registro actualizado', 'success');
-                    await cargarVacunas();
-                }
+                const cached = JSON.parse(localStorage.getItem('sigeporVaccines') || '[]');
+                const filtrados = cached.filter(v => v.id !== id);
+                localStorage.setItem('sigeporVaccines', JSON.stringify(filtrados));
+
+                mostrarMensaje('✓ Registro eliminado', 'success');
+                await cargarVacunas();
+                await actualizarEstadisticas();
             } catch (error) {
-                mostrarMensaje('✗ Error de conexión', 'error');
+                const cached = JSON.parse(localStorage.getItem('sigeporVaccines') || '[]');
+                const filtrados = cached.filter(v => v.id !== id);
+                localStorage.setItem('sigeporVaccines', JSON.stringify(filtrados));
+                mostrarMensaje('✓ Registro eliminado en modo local', 'success');
+                await cargarVacunas();
             }
         }
 
@@ -636,7 +642,6 @@
             }
         }
     </script>
-    <script src="js/offline_sync.js"></script>
     <script src="js/auth_guard.js"></script>
 </body>
 </html>

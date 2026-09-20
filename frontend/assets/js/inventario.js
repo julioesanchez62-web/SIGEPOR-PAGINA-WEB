@@ -1,40 +1,53 @@
 /**
- * SIGEPOR - Gestión de Inventarios, Alimentación y Corrales (HU-05)
+ * SIGEPOR - Gestión de Inventarios, Alimentación y Corrales (HU-05 & HU-03 Offline Sync)
  */
 
 const API_INVENTARIO = 'http://localhost:3001/api/inventario';
+const LOCAL_KEY_INVENTARIO = 'sigeporInventario';
 
 const alimentoForm = document.getElementById('alimentoForm');
 const alimentoTableBody = document.querySelector('#alimentoTable tbody');
 
 async function cargarInventario() {
+    let lista = [];
     try {
         const token = localStorage.getItem('sigepor_token') || localStorage.getItem('token');
         const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
 
         const res = await fetch(`${API_INVENTARIO}/alimentos`, { headers });
-        const result = await res.json();
-
-        if (res.ok && result.data) {
-            renderizarTablaAlimentos(result.data);
-            if (document.getElementById('statKilosAlimento')) {
-                document.getElementById('statKilosAlimento').textContent = (result.stats.totalKilos || 0).toFixed(1) + ' kg';
-            }
+        if (res.ok) {
+            const result = await res.json();
+            lista = result.data || [];
+            localStorage.setItem(LOCAL_KEY_INVENTARIO, JSON.stringify(lista));
+        } else {
+            throw new Error('Servidor no disponible');
         }
     } catch (err) {
-        console.error(err);
+        console.warn('Cargando inventario desde memoria local (Offline)');
+        try {
+            const cached = localStorage.getItem(LOCAL_KEY_INVENTARIO);
+            lista = cached ? JSON.parse(cached) : [];
+        } catch (e) {
+            lista = [];
+        }
     }
+
+    renderizarTablaAlimentos(lista);
+    actualizarStatsAlimento(lista);
 }
+window.cargarInventario = cargarInventario;
 
 function renderizarTablaAlimentos(lista) {
     if (!alimentoTableBody) return;
     alimentoTableBody.innerHTML = '';
 
+    const tableEmpty = document.getElementById('tableEmpty');
+
     if (!lista || lista.length === 0) {
-        document.getElementById('tableEmpty').style.display = 'block';
+        if (tableEmpty) tableEmpty.style.display = 'block';
         return;
     }
-    document.getElementById('tableEmpty').style.display = 'none';
+    if (tableEmpty) tableEmpty.style.display = 'none';
 
     lista.forEach(item => {
         const tr = document.createElement('tr');
@@ -53,6 +66,13 @@ function renderizarTablaAlimentos(lista) {
     });
 }
 
+function actualizarStatsAlimento(lista) {
+    const statKilos = document.getElementById('statKilosAlimento');
+    if (!statKilos) return;
+    const totalKilos = (lista || []).reduce((acc, curr) => acc + (parseFloat(curr.cantidad) || 0), 0);
+    statKilos.textContent = totalKilos.toFixed(1) + ' kg';
+}
+
 if (alimentoForm) {
     alimentoForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -61,6 +81,7 @@ if (alimentoForm) {
         if (token) headers['Authorization'] = `Bearer ${token}`;
 
         const datos = {
+            id: Date.now(),
             tipo_alimento: document.getElementById('tipo_alimento').value,
             cantidad: parseFloat(document.getElementById('cantidad').value),
             fecha_suministro: document.getElementById('fecha_suministro').value,
@@ -69,21 +90,40 @@ if (alimentoForm) {
         };
 
         try {
-            const res = await fetch(`${API_INVENTARIO}/alimentos`, {
-                method: 'POST',
-                headers,
-                body: JSON.stringify(datos)
-            });
+            const res = typeof fetchConFallbackOffline === 'function'
+                ? await fetchConFallbackOffline(`${API_INVENTARIO}/alimentos`, {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify(datos)
+                })
+                : await fetch(`${API_INVENTARIO}/alimentos`, {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify(datos)
+                });
+
             const result = await res.json();
-            if (res.ok) {
-                alert('🎉 ' + result.message);
+
+            // Guardado optimista en cache local
+            const cached = JSON.parse(localStorage.getItem(LOCAL_KEY_INVENTARIO) || '[]');
+            cached.push(datos);
+            localStorage.setItem(LOCAL_KEY_INVENTARIO, JSON.stringify(cached));
+
+            if (res.ok || res.offline) {
+                alert('🎉 ' + (result.message || 'Alimento guardado correctamente.'));
                 alimentoForm.reset();
                 cargarInventario();
             } else {
                 alert('⚠️ Error: ' + (result.message || 'No se pudo guardar.'));
             }
         } catch (err) {
-            alert('❌ Error de comunicación.');
+            console.error(err);
+            const cached = JSON.parse(localStorage.getItem(LOCAL_KEY_INVENTARIO) || '[]');
+            cached.push(datos);
+            localStorage.setItem(LOCAL_KEY_INVENTARIO, JSON.stringify(cached));
+            alert('✓ Guardado en modo local.');
+            alimentoForm.reset();
+            cargarInventario();
         }
     });
 }
@@ -93,13 +133,23 @@ async function eliminarAlimento(id) {
     try {
         const token = localStorage.getItem('sigepor_token') || localStorage.getItem('token');
         const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-        const res = await fetch(`${API_INVENTARIO}/alimentos/${id}`, { method: 'DELETE', headers });
-        if (res.ok) {
-            alert('🗑️ Registro eliminado.');
-            cargarInventario();
-        }
+
+        const res = typeof fetchConFallbackOffline === 'function'
+            ? await fetchConFallbackOffline(`${API_INVENTARIO}/alimentos/${id}`, { method: 'DELETE', headers })
+            : await fetch(`${API_INVENTARIO}/alimentos/${id}`, { method: 'DELETE', headers });
+
+        const cached = JSON.parse(localStorage.getItem(LOCAL_KEY_INVENTARIO) || '[]');
+        const filtrados = cached.filter(i => Number(i.id) !== Number(id));
+        localStorage.setItem(LOCAL_KEY_INVENTARIO, JSON.stringify(filtrados));
+
+        alert('🗑️ Registro eliminado.');
+        cargarInventario();
     } catch (err) {
-        alert('❌ Error al eliminar.');
+        const cached = JSON.parse(localStorage.getItem(LOCAL_KEY_INVENTARIO) || '[]');
+        const filtrados = cached.filter(i => Number(i.id) !== Number(id));
+        localStorage.setItem(LOCAL_KEY_INVENTARIO, JSON.stringify(filtrados));
+        alert('🗑️ Registro eliminado en caché local.');
+        cargarInventario();
     }
 }
 

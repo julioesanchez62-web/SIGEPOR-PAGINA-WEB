@@ -17,13 +17,7 @@
             </div>
             <ul>
                 <li><a href="index.html">🏠 Inicio</a></li>
-                <li><a href="registroporcino.html">🐷 Gestión Porcina</a></li>
-                <li><a href="vacunas.html">🩺 Vacunas</a></li>
-                <li><a href="veterinarios.html">👨‍⚕️ Veterinarios</a></li>
-                <li><a href="registro_usuarios.html">👤 Usuarios</a></li>
-                <li><a href="javascript:void(0)" onclick="openPanel('reports')">📊 Reportes</a></li>
-                <li><a href="javascript:void(0)" onclick="openPanel('settings')">⚙️ Configuración</a></li>
-                <li><a href="javascript:void(0)" onclick="cerrarSesion()">🔒 Cerrar Sesión</a></li>
+                
                 
             </ul>
         </nav>
@@ -39,23 +33,25 @@
 
             <div class="card-wrapper">
                 <form class="grid-form" id="formulario-usuarios">
-    <!-- CAMPO OCULTO PARA EL ID DE USUARIO (Indispensable para Consultar/Actualizar/Borrar) -->
-    <div class="field" style="grid-column: span 2;">
-        <label>ID de Usuario (Para Consultar/Actualizar/Borrar):</label>
-        <input type="number" id="input-id" placeholder="Ej: 1">
-    </div>
+   
 
     <div class="form-section-title">
         <span class="section-icon">📋</span>
         <h3>Información Básica</h3>
     </div>
+     <!-- CAMPO OCULTO PARA EL ID DE USUARIO (Indispensable para Consultar/Actualizar/Borrar) -->
+    <div class="field" style="grid-column: span 2;">
+        <label>ID de Usuario (Para Consultar/Actualizar/Borrar):</label>
+        <input type="number" id="input-id" placeholder="Ej: 1">
+    </div>
 
-    <div class="field">
+  
+
+    <div class="form-section-title" style="grid-column: span 2; margin-top: 20px;"></div>
+       <div class="field">
         <label>Nombres y Apellidos:</label>
         <input type="text" id="input-nombre" placeholder="Ej: Juan Pérez" required>
     </div>
-
-    <div class="form-section-title" style="grid-column: span 2; margin-top: 20px;"></div>
 
     <div class="field">
         <label>Correo Electrónico:</label>
@@ -93,13 +89,13 @@
         </section>
     </div>
 
+    <script src="js/offline_sync.js"></script>
     <script src="js/script.js"></script>
 
-    <!-- 🚀 AQUÍ PEGAS LA LÓGICA DE CONEXIÓN CON TU BACKEND 🚀 -->
     <script>
-        const API_URL = 'http://localhost:3001/api/users'; // URL oficial de tu módulo backend
+        const API_URL = 'http://localhost:3001/api/users';
+        const LOCAL_KEY_USERS = 'sigeporUsuarios';
 
-        // Mapeo de elementos de la interfaz
         const formulario = document.getElementById('formulario-usuarios');
         const btnGuardar = document.getElementById('btn-guardar');
         const inputId = document.getElementById('input-id');
@@ -109,41 +105,60 @@
         const inputContrasena = document.getElementById('input-contrasena');
 
         // 🟢 LÓGICA DEL BOTÓN: GUARDAR CAMBIOS
-        btnGuardar.addEventListener('click', async () => {
-            const datosUsuario = {
-                nombre: inputNombre.value.trim(),
-                correo: inputCorreo.value.trim(),
-                usuario: inputUsuario.value.trim(),
-                contraseña: inputContrasena.value,
-                idRol: 2 // Rol de usuario estándar asignado por defecto
-            };
+        if (btnGuardar) {
+            btnGuardar.addEventListener('click', async () => {
+                const newId = inputId.value.trim() ? parseInt(inputId.value.trim(), 10) : Date.now();
+                const datosUsuario = {
+                    id: newId,
+                    nombre: inputNombre.value.trim(),
+                    correo: inputCorreo.value.trim(),
+                    usuario: inputUsuario.value.trim(),
+                    contraseña: inputContrasena.value,
+                    idRol: 2
+                };
 
-            if (!datosUsuario.nombre || !datosUsuario.correo || !datosUsuario.contraseña) {
-                alert('Por favor, rellene todos los campos obligatorios antes de guardar.');
-                return;
-            }
-
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(datosUsuario)
-                });
-                const resultado = await response.json();
-
-                if (response.ok) {
-                    alert('¡Éxito! ' + resultado.message);
-                    if (resultado.user && resultado.user.id) {
-                        inputId.value = resultado.user.id; // Coloca el ID asignado por MySQL en pantalla
-                    }
-                } else {
-                    alert('Error: ' + (resultado.message || 'No se pudo guardar el usuario.'));
+                if (!datosUsuario.nombre || !datosUsuario.correo || !datosUsuario.contraseña) {
+                    alert('Por favor, rellene todos los campos obligatorios antes de guardar.');
+                    return;
                 }
-            } catch (error) {
-                console.error(error);
-                alert('Fallo de comunicación: Asegúrate de que tu backend esté corriendo.');
-            }
-        });
+
+                try {
+                    const response = typeof fetchConFallbackOffline === 'function'
+                        ? await fetchConFallbackOffline(API_URL, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(datosUsuario)
+                        })
+                        : await fetch(API_URL, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(datosUsuario)
+                        });
+
+                    const resultado = await response.json();
+
+                    // Caché optimista
+                    const cached = JSON.parse(localStorage.getItem(LOCAL_KEY_USERS) || '[]');
+                    cached.push(datosUsuario);
+                    localStorage.setItem(LOCAL_KEY_USERS, JSON.stringify(cached));
+
+                    if (response.ok || response.offline) {
+                        alert('¡Éxito! ' + (resultado.message || 'Usuario guardado.'));
+                        if (resultado.user && resultado.user.id) {
+                            inputId.value = resultado.user.id;
+                        }
+                    } else {
+                        alert('Error: ' + (resultado.message || 'No se pudo guardar el usuario.'));
+                    }
+                } catch (error) {
+                    console.error(error);
+                    const cached = JSON.parse(localStorage.getItem(LOCAL_KEY_USERS) || '[]');
+                    cached.push(datosUsuario);
+                    localStorage.setItem(LOCAL_KEY_USERS, JSON.stringify(cached));
+                    alert('✓ Guardado en modo local.');
+                }
+            });
+        }
 
         // 🔵 LÓGICA DEL BOTÓN: CONSULTAR USUARIO
         async function consultarUsuario() {
@@ -155,21 +170,30 @@
 
             try {
                 const response = await fetch(`${API_URL}/${id}`);
-                const resultado = await response.json();
-
                 if (response.ok) {
+                    const resultado = await response.json();
                     const userObj = resultado.data || resultado;
                     inputNombre.value = userObj.nombre || '';
                     inputCorreo.value = userObj.correo || userObj.email || '';
                     inputUsuario.value = userObj.usuario || '';
-                    inputContrasena.value = ''; // Por protección no se muestra la clave en texto plano
+                    inputContrasena.value = '';
                     alert('Datos cargados de forma exitosa desde la base de datos.');
-                } else {
-                    alert('Error: ' + resultado.message);
+                    return;
                 }
             } catch (error) {
-                console.error(error);
-                alert('No se pudo establecer conexión con el backend.');
+                console.warn('Buscando en caché local:', error);
+            }
+
+            const cached = JSON.parse(localStorage.getItem(LOCAL_KEY_USERS) || '[]');
+            const userObj = cached.find(u => Number(u.id) === Number(id));
+            if (userObj) {
+                inputNombre.value = userObj.nombre || '';
+                inputCorreo.value = userObj.correo || userObj.email || '';
+                inputUsuario.value = userObj.usuario || '';
+                inputContrasena.value = '';
+                alert('Datos cargados desde el almacenamiento local.');
+            } else {
+                alert('⚠️ Usuario no encontrado.');
             }
         }
 
@@ -182,6 +206,7 @@
             }
 
             const datosActualizados = {
+                id: parseInt(id, 10),
                 nombre: inputNombre.value.trim(),
                 correo: inputCorreo.value.trim(),
                 usuario: inputUsuario.value.trim(),
@@ -190,15 +215,29 @@
             };
 
             try {
-                const response = await fetch(`${API_URL}/${id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(datosActualizados)
-                });
+                const response = typeof fetchConFallbackOffline === 'function'
+                    ? await fetchConFallbackOffline(`${API_URL}/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(datosActualizados)
+                    })
+                    : await fetch(`${API_URL}/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(datosActualizados)
+                    });
+
                 const resultado = await response.json();
 
-                if (response.ok) {
-                    alert('¡Datos de usuario modificados en la base de datos con éxito!');
+                const cached = JSON.parse(localStorage.getItem(LOCAL_KEY_USERS) || '[]');
+                const idx = cached.findIndex(u => Number(u.id) === Number(id));
+                if (idx >= 0) {
+                    cached[idx] = { ...cached[idx], ...datosActualizados };
+                    localStorage.setItem(LOCAL_KEY_USERS, JSON.stringify(cached));
+                }
+
+                if (response.ok || response.offline) {
+                    alert('¡Datos de usuario modificados con éxito!');
                 } else {
                     alert('Error al actualizar: ' + resultado.message);
                 }
@@ -216,22 +255,33 @@
                 return;
             }
 
-            const confirmar = confirm(`¿Está seguro de eliminar al usuario con ID ${id}? Esta acción borrará el registro de MySQL permanentemente.`);
+            const confirmar = confirm(`¿Está seguro de eliminar al usuario con ID ${id}?`);
             if (!confirmar) return;
 
             try {
-                const response = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+                const response = typeof fetchConFallbackOffline === 'function'
+                    ? await fetchConFallbackOffline(`${API_URL}/${id}`, { method: 'DELETE' })
+                    : await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+
                 const resultado = await response.json();
 
-                if (response.ok) {
-                    alert(resultado.message);
-                    formulario.reset(); // Deja limpio el panel visual automáticamente
+                const cached = JSON.parse(localStorage.getItem(LOCAL_KEY_USERS) || '[]');
+                const filtrados = cached.filter(u => Number(u.id) !== Number(id));
+                localStorage.setItem(LOCAL_KEY_USERS, JSON.stringify(filtrados));
+
+                if (response.ok || response.offline) {
+                    alert(resultado.message || 'Usuario eliminado.');
+                    if (formulario) formulario.reset();
                 } else {
                     alert('Error al borrar: ' + resultado.message);
                 }
             } catch (error) {
                 console.error(error);
-                alert('No se pudo concretar la solicitud de eliminación.');
+                const cached = JSON.parse(localStorage.getItem(LOCAL_KEY_USERS) || '[]');
+                const filtrados = cached.filter(u => Number(u.id) !== Number(id));
+                localStorage.setItem(LOCAL_KEY_USERS, JSON.stringify(filtrados));
+                alert('🗑️ Usuario eliminado en modo local.');
+                if (formulario) formulario.reset();
             }
         }
     </script>

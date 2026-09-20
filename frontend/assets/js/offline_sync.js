@@ -1,5 +1,5 @@
 /**
- * SIGEPOR - Gestor de Sincronización Offline/Online (HU-03)
+ * SIGEPOR - Gestor de Sincronización Offline/Online Bidireccional (HU-03)
  */
 
 const OFFLINE_QUEUE_KEY = 'sigepor_offline_queue';
@@ -22,8 +22,8 @@ function enqueueOfflineRequest(url, method, body, headers = {}) {
     queue.push({
         id: Date.now(),
         url,
-        method,
-        body,
+        method: (method || 'GET').toUpperCase(),
+        body: typeof body === 'string' ? JSON.parse(body) : body,
         headers,
         timestamp: new Date().toISOString()
     });
@@ -35,10 +35,12 @@ async function processOfflineQueue() {
     const queue = getOfflineQueue();
     if (queue.length === 0) return;
 
-    console.log(`🔄 Procesando ${queue.length} registros pendientes en cola offline...`);
+    console.log(`🔄 Procesando ${queue.length} solicitudes pendientes en la cola offline...`);
     renderSyncBadge(true);
 
     const remaining = [];
+    let syncedCount = 0;
+
     for (const req of queue) {
         try {
             const token = localStorage.getItem('sigepor_token') || localStorage.getItem('token');
@@ -51,25 +53,36 @@ async function processOfflineQueue() {
             const res = await fetch(req.url, {
                 method: req.method,
                 headers,
-                body: typeof req.body === 'string' ? req.body : JSON.stringify(req.body)
+                body: req.body ? JSON.stringify(req.body) : undefined
             });
 
-            if (!res.ok && res.status >= 500) {
-                remaining.push(req); // Si falla por servidor, mantener en cola
+            if (res.ok || (res.status >= 200 && res.status < 300) || res.status === 404) {
+                syncedCount++;
+            } else if (res.status >= 500) {
+                remaining.push(req); // Si falla por servidor 5xx, mantener en cola para reintento
             }
         } catch (err) {
-            remaining.push(req); // Error de red, mantener
+            remaining.push(req); // Error de conexión de red, mantener en cola
         }
     }
 
     saveOfflineQueue(remaining);
     renderSyncBadge();
-    if (remaining.length === 0) {
-        if (typeof window.cargarDatosPantalla === 'function') window.cargarDatosPantalla();
-        if (typeof window.cargarPorcinos === 'function') window.cargarPorcinos();
-        if (typeof window.cargarVacunas === 'function') window.cargarVacunas();
-        alert('🎉 ¡Sincronización completada! Todos los registros locales guardados en la base de datos MySQL.');
+
+    if (syncedCount > 0) {
+        console.log(`✅ ¡${syncedCount} cambios locales sincronizados con MySQL!`);
+        refrescarUIActual();
     }
+}
+
+function refrescarUIActual() {
+    if (typeof window.cargarPorcinos === 'function') window.cargarPorcinos();
+    if (typeof window.cargarVacunas === 'function') window.cargarVacunas();
+    if (typeof window.cargarInventario === 'function') window.cargarInventario();
+    if (typeof window.cargarEventosReproductivos === 'function') window.cargarEventosReproductivos();
+    if (typeof window.cargarVeterinarios === 'function') window.cargarVeterinarios();
+    if (typeof window.cargarUsuarios === 'function') window.cargarUsuarios();
+    if (typeof window.cargarAlertasSistema === 'function') window.cargarAlertasSistema();
 }
 
 function renderSyncBadge(isSyncing = false) {
@@ -105,7 +118,7 @@ function renderSyncBadge(isSyncing = false) {
     } else if (!isOnline) {
         badge.style.background = '#fed7d7';
         badge.style.color = '#742a2a';
-        badge.innerHTML = `🟠 <span>Modo Offline (${queue.length} guardados en espera)</span>`;
+        badge.innerHTML = `🟠 <span>Modo Offline (${queue.length} guardados localmente)</span>`;
     } else if (queue.length > 0) {
         badge.style.background = '#ebf8ff';
         badge.style.color = '#2b6cb0';
@@ -134,14 +147,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Función de fetch con fallback offline
+// Función de fetch con fallback offline para mutaciones (POST, PUT, DELETE)
 async function fetchConFallbackOffline(url, options = {}) {
+    const method = (options.method || 'GET').toUpperCase();
+
     if (!navigator.onLine) {
-        enqueueOfflineRequest(url, options.method || 'GET', options.body);
+        if (method !== 'GET') {
+            enqueueOfflineRequest(url, method, options.body, options.headers);
+        }
         return {
             ok: true,
             offline: true,
-            json: async () => ({ status: 'offline', message: 'Guardado localmente. Se sincronizará al reconectarse.' })
+            json: async () => ({ status: 'offline', message: 'Guardado en modo local. Se sincronizará con MySQL al reconectarse.' })
         };
     }
 
@@ -149,14 +166,22 @@ async function fetchConFallbackOffline(url, options = {}) {
         const response = await fetch(url, options);
         return response;
     } catch (error) {
-        if (options.method && options.method !== 'GET') {
-            enqueueOfflineRequest(url, options.method, options.body);
+        if (method !== 'GET') {
+            enqueueOfflineRequest(url, method, options.body, options.headers);
             return {
                 ok: true,
                 offline: true,
-                json: async () => ({ status: 'offline', message: 'Sin conexión con el servidor. Guardado en cola local.' })
+                json: async () => ({ status: 'offline', message: 'Sin comunicación con el servidor. Guardado en cola local.' })
             };
         }
         throw error;
     }
 }
+
+// Exportar globalmente
+window.getOfflineQueue = getOfflineQueue;
+window.saveOfflineQueue = saveOfflineQueue;
+window.enqueueOfflineRequest = enqueueOfflineRequest;
+window.processOfflineQueue = processOfflineQueue;
+window.fetchConFallbackOffline = fetchConFallbackOffline;
+window.refrescarUIActual = refrescarUIActual;
