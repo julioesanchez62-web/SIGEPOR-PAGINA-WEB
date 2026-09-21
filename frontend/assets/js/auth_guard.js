@@ -31,11 +31,11 @@ function obtenerRolSesion() {
 // Rol 2: Usuario / Operario (Gestión Porcina, Reproducción, Inventario básico)
 const PERMISOS_RUTAS = {
     'registroporcino.html': [1, 2, 3],
-    'reproduccion.html': [1, 2],
+    'reproduccion.html': [1, 2, 3],
     'inventario.html': [1, 2, 3],
     'vacunas.html': [1, 3],
-    'veterinarios.html': [1],
-    'reportes.html': [1],
+    'veterinarios.html': [1, 3],
+    'reportes.html': [1, 3],
     'registro_usuarios.html': [1]
 };
 
@@ -60,6 +60,16 @@ function checkAuthAndPermissions(roleRequired = null) {
 
     // Si la vista es pública (Login, Registro de Usuarios, Recuperación), permitir acceso directo inmediato
     if (esPaginaPublica) {
+        const usuarioSesion = obtenerUsuarioSesion();
+        if (!usuarioSesion) {
+            const sidebar = document.querySelector('.sidebar');
+            if (sidebar) sidebar.style.display = 'none';
+            const mainContainer = document.querySelector('.main-container');
+            if (mainContainer) mainContainer.style.gridTemplateColumns = '1fr';
+        } else {
+            const idRol = obtenerRolSesion() || 2;
+            aplicarFiltrosDOMPorRol(idRol);
+        }
         return true;
     }
 
@@ -135,7 +145,11 @@ function aplicarFiltrosDOMPorRol(idRol) {
     });
 
     // 2. Ocultar o deshabilitar botones de acción en la interfaz (.cta-buttons, .btn-primary, .btn-delete, etc.) según el rol
-    if (idRol === 2) { // Rol Usuario / Operario
+    if (idRol === 1) { // Rol Administrador (Acceso Total y control CRUD completo)
+        document.querySelectorAll('.btn-delete, .btn-table-delete, .btn-edit, .btn-table-edit, .btn-update, [data-action="delete"]').forEach(btn => {
+            btn.style.display = '';
+        });
+    } else if (idRol === 2) { // Rol Usuario / Operario
         // Inhabilitar/Ocultar botones de eliminación de registros (eliminación no permitida para Operario)
         document.querySelectorAll('.btn-delete, .btn-table-delete, [data-action="delete"]').forEach(btn => {
             btn.style.display = 'none';
