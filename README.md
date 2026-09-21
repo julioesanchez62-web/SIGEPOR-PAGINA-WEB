@@ -1,76 +1,198 @@
 # SIGEPOR
 
-Sistema web para la gestion de informacion porcina, usuarios, vacunas y veterinarios.
+<div align="center">
 
-## Estado actual
+![SIGEPOR](https://img.shields.io/badge/SIGEPOR-Sistema%20de%20Gesti%C3%B3n%20Porcina-0A7A4A?style=for-the-badge)
 
-El proyecto cuenta con un frontend HTML/CSS/JavaScript y un backend REST desarrollado con Node.js, Express y MySQL.
+![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=node.js&logoColor=white)
+![Express](https://img.shields.io/badge/Express-000000?style=for-the-badge&logo=express&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=JSON%20web%20tokens&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
+![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
 
-### Avances completados
+</div>
 
-- Pagina principal con presentacion de SIGEPOR, acceso al login y registro de cuenta.
-- Diseno visual responsive para escritorio, tablet y movil.
-- Estilos centralizados en `frontend/assets/css/style.css`.
-- Navegacion lateral en las pantallas internas.
-- Gestion de porcinos con formulario, tabla, estadisticas y persistencia local.
-- Formularios para actualizacion de datos, vacunas y restauracion.
-- Backend organizado por modulos y capas: rutas, validadores, controladores, servicios y repositorios.
-- Conexion a MySQL mediante `mysql2/promise` y pool de conexiones.
-- CORS y parser JSON configurados en Express.
-- Endpoint de verificacion disponible en `GET /health`.
-- CRUD de usuarios disponible mediante la API.
-- Login conectado a MySQL mediante `POST /api/users/login`.
-- El login acepta un usuario o un correo electronico junto con la contrasena.
-- La interfaz guarda los datos basicos del usuario autenticado en `localStorage`.
-- Pruebas automatizadas del backend ejecutadas correctamente.
+## Autores
 
-## Estructura del proyecto
+- Julio Sánchez Rivera
+- Daniel Santiago Polania Correa
+- Ficha SENA: 3235886
+
+## Descripción del proyecto
+
+SIGEPOR es un sistema web de gestión porcina orientado a la administración integral de la producción, sanidad, reproducción, inventarios y trazabilidad de animales. La plataforma combina un frontend en HTML, CSS y JavaScript vanilla con un backend REST desarrollado en Node.js y Express, usando MySQL como motor de persistencia.
+
+El sistema está pensado para apoyar el control operativo del proceso porcino, desde la identificación individual de animales hasta la generación de reportes, alertas y mecanismos de sincronización offline para continuar operando sin conexión.
+
+## Estado del proyecto
+
+El proyecto se encuentra en una etapa de desarrollo funcional con arquitectura modular, autenticación segura, persistencia en base de datos relacional y soporte de operación híbrida online/offline. Se implementan módulos habilitados para producción y gestión operativa del negocio porcícola.
+
+## Características principales
+
+- Autenticación y control de usuarios con JWT y cifrado de contraseñas con `bcryptjs`.
+- Gestión porcina con identificación individual, validación de duplicados y soporte para QR/RFID.
+- Módulo de reproducción con celos, montas/inseminaciones, partos y destetes.
+- Módulo de salud con tratamientos, vacunación y historial sanitario.
+- Módulo de inventarios con registro de alimentos e insumos y alertas automáticas de stock mínimo.
+- Módulo de reportes y alertas con exportación a PDF y CSV/Excel.
+- Modo offline con cola de sincronización local y envío automático a la API (`POST /api/sync`) cuando la red vuelve a estar disponible.
+- Frontend dinámico con patrones de interacción en navegador y manejo seguro de sesión.
+
+## Módulos del sistema
+
+### 1. Autenticación y control de usuarios
+
+- Registro y login de usuarios.
+- Cifrado de contraseñas usando `bcryptjs`.
+- Emisión de tokens JWT para sesiones autenticadas.
+- Control de acceso por roles (Administrador, Empleado, Veterinario, Cliente).
+- Middleware de validación para rutas protegidas.
+
+### 2. Gestión porcina
+
+- Registro de porcinos y manejo de identificación.
+- Validación de duplicados por clave de identificación.
+- Registro de información productiva y sanitaria.
+- Integración con MySQL como origen central de datos.
+
+### 3. Reproducción
+
+- Manejo de eventos reproductivos.
+- Control de celos, montas, inseminaciones y partos.
+- Registro de destetes y cálculo de proximidad de partos.
+
+### 4. Salud y sanidad
+
+- Tratamientos médicos.
+- Programación y seguimiento de vacunas.
+- Historial sanitario por animal.
+- Alertas y reportes de salud.
+
+### 5. Inventarios
+
+- Registro de alimentos, materiales e insumos.
+- Control de cantidades y alertas por stock mínimo.
+- Seguimiento operativo para prevención de faltantes.
+
+### 6. Modo Offline y sincronización automática
+
+- Registro de operaciones pendientes en cola local cuando no hay conexión.
+- Escucha de eventos de red (`online` / `offline`).
+- Sincronización automática al restablecer Internet.
+- Envío de eventos pendientes al backend mediante `POST /api/sync`.
+
+### 7. Reportes y alertas
+
+- Generación de indicadores de rendimiento y sanidad.
+- Alertas por condición del sistema, inventario y producción.
+- Exportación de reportes en PDF, CSV y Excel.
+- Trazabilidad por animal.
+
+## Arquitectura del sistema
+
+El proyecto se estructura sobre una arquitectura en capas orientada a responsabilidades y separación de lógica.
+
+### Patrones aplicados
+
+- Layered Architecture: rutas, validadores, controladores, servicios y repositorios.
+- Observer: mecanismos de alerta y sincronización reactiva ante cambios de conectividad.
+- Visitor: generación y exportación de reportes y trazabilidad.
+
+### Organización principal
 
 ```text
 SIGEPOR PAGINA WEB/
-├── backend/                    # Backend legacy del prototipo inicial
-├── database/
-│   └── sigepor_database.sql    # Esquema y datos de referencia del prototipo
-├── frontend/
-│   └── assets/
-│       ├── index.html
-│       ├── registro_usuarios.html
-│       ├── registroporcino.html
-│       ├── vacunas.html
-│       ├── actualizacion_datos.html
-│       ├── restaurar.html
-│       ├── css/style.css
-│       ├── images/
-│       └── js/script.js
-├── SIGEPOR_BACKEND/            # Backend activo
+├── backend/                     # Backend Node.js / Express
 │   ├── src/
 │   │   ├── app.js
 │   │   ├── server.js
 │   │   ├── config/
+│   │   ├── controllers/
 │   │   ├── middlewares/
+│   │   ├── modules/
 │   │   ├── routes/
-│   │   └── modules/users/
-│   ├── test/health.test.js
+│   │   └── utils/
+│   ├── test/
 │   ├── package.json
 │   └── README.md
-└── README.md
+├── database/
+│   ├── sigepor_database.sql
+│   └── sigepor_database_unificada.sql
+├── frontend/
+│   └── assets/
+│       ├── css/
+│       ├── js/
+│       ├── index.html
+│       ├── registro_usuarios.html
+│       ├── registroporcino.html
+│       ├── vacunas.html
+│       ├── veterina rios.html
+│       ├── reportes.html
+│       └── ...
+├── README.md
+└── package.json
 ```
 
-El backend activo es `SIGEPOR_BACKEND`. La carpeta `backend` corresponde a una implementacion anterior y no debe utilizarse para iniciar la aplicacion actual.
+## Tecnologías y dependencias
 
-## Tecnologias
+### Backend
 
-- HTML5, CSS3 y JavaScript vanilla.
-- Node.js y CommonJS.
-- Express 4.
-- MySQL 8.
-- `mysql2/promise` para acceso a datos.
-- `bcryptjs` como dependencia preparada para el manejo seguro de contrasenas.
-- `supertest` y Node Test Runner para pruebas.
+- Node.js
+- Express
+- `mysql2/promise`
+- `dotenv`
+- `bcryptjs`
+- `jsonwebtoken`
+- `cors`
+- `supertest`
 
-## Configuracion de MySQL
+### Frontend
 
-El backend actual utiliza la base de datos `sigepor`. Crea el archivo `SIGEPOR_BACKEND/.env` con una configuracion equivalente a esta y reemplaza los valores segun tu instalacion:
+- HTML5
+- CSS3
+- JavaScript Vanilla
+- Fetch API
+- `localStorage`
+- Queue Offline Manager / sincronización local
+
+### Base de datos
+
+- MySQL 8
+
+## Requisitos previos
+
+Antes de ejecutar el proyecto, asegúrate de tener instalado:
+
+- Node.js 18 o superior
+- MySQL 8
+- Git
+- Visual Studio Code (opcional, recomendado)
+
+## Instalación y configuración
+
+### Paso 1: Clonar el repositorio
+
+```bash
+git clone https://github.com/julioesanchez62-web/SIGEPOR-PAGINA-WEB.git
+cd SIGEPOR-PAGINA-WEB
+```
+
+### Paso 2: Configurar la base de datos MySQL
+
+Importa el esquema base en MySQL usando el archivo:
+
+```bash
+database/sigepor_database.sql
+```
+
+Luego crea la base de datos y verifica que las tablas requeridas existan antes de arrancar la API.
+
+### Paso 3: Configurar variables de entorno
+
+Dentro de la carpeta `backend`, crea un archivo `.env` con la siguiente estructura:
 
 ```env
 PORT=3001
@@ -79,148 +201,144 @@ DB_PORT=3306
 DB_USER=root
 DB_PASSWORD=
 DB_NAME=sigepor
+JWT_SECRET=sigepor_secret_key_2026
 ```
 
-La tabla utilizada para el login es `usuarios` y contiene, entre otros, estos campos:
+> Importante: nunca publiques el archivo `.env` ni compartas credenciales reales en repositorios públicos.
 
-```text
-id, nombre, email, usuario, contrasena, fecha_registro, activo
-```
-
-En la base real el nombre de la columna de contrasena es `contraseña`. El repositorio la consulta usando ese nombre y expone los datos publicos mediante alias cuando corresponde.
-
-No publiques el archivo `.env` ni incluyas contrasenas reales en el repositorio.
-
-## Instalacion y ejecucion
-
-Desde la raiz del proyecto:
+### Paso 4: Instalar dependencias del backend
 
 ```bash
-cd SIGEPOR_BACKEND
+cd backend
 npm install
+```
+
+### Paso 5: Ejecutar el backend
+
+```bash
 npm run dev
 ```
 
-El servidor queda disponible en:
+O también:
+
+```bash
+npm start
+```
+
+La API quedará disponible en:
 
 ```text
 http://localhost:3001
 ```
 
-Para abrir el frontend, abre `frontend/assets/index.html` con Live Server o sirve la carpeta `frontend/assets` mediante un servidor estatico. El formulario de login realiza la peticion a:
+### Paso 6: Ejecutar el frontend
 
-```text
-POST http://localhost:3001/api/users/login
-```
+Sirve la carpeta `frontend/assets` con un servidor estático o con Live Server en Visual Studio Code.
 
-## Login
+Ejemplo con Live Server:
 
-El frontend envia este formato:
+1. Abre la carpeta `frontend/assets`.
+2. Haz clic derecho en `index.html`.
+3. Selecciona `Open with Live Server`.
 
-```json
+## Documentación de endpoints principales
+
+### API REST de SIGEPOR
+
+| Método | Ruta | Descripción | Estado esperado |
+| --- | --- | --- | --- |
+| GET | `/health` | Verifica que el backend está activo. | `200 OK` |
+| POST | `/api/auth/login` | Login del sistema con email o usuario y contraseña. | `200 OK` / `401` |
+| POST | `/api/users` | Registro de nuevo usuario. | `201 Created` |
+| GET | `/api/users` | Consulta usuarios registrados. | `200 OK` |
+| POST | `/api/porcinos` | Registro de porcino. | `201 Created` |
+| GET | `/api/porcinos` | Listado de porcinos. | `200 OK` |
+| POST | `/api/reproduccion` | Registro de eventos reproductivos. | `201 Created` |
+| GET | `/api/reproduccion` | Consulta de eventos reproductivos. | `200 OK` |
+| POST | `/api/sanidad` | Registro de vacunas o salud. | `201 Created` |
+| GET | `/api/sanidad` | Consulta de información sanitaria. | `200 OK` |
+| POST | `/api/inventario` | Registro de alimentos o insumos. | `201 Created` |
+| GET | `/api/inventario` | Consulta de inventario. | `200 OK` |
+| POST | `/api/sync` | Sincronización de cola offline. | `200 OK` |
+| GET | `/api/reportes` | Consulta de reportes y alertas. | `200 OK` |
+
+### Ejemplo de login
+
+```http
+POST /api/auth/login
+Content-Type: application/json
+
 {
-  "identificador": "usuario_o_correo",
+  "identificador": "usuario_o_email",
   "contraseña": "tu_contraseña"
 }
 ```
 
-El backend busca el valor recibido en las columnas `usuario` y `email`. Respuestas principales:
+### Respuestas típicas
 
-- `200`: credenciales validas.
-- `400`: faltan el identificador o la contrasena.
-- `401`: usuario, correo o contrasena incorrectos.
-- `500`: error interno o de conexion con MySQL.
+- `200 OK`: operación exitosa.
+- `201 Created`: recurso creado con éxito.
+- `400 Bad Request`: datos faltantes o inválidos.
+- `401 Unauthorized`: credenciales inválidas o token no válido.
+- `403 Forbidden`: el usuario no tiene permisos suficientes.
+- `404 Not Found`: recurso no encontrado.
+- `500 Internal Server Error`: error del servidor o de base de datos.
 
-## Endpoints de usuarios
+## Seguridad
 
-La API se monta bajo `/api/users`:
+La aplicación implementa buenas prácticas básicas de seguridad para la gestión de usuarios y acceso a recursos:
 
-| Metodo | Ruta | Funcion |
-| --- | --- | --- |
-| POST | `/api/users` | Crear usuario |
-| POST | `/api/users/login` | Iniciar sesion |
-| GET | `/api/users` | Consultar usuarios |
-| GET | `/api/users/:id` | Consultar usuario por ID |
-| PUT | `/api/users/:id` | Actualizar usuario |
-| PATCH | `/api/users/:id` | Actualizacion parcial |
-| DELETE | `/api/users/:id` | Eliminar usuario |
-| GET | `/health` | Verificar disponibilidad del backend |
+- Contraseñas cifradas con `bcryptjs`.
+- Tokens JWT para gestión de sesiones.
+- Middleware de autenticación para rutas restringidas.
+- Validación de roles mediante RBAC.
+- Restricción de acceso por perfil.
 
 ## Pruebas
 
-Ejecuta las pruebas desde `SIGEPOR_BACKEND`:
+El backend incluye pruebas automatizadas con Node Test Runner y Supertest.
+
+Para ejecutarlas:
 
 ```bash
+cd backend
 npm test
 ```
 
-Tambien se verifico manualmente que:
+## Flujo recomendado de uso
 
-- El backend inicia con la configuracion de MySQL disponible.
-- La ruta `/api/users/login` responde `400` cuando faltan datos.
-- Las credenciales invalidas responden `401`.
-- La consulta de login busca por usuario o correo.
-- El proyecto no presenta errores de sintaxis en los archivos principales del flujo de autenticacion.
+1. Crear la base de datos desde `database/sigepor_database.sql`.
+2. Configurar `.env` con las credenciales MySQL y JWT.
+3. Ejecutar el backend con `npm run dev`.
+4. Iniciar el frontend con Live Server.
+5. Registrar un usuario y autenticarse.
+6. Usar módulos de porcinos, reproducción, sanidad, inventario y reportes.
+7. Validar sincronización offline cuando la conexión se interrumpe.
 
-## Pendientes recomendados
+## Estado de desarrollo y próximos pasos
 
-- Aplicar `bcrypt` al crear y actualizar contrasenas; el flujo actual compara el valor almacenado y debe migrarse completamente a hashes.
-- Agregar tokens o sesiones para proteger los endpoints privados.
-- Evitar guardar informacion de autenticacion sensible en `localStorage`.
-- Separar la logica inline de `index.html` en un modulo JavaScript unico.
-- Agregar pruebas de integracion para login valido, login por usuario, login por correo y credenciales invalidas.
-- Completar las vistas de reportes y configuracion.
+El proyecto ya contempla un conjunto de capacidades operativas y funcionales avanzadas. Como próximos pasos recomendados se destacan:
 
-## Documentacion adicional
+- Fortalecer la validación de datos y sanitización de entradas.
+- Expandir pruebas de integración para casos críticos de autenticación y sincronización.
+- Mejorar manejo de sesiones y expiración de tokens.
+- Rediseñar la estructura del frontend para modularizar más la lógica del cliente.
+- Completar la automatización de reportes PDF/Excel con formato empresarial.
+- Estabilizar la sincronización offline con auditoría y reconciliación de filas pendientes.
 
-- [Documentacion del backend](SIGEPOR_BACKEND/README.md)
+## Documentación adicional
+
+- [Backend](backend/README.md)
+- [Base de datos](database/sigepor_database.sql)
 - [Arquitectura SQL visual](frontend/assets/ARQUITECTURA_SQL.html)
 - [Resumen de mejoras visuales](frontend/assets/RESUMEN_MEJORAS.html)
-- [Ejemplos de imagenes](frontend/assets/EJEMPLOS_IMAGENES.html)
+- [Ejemplos de imágenes](frontend/assets/EJEMPLOS_IMAGENES.html)
 - [Prueba de logos](frontend/assets/PRUEBA_LOGOS.html)
 
-##actualizacion 20sep2026 
-1. Núcleo del Motor Offline (frontend/assets/js/offline_sync.js)
-Procesamiento de Cola Saliente (processOfflineQueue): Al reconectarse a Internet o al backend, recorre la cola sigepor_offline_queue enviando secuencialmente a la API MySQL cada solicitud pendiente (POST, PUT, DELETE).
-Sincronización Entrante y Refresco Global (refrescarUIActual): Al finalizar la sincronización saliente o detectar conexión activa, dispara la recarga de la UI y los arreglos de memoria de la página en uso.
-Insignia de Red Flotante (renderSyncBadge): Notifica en tiempo real el estado actual (🟢 En línea, 🟠 Modo Offline (X guardados localmente), ⚡ X pendientes por sincronizar, 🔄 Sincronizando...) e incluye botón "Sincronizar Ya".
-Helper fetchConFallbackOffline: Permite realizar solicitudes de mutación transparentes, encolando automáticamente si la red falla o está fuera de línea.
-2. Módulos Integrados
-🐷 Módulo de Porcinos (
-registro_porcino.js
-)
-Lectura híbrida en cargarPorcinos(): Carga desde MySQL cuando hay conexión y actualiza el caché sigeporPigs. Si falla la red, lee directamente de sigeporPigs.
-Registro (POST), edición (PUT) y eliminación (DELETE) con actualización optimista inmediata de la tabla y estadísticas, registrando cambios en la cola offline si no hay señal.
-Caché local de veterinarios (sigepor_cache_veterinarios) para autocompletar el selector sin red.
-🩺 Módulo de Vacunas (
-vacunas.html
-)
-Inclusión del script offline_sync.js.
-Registro y eliminación sincronizados con sigeporVaccines en localStorage.
-Recálculo de estadísticas locales (Total, Aplicadas, Pendientes) a partir del caché local cuando el servidor no responde.
-📦 Módulo de Inventario (
-inventario.js
-)
-Sincronización de stock de alimento balanceado mediante el caché sigeporInventario.
-Operaciones de adición y eliminación con fallback offline y actualización de tarjetas de total en kilos.
-🍼 Módulo de Eventos Reproductivos (
-reproduccion.js
-)
-Almacenamiento en caché de eventos reproductivos (sigeporReproduccion).
-Registro offline de cubriciones, partos (con lechones nacidos) y destetes, recalculando contadores en pantalla.
-👨‍⚕️ Módulo de Veterinarios (
-veterinarios.html
-)
-Integración de offline_sync.js.
-Registro, consulta por ID, actualización y eliminación de personal veterinario con respaldo en sigeporVeterinarios.
-👤 Módulo de Usuarios (
-registro_usuarios.html
-)
-Integración de offline_sync.js.
-Guardado, búsqueda, edición y borrado de perfiles de usuario con fallback local en sigeporUsuarios.
-📊 Módulo de Reportes & Trazabilidad (
-reportes.js
-)
-cargarAlertasSistema(): En caso de no tener señal, genera alertas automáticas a partir de los datos en caché (sigeporPigs, sigeporVaccines, sigeporReproduccion).
-exportarDatosModulo(): Permite descargar reportes CSV y JSON extraídos directamente de la memoria del navegador cuando el backend está inalcanzable.
-buscarTrazabilidadPorcino(): Consulta e imprime la ficha técnica e historial productivo buscando en la base local si no hay conexión a MySQL.
+## Licencia
+
+Este proyecto fue desarrollado como trabajo de aplicación y gestión técnica para la gestión porcina y puede adaptarse según la política institucional del equipo de desarrollo.
+
+---
+
+SIGEPOR © 2026 - Sistema de Gestión Porcina
