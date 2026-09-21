@@ -13,14 +13,19 @@
 const express = require('express');
 const usersController = require('./users.controller');
 const userValidator = require('./users.validator');
+const { verifyToken, requireRole } = require('../../middlewares/auth.middleware');
 
 const router = express.Router();
 
 /**
+ * POST /login (POST /users/login)
+ * Ruta pública para el login de usuarios
+ */
+router.post('/login', usersController.login);
+
+/**
  * POST / (POST /users)
- * Crear nuevo usuario
- * Body: { nombre, correo, contraseña, idRol }
- * Respuestas: 201, 400, 404, 409, 500
+ * Crear nuevo usuario (Registro público o administrativo)
  */
 router.post(
   '/',
@@ -29,43 +34,12 @@ router.post(
 );
 
 /**
- * POST /login (POST /users/login)
- * 🔥 NUEVA RUTA PARA EL LOGIN DE USUARIOS
- * Body: { correo, contraseña }
- * Respuestas: 200, 400, 401, 500
+ * Rutas de administración de usuarios protegidas con JWT y RBAC (Solo Administrador)
  */
-router.post('/login',usersController.login);
+router.get('/', verifyToken, requireRole(['Administrador']), usersController.getUsers);
+router.get('/:id', verifyToken, requireRole(['Administrador']), usersController.getUserById);
+router.put('/:id', verifyToken, requireRole(['Administrador']), usersController.updateUser);
+router.patch('/:id', verifyToken, requireRole(['Administrador']), usersController.patchUser);
+router.delete('/:id', verifyToken, requireRole(['Administrador']), usersController.deleteUser);
 
-/**
- * GET / (GET /users)
- * Obtener lista de usuarios
- */
-router.get('/', usersController.getUsers);
-
-/**
- * GET /:id (GET /users/:id)
- * Obtener usuario por ID
- */
-router.get('/:id', usersController.getUserById);
-
-/**
- * PUT /:id (PUT /users/:id)
- * Actualizar usuario por ID
- */
-router.put('/:id', usersController.updateUser);
-
-/**
- * PATCH /:id (PATCH /users/:id)
- * Actualización parcial (Ej: cambiar estado activo)
- * 🔥 INTEGRADO Y REVISADO CON ÉXITO
- */
-router.patch('/:id', usersController.patchUser);
-
-/**
- * DELETE /:id (DELETE /users/:id)
- * Eliminar usuario por ID
- */
-router.delete('/:id', usersController.deleteUser);
-
-// Exportación única oficial del enrutador
 module.exports = router;

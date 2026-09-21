@@ -2095,3 +2095,55 @@ input[type="email"]:focus {
     color: #ec6880;
 }
 
+/* Pestañas de Selección de Rol (HU-06 RBAC) */
+.role-selector-tabs {
+    display: flex;
+    gap: 6px;
+    background: #f7fafc;
+    padding: 6px;
+    border-radius: 16px;
+    margin: 15px 0 20px 0;
+    border: 1px solid #e2e8f0;
+    justify-content: space-between;
+}
+
+.role-tab {
+    flex: 1;
+    padding: 8px 10px;
+    border: none;
+    background: transparent;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #4a5568;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    white-space: nowrap;
+    text-align: center;
+}
+
+.role-tab:hover {
+    background: #edf2f7;
+    color: #2d3748;
+}
+
+.role-tab.active {
+    background: linear-gradient(135deg, #ec6880 0%, #e0526b 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(236, 104, 128, 0.3);
+}
+
+body.theme-dark .role-selector-tabs {
+    background: #1a202c;
+    border-color: #2d3748;
+}
+
+body.theme-dark .role-tab {
+    color: #a0aec0;
+}
+
+body.theme-dark .role-tab.active {
+    background: linear-gradient(135deg, #e0526b 0%, #c53030 100%);
+    color: white;
+}
+

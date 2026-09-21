@@ -22,12 +22,21 @@ const statHealthy = document.getElementById('statHealthy');
 const statObserving = document.getElementById('statObserving');
 const statSick = document.getElementById('statSick');
 
+function obtenerAuthHeaders() {
+    const token = localStorage.getItem('sigepor_token') || localStorage.getItem('token');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+    return headers;
+}
+
 // 1. Cargar veterinarios en el <select>
 async function cargarVeterinariosEnSelect() {
     if (!selectVeterinario) return;
 
     try {
-        const respuesta = await fetch(`${API_BASE_PORCINOS}/veterinarios`);
+        const respuesta = await fetch(`${API_BASE_PORCINOS}/veterinarios`, { headers: obtenerAuthHeaders() });
         if (respuesta.ok) {
             const resultado = await respuesta.json();
             if (resultado.status === 'success' && Array.isArray(resultado.data)) {
@@ -61,7 +70,7 @@ function poblarSelectVeterinarios(lista) {
 async function cargarPorcinos() {
     let porcinos = [];
     try {
-        const respuesta = await fetch(API_BASE_PORCINOS);
+        const respuesta = await fetch(API_BASE_PORCINOS, { headers: obtenerAuthHeaders() });
         if (respuesta.ok) {
             const resultado = await respuesta.json();
             if (resultado.status === 'success') {
@@ -127,6 +136,10 @@ function renderizarTablaPorcinos(porcinos) {
         `;
         pigTableBody.appendChild(tr);
     });
+
+    if (window.aplicarFiltrosDOMPorRol && window.obtenerRolSesion) {
+        window.aplicarFiltrosDOMPorRol(window.obtenerRolSesion());
+    }
 }
 
 function actualizarEstadisticasCalculadas(porcinos) {
@@ -166,12 +179,12 @@ if (pigForm) {
             const respuesta = typeof fetchConFallbackOffline === 'function'
                 ? await fetchConFallbackOffline(API_BASE_PORCINOS, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: obtenerAuthHeaders(),
                     body: JSON.stringify(datos)
                 })
                 : await fetch(API_BASE_PORCINOS, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: obtenerAuthHeaders(),
                     body: JSON.stringify(datos)
                 });
 
@@ -211,7 +224,7 @@ async function consultarPorcino() {
     }
 
     try {
-        const respuesta = await fetch(`${API_BASE_PORCINOS}/${id}`);
+        const respuesta = await fetch(`${API_BASE_PORCINOS}/${id}`, { headers: obtenerAuthHeaders() });
         if (respuesta.ok) {
             const resultado = await respuesta.json();
             if (resultado.status === 'success') {
@@ -269,12 +282,12 @@ async function actualizarPorcino() {
         const respuesta = typeof fetchConFallbackOffline === 'function'
             ? await fetchConFallbackOffline(`${API_BASE_PORCINOS}/${id}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: obtenerAuthHeaders(),
                 body: JSON.stringify(datos)
             })
             : await fetch(`${API_BASE_PORCINOS}/${id}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: obtenerAuthHeaders(),
                 body: JSON.stringify(datos)
             });
 
@@ -303,6 +316,10 @@ async function actualizarPorcino() {
 
 // 6. Borrar porcino (DELETE)
 async function borrarPorcino() {
+    if (window.obtenerRolSesion && window.obtenerRolSesion() === 2) {
+        alert('Acceso Denegado: El rol Operario / Empleado no tiene permisos para eliminar registros.');
+        return;
+    }
     let id = inputPigId.value.trim();
     if (!id) {
         id = prompt('Ingrese el ID o Identificación del porcino que desea eliminar:');
@@ -314,8 +331,8 @@ async function borrarPorcino() {
 
     try {
         const respuesta = typeof fetchConFallbackOffline === 'function'
-            ? await fetchConFallbackOffline(`${API_BASE_PORCINOS}/${id}`, { method: 'DELETE' })
-            : await fetch(`${API_BASE_PORCINOS}/${id}`, { method: 'DELETE' });
+            ? await fetchConFallbackOffline(`${API_BASE_PORCINOS}/${id}`, { method: 'DELETE', headers: obtenerAuthHeaders() })
+            : await fetch(`${API_BASE_PORCINOS}/${id}`, { method: 'DELETE', headers: obtenerAuthHeaders() });
 
         const resultado = await respuesta.json();
 

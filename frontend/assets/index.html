@@ -91,11 +91,27 @@
                         </div>
                         <div class="logo-glow-login"></div>
                     </div>
-                    <h2>INGRESO DE USUARIO</h2>
-                    <p class="login-subtitle">Accede a tu cuenta SIGEPOR</p>
+                    
+                    <!-- Pestañas de Control de Acceso por Roles (RBAC) -->
+                    <div class="role-selector-tabs" id="roleSelectorTabs">
+                        <button type="button" class="role-tab active" data-role="1" onclick="seleccionarRolIngreso(1, 'Administrador', '👑')">
+                            👑 Administrador
+                        </button>
+                        <button type="button" class="role-tab" data-role="3" onclick="seleccionarRolIngreso(3, 'Veterinario', '👨‍⚕️')">
+                            👨‍⚕️ Veterinario
+                        </button>
+                        <button type="button" class="role-tab" data-role="2" onclick="seleccionarRolIngreso(2, 'Usuario / Empleado', '👤')">
+                            👤 Usuario / Empleado
+                        </button>
+                    </div>
+
+                    <h2 id="loginTitle">👑 INGRESO DE ADMINISTRADOR</h2>
+                    <p class="login-subtitle" id="loginSubtitle">Acceso al portal de control y administración global SIGEPOR</p>
                 </header>
                 
                 <form id="loginForm">
+                    <input type="hidden" id="loginRolEsperado" value="1">
+
                     <label for="loginIdentificador">Ingrese su usuario o correo</label>
                     <input type="text" id="loginIdentificador" placeholder="Usuario o correo" autocomplete="username" required>
 
@@ -125,6 +141,7 @@
     </section>
 </main>
 
+    <script src="js/auth_guard.js"></script>
     <script src="js/script.js"></script>
     <script src="js/offline_sync.js"></script>
     <script>

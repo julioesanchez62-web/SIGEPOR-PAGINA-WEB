@@ -17,8 +17,14 @@
             </div>
             <ul>
                 <li><a href="index.html">🏠 Inicio</a></li>
-                
-                
+                <li><a href="registro_usuarios.html" class="active">👤 Usuarios</a></li>
+                <li><a href="registroporcino.html">🐷 Gestión Porcina</a></li>
+                <li><a href="reproduccion.html">🍼 Reproducción</a></li>
+                <li><a href="vacunas.html">🩺 Vacunas</a></li>
+                <li><a href="inventario.html">📦 Inventario</a></li>
+                <li><a href="veterinarios.html">👨‍⚕️ Veterinarios</a></li>                 
+                <li><a href="reportes.html">📊 Reportes & Alertas</a></li>
+                <li><a href="javascript:void(0)" onclick="cerrarSesion()">🔒 Cerrar Sesión</a></li>
             </ul>
         </nav>
 
@@ -65,6 +71,16 @@
         <label>Contraseña:</label>
         <input type="password" id="input-contrasena" placeholder="contraseña">
     </div>
+
+    <div class="field" style="grid-column: span 2;">
+        <label>Rol de Usuario / Permisos (RBAC):</label>
+        <select id="input-rol" style="padding: 10px; border-radius: 8px; border: 1px solid #cbd5e0; width: 100%;">
+            <option value="2" selected>👤 Empleado / Operador (Rol 2)</option>
+            <option value="3">👨‍⚕️ Veterinario (Rol 3)</option>
+            <option value="1">👑 Administrador (Rol 1)</option>
+            <option value="4">👥 Cliente (Rol 4)</option>
+        </select>
+    </div>
     
     <div class="form-actions">
         <!-- Quitamos type="submit" para controlar el envío mediante JS de forma segura -->
@@ -90,11 +106,21 @@
     </div>
 
     <script src="js/offline_sync.js"></script>
+    <script src="js/auth_guard.js"></script>
     <script src="js/script.js"></script>
 
     <script>
         const API_URL = 'http://localhost:3001/api/users';
         const LOCAL_KEY_USERS = 'sigeporUsuarios';
+
+        function obtenerAuthHeaders() {
+            const token = localStorage.getItem('sigepor_token') || localStorage.getItem('token');
+            const headers = { 'Content-Type': 'application/json' };
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            return headers;
+        }
 
         const formulario = document.getElementById('formulario-usuarios');
         const btnGuardar = document.getElementById('btn-guardar');
@@ -103,6 +129,7 @@
         const inputCorreo = document.getElementById('input-correo');
         const inputUsuario = document.getElementById('input-usuario');
         const inputContrasena = document.getElementById('input-contrasena');
+        const inputRol = document.getElementById('input-rol');
 
         // 🟢 LÓGICA DEL BOTÓN: GUARDAR CAMBIOS
         if (btnGuardar) {
@@ -114,7 +141,7 @@
                     correo: inputCorreo.value.trim(),
                     usuario: inputUsuario.value.trim(),
                     contraseña: inputContrasena.value,
-                    idRol: 2
+                    idRol: parseInt(inputRol.value, 10)
                 };
 
                 if (!datosUsuario.nombre || !datosUsuario.correo || !datosUsuario.contraseña) {
@@ -126,12 +153,12 @@
                     const response = typeof fetchConFallbackOffline === 'function'
                         ? await fetchConFallbackOffline(API_URL, {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
+                            headers: obtenerAuthHeaders(),
                             body: JSON.stringify(datosUsuario)
                         })
                         : await fetch(API_URL, {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
+                            headers: obtenerAuthHeaders(),
                             body: JSON.stringify(datosUsuario)
                         });
 
@@ -169,13 +196,14 @@
             }
 
             try {
-                const response = await fetch(`${API_URL}/${id}`);
+                const response = await fetch(`${API_URL}/${id}`, { headers: obtenerAuthHeaders() });
                 if (response.ok) {
                     const resultado = await response.json();
                     const userObj = resultado.data || resultado;
                     inputNombre.value = userObj.nombre || '';
                     inputCorreo.value = userObj.correo || userObj.email || '';
                     inputUsuario.value = userObj.usuario || '';
+                    if (userObj.idRol) inputRol.value = String(userObj.idRol);
                     inputContrasena.value = '';
                     alert('Datos cargados de forma exitosa desde la base de datos.');
                     return;
@@ -190,6 +218,7 @@
                 inputNombre.value = userObj.nombre || '';
                 inputCorreo.value = userObj.correo || userObj.email || '';
                 inputUsuario.value = userObj.usuario || '';
+                if (userObj.idRol) inputRol.value = String(userObj.idRol);
                 inputContrasena.value = '';
                 alert('Datos cargados desde el almacenamiento local.');
             } else {
@@ -211,19 +240,19 @@
                 correo: inputCorreo.value.trim(),
                 usuario: inputUsuario.value.trim(),
                 contraseña: inputContrasena.value,
-                idRol: 2
+                idRol: parseInt(inputRol.value, 10)
             };
 
             try {
                 const response = typeof fetchConFallbackOffline === 'function'
                     ? await fetchConFallbackOffline(`${API_URL}/${id}`, {
                         method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: obtenerAuthHeaders(),
                         body: JSON.stringify(datosActualizados)
                     })
                     : await fetch(`${API_URL}/${id}`, {
                         method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: obtenerAuthHeaders(),
                         body: JSON.stringify(datosActualizados)
                     });
 
@@ -260,8 +289,8 @@
 
             try {
                 const response = typeof fetchConFallbackOffline === 'function'
-                    ? await fetchConFallbackOffline(`${API_URL}/${id}`, { method: 'DELETE' })
-                    : await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+                    ? await fetchConFallbackOffline(`${API_URL}/${id}`, { method: 'DELETE', headers: obtenerAuthHeaders() })
+                    : await fetch(`${API_URL}/${id}`, { method: 'DELETE', headers: obtenerAuthHeaders() });
 
                 const resultado = await response.json();
 

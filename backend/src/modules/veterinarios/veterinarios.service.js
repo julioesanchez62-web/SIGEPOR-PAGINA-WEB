@@ -7,6 +7,7 @@
  * - Validaciones de existencia y duplicados
  */
 
+const bcrypt = require('bcryptjs');
 const veterinariosRepository = require('./veterinarios.repository');
 
 /**
@@ -47,6 +48,12 @@ async function createVeterinario(datos) {
     }
   }
 
+  // Encriptar la contraseña si se proporciona
+  if (datos.contraseña && !datos.contraseña.startsWith('$2a$') && !datos.contraseña.startsWith('$2b$')) {
+    const salt = await bcrypt.genSalt(10);
+    datos.contraseña = await bcrypt.hash(datos.contraseña, salt);
+  }
+
   return await veterinariosRepository.createVeterinario(datos);
 }
 
@@ -59,6 +66,12 @@ async function updateVeterinario(id, datos) {
     const error = new Error(`El veterinario con ID ${id} no fue encontrado.`);
     error.statusCode = 404;
     throw error;
+  }
+
+  // Encriptar contraseña si viene modificada
+  if (datos.contraseña && !datos.contraseña.startsWith('$2a$') && !datos.contraseña.startsWith('$2b$')) {
+    const salt = await bcrypt.genSalt(10);
+    datos.contraseña = await bcrypt.hash(datos.contraseña, salt);
   }
 
   return await veterinariosRepository.updateVeterinario(id, datos);

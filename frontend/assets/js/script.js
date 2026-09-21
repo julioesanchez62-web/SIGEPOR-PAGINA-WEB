@@ -1,6 +1,36 @@
 // ==========================================
-// 🔐 SECCIÓN: INICIO DE SESIÓN (BYPASS TEXTO PLANO)
+// 🔐 SECCIÓN: INICIO DE SESIÓN CON ROLES RBAC (HU-06)
 // ==========================================
+
+function seleccionarRolIngreso(rolId, rolNombre, icono) {
+    const hiddenRol = document.getElementById('loginRolEsperado');
+    if (hiddenRol) hiddenRol.value = rolId;
+
+    const titleEl = document.getElementById('loginTitle');
+    const subTitleEl = document.getElementById('loginSubtitle');
+
+    if (titleEl) titleEl.textContent = `${icono} INGRESO DE ${rolNombre.toUpperCase()}`;
+    if (subTitleEl) {
+        if (Number(rolId) === 1) {
+            subTitleEl.textContent = 'Acceso al portal de control y administración global SIGEPOR';
+        } else if (Number(rolId) === 3) {
+            subTitleEl.textContent = 'Acceso al portal médico veterinario y control de sanidad';
+        } else {
+            subTitleEl.textContent = 'Acceso a gestión de granja porcina e inventarios';
+        }
+    }
+
+    const tabs = document.querySelectorAll('.role-tab');
+    tabs.forEach(tab => {
+        if (Number(tab.getAttribute('data-role')) === Number(rolId)) {
+            tab.classList.add('active');
+        } else {
+            tab.classList.remove('active');
+        }
+    });
+}
+window.seleccionarRolIngreso = seleccionarRolIngreso;
+
 document.getElementById('loginForm')?.addEventListener('submit', async function(e) {
     e.preventDefault();
 
@@ -16,17 +46,15 @@ document.getElementById('loginForm')?.addEventListener('submit', async function(
                       document.querySelector('input[type="password"]');
                       
     const errorBox = document.getElementById('errorBox');
+    const rolEsperado = Number(document.getElementById('loginRolEsperado')?.value || 1);
 
     const valorCorreo = inputUser ? inputUser.value.trim() : "";
     const valorPassword = inputPass ? inputPass.value : "";
 
-    // 2. Construcción del JSON idéntico a tu Postman funcional
-    const datosBypass = {
+    const datosLogin = {
         correo: valorCorreo,      
         contraseña: valorPassword  
     };
-
-    console.log("✈️ Enviando solicitud al bypass de MySQL:", datosBypass);
 
     if (!valorCorreo || !valorPassword) {
         if (errorBox) {
@@ -38,42 +66,54 @@ document.getElementById('loginForm')?.addEventListener('submit', async function(
     }
 
     try {
-        // 3. Petición HTTP directa al endpoint de usuarios
+        // Petición HTTP al backend
         const respuesta = await fetch('http://localhost:3001/api/users/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(datosBypass)
+            body: JSON.stringify(datosLogin)
         });
 
         const resultado = await respuesta.json();
-        console.log("📥 Respuesta del servidor MySQL:", resultado);
 
         if (respuesta.ok) {
             if (errorBox) errorBox.style.display = "none";
-            alert("¡Bienvenido al sistema SIGEPOR!");
             
-            // Almacenamos la sesión y el token en el navegador
             const tokenGuardar = resultado.token || (resultado.data && resultado.data.token) || (resultado.user && resultado.user.token);
             if (tokenGuardar) {
                 localStorage.setItem('token', tokenGuardar);
                 localStorage.setItem('sigepor_token', tokenGuardar);
             }
-            localStorage.setItem('usuarioSesion', JSON.stringify(resultado.user || resultado.data || resultado));
-            window.location.href = "registroporcino.html";
+
+            const usuarioSesion = resultado.user || resultado.data || resultado;
+            localStorage.setItem('usuarioSesion', JSON.stringify(usuarioSesion));
+            localStorage.setItem('usuario_sigepor', JSON.stringify(usuarioSesion));
+
+            const idRol = Number(usuarioSesion.idRol || usuarioSesion.rol || 2);
+            const rolNombre = usuarioSesion.rolNombre || (idRol === 1 ? 'Administrador' : idRol === 3 ? 'Veterinario' : idRol === 4 ? 'Cliente' : 'Empleado');
+
+            alert(`¡Bienvenido al sistema SIGEPOR!\nUsuario: ${usuarioSesion.nombre || usuarioSesion.email}\nRol: ${rolNombre}`);
+
+            // Redirección inteligente por rol (RBAC HU-06)
+            if (idRol === 3) {
+                window.location.href = "vacunas.html";
+            } else if (idRol === 4) {
+                window.location.href = "reportes.html";
+            } else {
+                window.location.href = "registroporcino.html";
+            }
         } else {
-            // Si las credenciales fallan en el bypass
             if (errorBox) {
                 errorBox.style.display = "flex";
                 const errorText = errorBox.querySelector('p') || errorBox;
-                errorText.textContent = "DATOS INCORRECTOS INGRESARLOS NUEVAMENTE";
+                errorText.textContent = resultado.message || "DATOS INCORRECTOS. INGRESARLOS NUEVAMENTE";
             }
         }
 
     } catch (error) {
         console.error('❌ Error de conexión con la API:', error);
-        alert('No se pudo conectar con el servidor de SIGEPOR.');
+        alert('No se pudo conectar con el servidor de SIGEPOR. Asegúrate de tener el backend ejecutándose en el puerto 3001.');
     }
 });
 
