@@ -172,6 +172,10 @@ if (reproForm) {
 }
 
 async function eliminarEventoRepro(id) {
+    if (window.obtenerRolSesion && window.obtenerRolSesion() === 2) {
+        alert('Acceso Denegado: El rol Operario / Empleado no tiene permisos para eliminar registros.');
+        return;
+    }
     if (!confirm('¿Eliminar este registro reproductivo?')) return;
     try {
         const token = localStorage.getItem('sigepor_token') || localStorage.getItem('token');

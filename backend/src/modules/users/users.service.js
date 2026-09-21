@@ -85,6 +85,15 @@ async function loginUser(identificador, contraseña) {
     passwordMatch = await bcrypt.compare(contraseña, contrasenaBD);
   } else {
     passwordMatch = (contraseña === contrasenaBD);
+    if (passwordMatch && usuario.id) {
+      try {
+        const salt = await bcrypt.genSalt(10);
+        const hashAuto = await bcrypt.hash(contraseña, salt);
+        await usersRepository.patchUser(usuario.id, { contraseña: hashAuto });
+      } catch (e) {
+        console.warn('Migración automática a hash bcryptjs omitida:', e.message);
+      }
+    }
   }
 
   if (!passwordMatch) return null;
