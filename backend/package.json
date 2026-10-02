@@ -13,7 +13,8 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "test": "node --test"
+    "test": "node --test --test-force-exit",
+    "test:e2e": "node --test --test-force-exit test/e2e-integration.test.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

@@ -11,14 +11,14 @@ const sanidadRoutes = require('../modules/sanidad/sanidad.routes');
 const reproduccionRoutes = require('../modules/reproduccion/reproduccion.routes');
 const reportesRoutes = require('../modules/reportes/reportes.routes');
 
-// Controller legado para perfil
-const userController = require('../controllers/user.controller');
+// Controlador modular de usuarios para perfil
+const usersController = require('../modules/users/users.controller');
 
 /* ==========================================================================
    1. RUTAS DE COMPROBACIÓN (HEALTH)
    ========================================================================== */
-router.get(['/health', '/api/health'], (req, res) => res.json({ status: 'OK', message: 'SIGEPOR API running' }));
-router.get('/perfil', userController.getProfile);
+router.get(['/health', '/api/health'], (req, res) => res.json({ status: 'ok', message: 'SIGEPOR backend is running' }));
+router.get('/perfil', usersController.getProfile);
 
 /* ==========================================================================
    2. MONTAJE DE MÓDULOS DEL SISTEMA (Soporta prefijos con /api y sin /api)

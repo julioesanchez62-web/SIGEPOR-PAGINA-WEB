@@ -1,16 +1,15 @@
-# SIGEPOR
+# SIGEPOR - Sistema de Gestión Porcina
 
 <div align="center">
 
 ![SIGEPOR](https://img.shields.io/badge/SIGEPOR-Sistema%20de%20Gesti%C3%B3n%20Porcina-0A7A4A?style=for-the-badge)
 
-![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=node.js&logoColor=white)
-![Express](https://img.shields.io/badge/Express-000000?style=for-the-badge&logo=express&logoColor=white)
-![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
-![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=JSON%20web%20tokens&logoColor=white)
-![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
-![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
-![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
+![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black)
+![Vite](https://img.shields.io/badge/Vite-6.0-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-24-339933?style=for-the-badge&logo=node.js&logoColor=white)
+![Express](https://img.shields.io/badge/Express-4.22-000000?style=for-the-badge&logo=express&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-RBAC-000000?style=for-the-badge&logo=JSON%20web%20tokens&logoColor=white)
 
 </div>
 
@@ -20,180 +19,124 @@
 - Daniel Santiago Polania Correa
 - Ficha SENA: 3235886
 
-## Descripción del proyecto
+---
 
-SIGEPOR es un sistema web de gestión porcina orientado a la administración integral de la producción, sanidad, reproducción, inventarios y trazabilidad de animales. La plataforma combina un frontend en HTML, CSS y JavaScript vanilla con un backend REST desarrollado en Node.js y Express, usando MySQL como motor de persistencia.
+## Descripción del Proyecto
 
-El sistema está pensado para apoyar el control operativo del proceso porcino, desde la identificación individual de animales hasta la generación de reportes, alertas y mecanismos de sincronización offline para continuar operando sin conexión.
+**SIGEPOR** es una plataforma integral de software de gestión porcícola diseñada para optimizar y controlar el ciclo biológico, zootécnico y operativo de hatos porcinos. Integra una Single Page Application (**SPA**) moderna construida en **React 18** y **Vite**, con una arquitectura backend desacoplada en capas sobre **Node.js / Express**, respaldada por **MySQL** como motor relacional transaccional.
 
-## Estado del proyecto
+La plataforma cuenta con control de acceso basado en roles (**RBAC**), enrutamiento protegido, soporte para operación sin conexión (**PWA con IndexedDB y Service Workers**) y sincronización estricta sin falsos positivos.
 
-El proyecto se encuentra en una etapa de desarrollo funcional con arquitectura modular, autenticación segura, persistencia en base de datos relacional y soporte de operación híbrida online/offline. Se implementan módulos habilitados para producción y gestión operativa del negocio porcícola.
+---
 
-## Características principales
+## Características Principales y Módulos
 
-- Autenticación y control de usuarios con JWT y cifrado de contraseñas con `bcryptjs`.
-- Gestión porcina con identificación individual, validación de duplicados y soporte para QR/RFID.
-- Módulo de reproducción con celos, montas/inseminaciones, partos y destetes.
-- Módulo de salud con tratamientos, vacunación y historial sanitario.
-- Módulo de inventarios con registro de alimentos e insumos y alertas automáticas de stock mínimo.
-- Módulo de reportes y alertas con exportación a PDF y CSV/Excel.
-- Modo offline con cola de sincronización local y envío automático a la API (`POST /api/sync`) cuando la red vuelve a estar disponible.
-- Frontend dinámico con patrones de interacción en navegador y manejo seguro de sesión.
+### 1. Autenticación y Control de Acceso por Roles (RBAC)
+- Autenticación criptográfica con **JSON Web Tokens (JWT)** y contraseñas hasheadas mediante **Bcrypt (Salt 10)**.
+- Jerarquía de roles definida:
+  - **👑 Administrador (Rol 1):** Acceso total a usuarios, personal veterinario, inventarios, porcinos y reportes.
+  - **👨‍⚕️ Veterinario (Rol 3):** Gestión sanitaria, vacunas, diagnósticos, historial reproductivo y porcinos.
+  - **👷 Empleado (Rol 2):** Registro de porcinos, eventos reproductivos y raciones de alimentos.
+  - **🛒 Cliente (Rol 4):** Consulta de porcinos en modo lectura.
+- Restricción estricta en `POST /api/users`: Bloqueo de asignación del rol Administrador a peticiones públicas o sin privilegios de administrador.
+- Verificación del estado activo (`activo = 1`) antes de emitir tokens en el login.
 
-## Módulos del sistema
+### 2. Gestión Integral de Porcinos
+- Registro, edición y seguimiento individual por identificación/arete.
+- Control de raza, peso, género, fecha de nacimiento y estado de salud.
+- Asignación de médico veterinario responsable por animal.
 
-### 1. Autenticación y control de usuarios
+### 3. Sanidad, Vacunación y Tratamientos Clínicos
+- Registro de dosis de vacunas aplicadas y cálculo de fecha de revacunación.
+- Control de enfermedades, diagnósticos veterinarios y prescripción de tratamientos.
 
-- Registro y login de usuarios.
-- Cifrado de contraseñas usando `bcryptjs`.
-- Emisión de tokens JWT para sesiones autenticadas.
-- Control de acceso por roles (Administrador, Empleado, Veterinario, Cliente).
-- Middleware de validación para rutas protegidas.
+### 4. Reproducción y Partos
+- Registro de montas e inseminaciones artificiales.
+- Cálculo automático de la fecha probable de parto (+114 días de gestación).
+- Registro de partos asistidos y número de lechones nacidos vivos.
 
-### 2. Gestión porcina
+### 5. Inventario y Logística
+- Control de raciones de alimentos por corral y cantidades suministradas.
+- Infraestructura de corrales, capacidad de animales y estado de limpieza.
+- Directorio de proveedores aliados.
 
-- Registro de porcinos y manejo de identificación.
-- Validación de duplicados por clave de identificación.
-- Registro de información productiva y sanitaria.
-- Integración con MySQL como origen central de datos.
+### 6. Modo Offline y PWA (IndexedDB + Service Worker)
+- Aplicación Web Progresiva instalable con soporte sin conexión.
+- Cola de mutaciones pendientes en **IndexedDB** (`offline_queue`).
+- Sincronización automática al recuperar la conexión a internet.
+- **Validación estricta de respuestas HTTP:** Únicamente los códigos `2xx` se consideran éxito; los errores `4xx` se alertan al usuario y se descartan para evitar registrar datos falsos.
 
-### 3. Reproducción
+### 7. Reportes y Trazabilidad Operativa
+- Monitor en vivo de alertas sanitarias y operativas del hato.
+- Consulta de hoja de vida y trazabilidad histórica individual por animal.
 
-- Manejo de eventos reproductivos.
-- Control de celos, montas, inseminaciones y partos.
-- Registro de destetes y cálculo de proximidad de partos.
+---
 
-### 4. Salud y sanidad
-
-- Tratamientos médicos.
-- Programación y seguimiento de vacunas.
-- Historial sanitario por animal.
-- Alertas y reportes de salud.
-
-### 5. Inventarios
-
-- Registro de alimentos, materiales e insumos.
-- Control de cantidades y alertas por stock mínimo.
-- Seguimiento operativo para prevención de faltantes.
-
-### 6. Modo Offline y sincronización automática
-
-- Registro de operaciones pendientes en cola local cuando no hay conexión.
-- Escucha de eventos de red (`online` / `offline`).
-- Sincronización automática al restablecer Internet.
-- Envío de eventos pendientes al backend mediante `POST /api/sync`.
-
-### 7. Reportes y alertas
-
-- Generación de indicadores de rendimiento y sanidad.
-- Alertas por condición del sistema, inventario y producción.
-- Exportación de reportes en PDF, CSV y Excel.
-- Trazabilidad por animal.
-
-## Arquitectura del sistema
-
-El proyecto se estructura sobre una arquitectura en capas orientada a responsabilidades y separación de lógica.
-
-### Patrones aplicados
-
-- Layered Architecture: rutas, validadores, controladores, servicios y repositorios.
-- Observer: mecanismos de alerta y sincronización reactiva ante cambios de conectividad.
-- Visitor: generación y exportación de reportes y trazabilidad.
-
-### Organización principal
+## Arquitectura del Repositorio
 
 ```text
 SIGEPOR PAGINA WEB/
-├── backend/                     # Backend Node.js / Express
-│   ├── src/
-│   │   ├── app.js
-│   │   ├── server.js
-│   │   ├── config/
-│   │   ├── controllers/
-│   │   ├── middlewares/
-│   │   ├── modules/
-│   │   ├── routes/
-│   │   └── utils/
-│   ├── test/
-│   ├── package.json
-│   └── README.md
 ├── database/
-│   ├── sigepor_database.sql
-│   └── sigepor_database_unificada.sql
-├── frontend/
-│   └── assets/
-│       ├── css/
-│       ├── js/
-│       ├── index.html
-│       ├── registro_usuarios.html
-│       ├── registroporcino.html
-│       ├── vacunas.html
-│       ├── veterina rios.html
-│       ├── reportes.html
-│       └── ...
-├── README.md
-└── package.json
+│   └── sigepor_database_definitiva.sql  # Script SQL canónico unificado con datos semilla
+├── backend/                             # API REST en Node.js / Express
+│   ├── src/
+│   │   ├── app.js                       # Configuración de Express, CORS y middlewares
+│   │   ├── server.js                    # Inicialización del servidor HTTP
+│   │   ├── config/
+│   │   │   ├── env.js                   # Variables de entorno estrictas (.env)
+│   │   │   └── mysql.js                 # Pool mysql2/promise y auto-migración
+│   │   ├── middlewares/
+│   │   │   ├── auth.middleware.js       # Verificación JWT y requireRole (RBAC)
+│   │   │   └── error.middleware.js      # Manejador centralizado de errores HTTP
+│   │   ├── modules/                     # Arquitectura modular por capas
+│   │   │   ├── auth/                    # Login y validación de usuarios
+│   │   │   ├── porcinos/                # CRUD de Porcinos
+│   │   │   ├── sanidad/                 # Vacunas y Enfermedades
+│   │   │   ├── reproduccion/            # Eventos Reproductivos
+│   │   │   ├── inventario/              # Alimentos, Corrales, Proveedores
+│   │   │   ├── veterinarios/            # Personal Veterinario
+│   │   │   ├── reportes/                # Alertas y Trazabilidad
+│   │   │   └── users/                   # Administración de Usuarios
+│   │   └── routes/
+│   │       └── index.js                 # Enrutador principal y health check
+│   ├── test/                            # Suite automatizada con Supertest
+│   │   ├── auth.test.js
+│   │   ├── health.test.js
+│   │   ├── routes.test.js
+│   │   └── e2e-integration.test.js      # Test de integración E2E completo
+│   └── .env                             # Variables de configuración
+├── frontend/                            # SPA moderna en React 18 + Vite
+│   ├── public/
+│   │   ├── manifest.json                # Manifiesto PWA
+│   │   └── sw.js                        # Service Worker para funcionamiento offline
+│   ├── src/
+│   │   ├── api/
+│   │   │   └── axiosClient.js           # Cliente Axios con interceptor Bearer Token
+│   │   ├── context/
+│   │   │   ├── AuthContext.jsx          # Estado de sesión y control RBAC
+│   │   │   └── NetworkSyncContext.jsx   # Gestor de conectividad e IndexedDB
+│   │   ├── components/                  # Navbar, Sidebar, Modal, Alert, ProtectedRoute
+│   │   └── pages/                       # Vistas por módulo del sistema
+│   └── vite.config.js                   # Configuración de Vite y proxy
+└── README.md
 ```
 
-## Tecnologías y dependencias
+---
 
-### Backend
+## Instalación y Puesta en Marcha
 
-- Node.js
-- Express
-- `mysql2/promise`
-- `dotenv`
-- `bcryptjs`
-- `jsonwebtoken`
-- `cors`
-- `supertest`
+### Requisitos Previos
+- **Node.js** v18 o superior (v24 recomendado).
+- **MySQL Server** 8.0+ o MariaDB (vía XAMPP o servicio nativo en puerto 3306).
 
-### Frontend
-
-- HTML5
-- CSS3
-- JavaScript Vanilla
-- Fetch API
-- `localStorage`
-- Queue Offline Manager / sincronización local
-
-### Base de datos
-
-- MySQL 8
-
-## Requisitos previos
-
-Antes de ejecutar el proyecto, asegúrate de tener instalado:
-
-- Node.js 18 o superior
-- MySQL 8
-- Git
-- Visual Studio Code (opcional, recomendado)
-
-## Instalación y configuración
-
-### Paso 1: Clonar el repositorio
-
+### 1. Base de Datos
+Importa en MySQL Workbench o phpMyAdmin el archivo definitivo:
 ```bash
-git clone https://github.com/julioesanchez62-web/SIGEPOR-PAGINA-WEB.git
-cd SIGEPOR-PAGINA-WEB
+mysql -u root -p sigepor < database/sigepor_database_definitiva.sql
 ```
 
-### Paso 2: Configurar la base de datos MySQL
-
-Importa el esquema base en MySQL usando el archivo:
-
-```bash
-database/sigepor_database.sql
-```
-
-Luego crea la base de datos y verifica que las tablas requeridas existan antes de arrancar la API.
-
-### Paso 3: Configurar variables de entorno
-
-Dentro de la carpeta `backend`, crea un archivo `.env` con la siguiente estructura:
-
+### 2. Configurar Variables de Entorno del Backend
+Crea o edita `backend/.env`:
 ```env
 PORT=3001
 DB_HOST=localhost
@@ -201,144 +144,92 @@ DB_PORT=3306
 DB_USER=root
 DB_PASSWORD=
 DB_NAME=sigepor
-JWT_SECRET=sigepor_secret_key_2026
+JWT_SECRET=sigepor_jwt_secure_secret_key_512bits_2026
 ```
 
-> Importante: nunca publiques el archivo `.env` ni compartas credenciales reales en repositorios públicos.
-
-### Paso 4: Instalar dependencias del backend
-
+### 3. Iniciar el Backend
 ```bash
 cd backend
 npm install
-```
-
-### Paso 5: Ejecutar el backend
-
-```bash
 npm run dev
 ```
+El servidor quedará disponible en `http://localhost:3001`.
 
-O también:
-
+### 4. Iniciar el Frontend (React)
+En una nueva terminal:
 ```bash
-npm start
+cd frontend
+npm install
+npm run dev
 ```
+La aplicación React se abrirá en `http://localhost:5173`.
 
-La API quedará disponible en:
+---
 
-```text
-http://localhost:3001
-```
+## Usuarios de Prueba (Datos Semilla)
 
-### Paso 6: Ejecutar el frontend
+| Perfil / Rol | Correo Electrónico | Contraseña | Nivel de Acceso |
+| :--- | :--- | :--- | :--- |
+| **Administrador** | `admin@sigepor.com` | `admin123` | Total (Módulos operativos y Gestión de Usuarios) |
+| **Veterinario** | `vet@sigepor.com` | `vet123` | Salud, Vacunas, Porcinos, Reproducción, Inventario y Reportes |
+| **Empleado** | `operario@sigepor.com` | `empleado123` | Porcinos, Reproducción e Inventario |
+| **Cliente** | `cliente@sigepor.com` | `cliente123` | Consulta de Porcinos |
 
-Sirve la carpeta `frontend/assets` con un servidor estático o con Live Server en Visual Studio Code.
+---
 
-Ejemplo con Live Server:
+## Guía de Verificación Manual (Paso a Paso)
 
-1. Abre la carpeta `frontend/assets`.
-2. Haz clic derecho en `index.html`.
-3. Selecciona `Open with Live Server`.
+Para realizar una demostración continua del flujo completo entre **React**, **Express** y **MySQL**:
 
-## Documentación de endpoints principales
+1. **Asegurar Servicios Activos:**
+   - Inicia **MySQL** en el panel de control de **XAMPP**.
+   - Inicia el backend en una terminal (`npm run dev` en `backend/`).
+   - Inicia el frontend en otra terminal (`npm run dev` en `frontend/`).
+2. **Acceder a la Aplicación:**
+   - Abre en el navegador `http://localhost:5173/`.
+   - Haz clic en la pestaña **👑 Administrador** (se autocompleta `admin@sigepor.com`).
+   - Digita la contraseña `admin123` e inicia sesión.
+3. **Verificar Token JWT en Navegador:**
+   - Abre las Herramientas de Desarrollador con `F12`.
+   - En la pestaña **Application** &rarr; **Local Storage**, comprueba la clave `sigepor_token` con el JWT firmado.
+4. **Registrar un Porcino:**
+   - En el menú lateral, dirígete a **Porcinos**.
+   - Haz clic en el botón **➕ Registrar Nuevo Porcino**.
+   - Completa el formulario con una identificación única (ej. `POR-9999`), peso, estado de salud y veterinario.
+   - Presiona **Guardar en MySQL**.
+5. **Comprobar Petición de Red:**
+   - En la pestaña **Network (Red)** de DevTools (`F12`), filtra por `Fetch/XHR`.
+   - Revisa la petición `POST /api/porcinos`.
+   - En la sección **Headers**, verifica la presencia del encabezado:
+     ```http
+     Authorization: Bearer eyJhbGciOi...
+     ```
+   - El código devuelto por Express es **`201 Created`**.
+6. **Validar Persistencia en MySQL:**
+   - En phpMyAdmin o MySQL Workbench ejecuta:
+     ```sql
+     SELECT * FROM porcinos WHERE identificacion = 'POR-9999';
+     ```
+   - El registro se encuentra persistido físicamente con su ID autoincremental y fecha de registro.
 
-### API REST de SIGEPOR
+---
 
-| Método | Ruta | Descripción | Estado esperado |
-| --- | --- | --- | --- |
-| GET | `/health` | Verifica que el backend está activo. | `200 OK` |
-| POST | `/api/auth/login` | Login del sistema con email o usuario y contraseña. | `200 OK` / `401` |
-| POST | `/api/users` | Registro de nuevo usuario. | `201 Created` |
-| GET | `/api/users` | Consulta usuarios registrados. | `200 OK` |
-| POST | `/api/porcinos` | Registro de porcino. | `201 Created` |
-| GET | `/api/porcinos` | Listado de porcinos. | `200 OK` |
-| POST | `/api/reproduccion` | Registro de eventos reproductivos. | `201 Created` |
-| GET | `/api/reproduccion` | Consulta de eventos reproductivos. | `200 OK` |
-| POST | `/api/sanidad` | Registro de vacunas o salud. | `201 Created` |
-| GET | `/api/sanidad` | Consulta de información sanitaria. | `200 OK` |
-| POST | `/api/inventario` | Registro de alimentos o insumos. | `201 Created` |
-| GET | `/api/inventario` | Consulta de inventario. | `200 OK` |
-| POST | `/api/sync` | Sincronización de cola offline. | `200 OK` |
-| GET | `/api/reportes` | Consulta de reportes y alertas. | `200 OK` |
+## Pruebas Automatizadas
 
-### Ejemplo de login
-
-```http
-POST /api/auth/login
-Content-Type: application/json
-
-{
-  "identificador": "usuario_o_email",
-  "contraseña": "tu_contraseña"
-}
-```
-
-### Respuestas típicas
-
-- `200 OK`: operación exitosa.
-- `201 Created`: recurso creado con éxito.
-- `400 Bad Request`: datos faltantes o inválidos.
-- `401 Unauthorized`: credenciales inválidas o token no válido.
-- `403 Forbidden`: el usuario no tiene permisos suficientes.
-- `404 Not Found`: recurso no encontrado.
-- `500 Internal Server Error`: error del servidor o de base de datos.
-
-## Seguridad
-
-La aplicación implementa buenas prácticas básicas de seguridad para la gestión de usuarios y acceso a recursos:
-
-- Contraseñas cifradas con `bcryptjs`.
-- Tokens JWT para gestión de sesiones.
-- Middleware de autenticación para rutas restringidas.
-- Validación de roles mediante RBAC.
-- Restricción de acceso por perfil.
-
-## Pruebas
-
-El backend incluye pruebas automatizadas con Node Test Runner y Supertest.
-
-Para ejecutarlas:
+El backend incluye pruebas automatizadas con el **Node Test Runner** nativo (`node --test`) y **Supertest**:
 
 ```bash
 cd backend
 npm test
 ```
+Las aserciones validan estrictamente códigos de respuesta `200`, `201`, `401` y `403`. **Ningún código HTTP 500 se valida como respuesta exitosa.**
 
-## Flujo recomendado de uso
-
-1. Crear la base de datos desde `database/sigepor_database.sql`.
-2. Configurar `.env` con las credenciales MySQL y JWT.
-3. Ejecutar el backend con `npm run dev`.
-4. Iniciar el frontend con Live Server.
-5. Registrar un usuario y autenticarse.
-6. Usar módulos de porcinos, reproducción, sanidad, inventario y reportes.
-7. Validar sincronización offline cuando la conexión se interrumpe.
-
-## Estado de desarrollo y próximos pasos
-
-El proyecto ya contempla un conjunto de capacidades operativas y funcionales avanzadas. Como próximos pasos recomendados se destacan:
-
-- Fortalecer la validación de datos y sanitización de entradas.
-- Expandir pruebas de integración para casos críticos de autenticación y sincronización.
-- Mejorar manejo de sesiones y expiración de tokens.
-- Rediseñar la estructura del frontend para modularizar más la lógica del cliente.
-- Completar la automatización de reportes PDF/Excel con formato empresarial.
-- Estabilizar la sincronización offline con auditoría y reconciliación de filas pendientes.
-
-## Documentación adicional
-
-- [Backend](backend/README.md)
-- [Base de datos](database/sigepor_database.sql)
-- [Arquitectura SQL visual](frontend/assets/ARQUITECTURA_SQL.html)
-- [Resumen de mejoras visuales](frontend/assets/RESUMEN_MEJORAS.html)
-- [Ejemplos de imágenes](frontend/assets/EJEMPLOS_IMAGENES.html)
-- [Prueba de logos](frontend/assets/PRUEBA_LOGOS.html)
-
-## Licencia
-
-Este proyecto fue desarrollado como trabajo de aplicación y gestión técnica para la gestión porcina y puede adaptarse según la política institucional del equipo de desarrollo.
+Para ejecutar el test de integración End-to-End automatizado:
+```bash
+cd backend
+npm run test:e2e
+```
 
 ---
 
-SIGEPOR © 2026 - Sistema de Gestión Porcina
+SIGEPOR © 2026 - Sistema de Gestión Porcina.

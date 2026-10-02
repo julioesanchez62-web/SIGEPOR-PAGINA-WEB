@@ -140,15 +140,17 @@ async function syncPendingData() {
                 body: req.payload || req.body ? JSON.stringify(req.payload || req.body) : undefined
             });
 
-            if (res.ok || (res.status >= 200 && res.status < 300) || res.status === 404) {
+            // REGLA ESTRICTA: Solo códigos 2xx (200-299) se consideran éxito
+            if (res.ok && res.status >= 200 && res.status < 300) {
                 syncedCount++;
                 console.log(`✅ Registro ${req.id} sincronizado exitosamente con MySQL (${req.method} ${urlTarget}).`);
             } else if (res.status >= 500) {
-                console.warn(`⚠ Error 5xx del servidor para ${req.id}. Se mantendrá en cola para el próximo intento.`);
+                console.error(`💥 Error 5xx del servidor backend para ${req.id}. Se mantiene en cola para reintento.`);
                 remaining.push(req);
             } else {
-                // Errores 4xx permanentes (distintos de 404)
-                console.warn(`⚠ Solicitud ${req.id} rechazada por la API (${res.status}). Descartando de la cola.`);
+                // Errores 4xx (400, 401, 403, 404, etc.): La API rechazó explícitamente la transacción
+                // NUNCA validar como éxito ni persistir en la vista. Se descarta de la cola.
+                console.warn(`⛔ Solicitud ${req.id} rechazada por la API (HTTP ${res.status}). Descartando de la cola sin persistir.`);
             }
         } catch (err) {
             console.warn(`📡 Red inaccesible al intentar sincronizar elemento ${req.id}. Se mantiene en cola.`, err);

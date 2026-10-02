@@ -5,7 +5,11 @@
 
 const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'sigepor_secret_key_2026_production';
+const { jwtSecret } = require('../config/env');
+const JWT_SECRET = jwtSecret || process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET no está configurado en el archivo .env');
+}
 
 // Mapeo de Roles del sistema
 const ROLES = {

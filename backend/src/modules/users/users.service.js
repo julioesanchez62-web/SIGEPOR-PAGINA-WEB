@@ -78,22 +78,21 @@ async function loginUser(identificador, contraseña) {
 
   if (!usuario) return null;
 
+  // Validación de estado activo
+  if (usuario.activo !== undefined && (Number(usuario.activo) === 0 || usuario.activo === false)) {
+    const error = new Error('Acceso denegado: El usuario se encuentra inactivo en el sistema. Contacte al administrador.');
+    error.statusCode = 403;
+    throw error;
+  }
+
   const contrasenaBD = usuario.contraseña || usuario.password;
 
   let passwordMatch = false;
   if (contrasenaBD && (contrasenaBD.startsWith('$2a$') || contrasenaBD.startsWith('$2b$'))) {
     passwordMatch = await bcrypt.compare(contraseña, contrasenaBD);
   } else {
-    passwordMatch = (contraseña === contrasenaBD);
-    if (passwordMatch && usuario.id) {
-      try {
-        const salt = await bcrypt.genSalt(10);
-        const hashAuto = await bcrypt.hash(contraseña, salt);
-        await usersRepository.patchUser(usuario.id, { contraseña: hashAuto });
-      } catch (e) {
-        console.warn('Migración automática a hash bcryptjs omitida:', e.message);
-      }
-    }
+    // Seguridad: Rechazar contraseñas en texto plano
+    passwordMatch = false;
   }
 
   if (!passwordMatch) return null;

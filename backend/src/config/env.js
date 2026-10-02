@@ -2,21 +2,21 @@ const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 require('dotenv').config(); // Fallback si está en el root
 
-// Se remueve DB_PASSWORD de las variables estrictamente obligatorias
-const requiredEnv = ['DB_HOST', 'DB_PORT', 'DB_USER', 'DB_NAME'];
+// Variables estrictamente obligatorias leídas desde el archivo .env
+const requiredEnv = ['DB_HOST', 'DB_PORT', 'DB_USER', 'DB_NAME', 'JWT_SECRET'];
 const missing = requiredEnv.filter((key) => {
   const value = process.env[key];
   return value === undefined || value === null || value === '';
 });
 
 if (missing.length > 0) {
-  throw new Error(`Faltan variables de entorno obligatorias: ${missing.join(', ')}`);
+  throw new Error(`Faltan variables de entorno obligatorias en .env: ${missing.join(', ')}`);
 }
 
 module.exports = {
   port: Number(process.env.PORT || 3001),
   nodeEnv: process.env.NODE_ENV || 'development',
-  jwtSecret: process.env.JWT_SECRET || 'sigepor_secret_key_2026_production',
+  jwtSecret: process.env.JWT_SECRET,
   db: {
     host: process.env.DB_HOST,
     port: Number(process.env.DB_PORT),

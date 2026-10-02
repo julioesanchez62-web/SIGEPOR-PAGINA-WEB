@@ -7,7 +7,9 @@
  * - Responder con códigos HTTP correctos
  */
 
+const jwt = require('jsonwebtoken');
 const usersService = require('./users.service');
+const { JWT_SECRET } = require('../../middlewares/auth.middleware');
 
 /**
  * 🟢 Asociado al botón: GUARDAR CAMBIOS
@@ -17,6 +19,32 @@ const usersService = require('./users.service');
 async function createUser(req, res, next) {
   try {
     const { nombre, correo, contraseña, idRol } = req.body;
+
+    // SEGURIDAD: Bloquear asignación del rol Administrador a peticiones públicas o sin privilegios
+    if (Number(idRol) === 1 || String(idRol).toLowerCase() === 'administrador') {
+      const authHeader = req.headers['authorization'] || req.headers['x-access-token'];
+      let requesterIsAdmin = false;
+
+      if (authHeader) {
+        try {
+          const token = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : authHeader;
+          const decoded = jwt.verify(token, JWT_SECRET);
+          if (Number(decoded.idRol) === 1 || (decoded.rolNombre && decoded.rolNombre.toLowerCase() === 'administrador')) {
+            requesterIsAdmin = true;
+          }
+        } catch (err) {
+          requesterIsAdmin = false;
+        }
+      }
+
+      if (!requesterIsAdmin) {
+        return res.status(403).json({
+          status: 'fail',
+          message: 'Acceso denegado: Se requieren privilegios de Administrador autenticado para asignar el rol Administrador.'
+        });
+      }
+    }
+
     const usuario = await usersService.createUser(nombre, correo, contraseña, idRol);
     
     // Entrega confirmación exitosa dinámica al Postman
@@ -172,6 +200,20 @@ async function deleteUser(req, res, next) {
   }
 }
 
+/**
+ * Obtener perfil del usuario autenticado
+ */
+async function getProfile(req, res, next) {
+  try {
+    return res.status(200).json({
+      status: 'success',
+      user: req.user || null
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 // Exportación unificada de todas las funciones mapeadas en las rutas
 module.exports = {
   createUser,
@@ -180,5 +222,6 @@ module.exports = {
   getUserById,
   updateUser,
   patchUser,
-  deleteUser
+  deleteUser,
+  getProfile
 };
