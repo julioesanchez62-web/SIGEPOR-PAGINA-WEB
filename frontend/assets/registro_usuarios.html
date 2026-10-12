@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIGEPOR - Gestión y Registro de Usuarios</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .public-registration-wrapper {
+            max-width: 850px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        .tab-navigation {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 12px;
+        }
+        .tab-btn {
+            background: #edf2f7;
+            border: 1px solid #cbd5e0;
+            padding: 12px 22px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #4a5568;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .tab-btn:hover {
+            background: #e2e8f0;
+        }
+        .tab-btn.active {
+            background: #2b6cb0;
+            color: white;
+            border-color: #2b6cb0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .tab-panel {
+            display: none;
+        }
+        .tab-panel.active {
+            display: block;
+        }
+        .back-link-container {
+            margin-bottom: 20px;
+        }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #2b6cb0;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        .security-badge {
+            background: #ebf8ff;
+            border-left: 4px solid #3182ce;
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #2b6cb0;
+        }
+        .admin-badge-indicator {
+            display: inline-block;
+            background: #2b6cb0;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        /* Controles exclusivos para Administrador */
+        .admin-only-controls {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Barra lateral de navegación (se oculta automáticamente en visitantes no autenticados) -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <img src="images/logo.jpg" alt="SIGEPOR">
+                </div>
+                <h3>SIGEPOR</h3>
+            </div>
+            <ul>
+                <li><a href="indexpruebados.html">🏠 Inicio</a></li>
+                <li><a href="registro_usuarios.html" class="active">👤 Usuarios</a></li>
+                
+            </ul>
+        </nav>
+
+        <section class="content">
+            <div class="public-registration-wrapper">
+                <div class="back-link-container">
+                    <a href="index.html" class="back-link">← Volver al Inicio de Sesión</a>
+                </div>
+                
+                <
+
+                <!-- Pestañas de Navegación por Modo -->
+                <div class="tab-navigation">
+                    <button type="button" class="tab-btn active" id="tab-btn-registro" onclick="cambiarTabModo('registro')">
+                        ✨ Registro / Formulario
+                    </button>
+                    <button type="button" class="tab-btn" id="tab-btn-recuperacion" onclick="cambiarTabModo('recuperacion')">
+                        📧 Recuperación 
+                    </button>
+                </div>
+
+                <!-- PESTAÑA 1: FORMULARIO DE REGISTRO / GESTIÓN DE USUARIOS -->
+                <div class="card-wrapper tab-panel active" id="tab-registro">
+                    <div class="form-section-title">
+                        <span class="section-icon">📝</span>
+                        <h3 id="form-section-heading">Información de Registro de Usuario</h3>
+                    </div>
+
+                    <form class="grid-form" id="formulario-usuarios">
+                        <!-- Campo de búsqueda por ID (visible ÚNICAMENTE para Administradores autenticados) -->
+                        <div class="field admin-only-controls" style="grid-column: span 2; background: #f7fafc; padding: 12px; border-radius: 8px; border: 1px dashed #cbd5e0; margin-bottom: 10px;">
+                            <label style="color: #2b6cb0; font-weight: bold;">🔍 Consultar / Gestionar Usuario por ID (Administración):</label>
+                            <input type="number" id="input-id" placeholder="Ingrese el número ID de usuario (Ej: 1)">
+                        </div>
+
+                        <div class="field">
+                            <label>Nombres y Apellidos *:</label>
+                            <input type="text" id="input-nombre" placeholder="Ej: Juan Pérez" required autocomplete="name">
+                        </div>
+
+                        <div class="field">
+                            <label>Correo Electrónico *:</label>
+                            <input type="email" id="input-correo" placeholder="usuario@ejemplo.com" required autocomplete="email">
+                        </div>
+
+                        <div class="field">
+                            <label>Nombre de Usuario / Identificador *:</label>
+                            <input type="text" id="input-usuario" placeholder="Ej: jperez" required autocomplete="username">
+                        </div>
+
+                        <div class="field">
+                            <label>Contraseña *:</label>
+                            <input type="password" id="input-contrasena" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+                        </div>
+
+                        <div class="field" style="grid-column: span 2;">
+                            <label>Rol de Usuario / Permisos (RBAC):</label>
+                            <select id="input-rol" style="padding: 10px; border-radius: 8px; border: 1px solid #cbd5e0; width: 100%;">
+                                <option value="2" selected>👤 Empleado / Operador (Rol 2)</option>
+                                <option value="3">👨‍⚕️ Veterinario (Rol 3)</option>
+                                <option value="4">👥 Cliente (Rol 4)</option>
+                                
+                            </select>
+                        </div>
+                        
+                        <div class="form-actions" style="grid-column: span 2; display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px;">
+                            <button type="button" id="btn-guardar" class="btn-save btn-primary" style="padding: 12px 20px;">✨ CREAR CUENTA NUEVA</button>
+                            <button type="reset" class="btn-reset" style="padding: 12px 20px;">↻ LIMPIAR FORMULARIO</button>
+                            
+                            <!-- Botones de Gestión CRUD (visibles ÚNICAMENTE en Modo Administrador) -->
+                            <button type="button" id="btn-consultar" class="btn-consult admin-only-controls" style="padding: 12px 20px; background: #3182ce; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;" onclick="consultarUsuario()">🔍 CONSULTAR</button>
+                            <button type="button" id="btn-actualizar" class="btn-update admin-only-controls" style="padding: 12px 20px; background: #dd6b20; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;" onclick="actualizarUsuario()">✏️ ACTUALIZAR</button>
+                            <button type="button" id="btn-eliminar" class="btn-delete admin-only-controls" style="padding: 12px 20px; background: #e53e3e; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;" onclick="borrarUsuario()">🗑️ ELIMINAR</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- PESTAÑA 2: SOLICITUD DE RECUPERACIÓN / ACTUALIZACIÓN POR CORREO -->
+                <div class="card-wrapper tab-panel" id="tab-recuperacion">
+                    <div class="form-section-title">
+                        <span class="section-icon">📧</span>
+                        <h3>Solicitud de Instrucciones mediante Correo Electrónico</h3>
+                    </div>
+
+                    <form class="grid-form" id="formulario-recuperacion" onsubmit="procesarRecuperacionCorreo(event)">
+                        <div class="field" style="grid-column: span 2;">
+                            <label>Ingresa el Correo Electrónico Registrado *:</label>
+                            <input type="email" id="input-correo-recuperacion" placeholder="usuario@ejemplo.com" required autocomplete="email">
+                        </div>
+
+                        <div class="form-actions" style="grid-column: span 2; margin-top: 15px;">
+                            <button type="submit" class="btn-primary" style="padding: 12px 24px;">📧 ENVIAR ENLACE DE VERIFICACIÓN</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Notificación de seguridad -->
+                <div class="security-badge" id="security-info-footer">
+                    <strong>🔒 Protección de Datos Sensibles:</strong> En modo auto-registro público no se exponen datos de cuentas ni se permite la consulta de registros por ID.
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="js/offline_sync.js"></script>
+    <script src="js/auth_guard.js"></script>
+    <script src="js/script.js"></script>
+
+    <script>
+        const API_URL = 'http://localhost:3001/api/users';
+        const LOCAL_KEY_USERS = 'sigeporUsuarios';
+
+        // Comprobar si el usuario en sesión es Administrador (Rol 1)
+        function esAdministradorActual() {
+            const usuario = typeof obtenerUsuarioSesion === 'function' ? obtenerUsuarioSesion() : null;
+            return usuario && Number(usuario.idRol || usuario.rol) === 1;
+        }
+
+        // Sanitización contra ataques XSS (Cross-Site Scripting)
+        function sanitizarEntrada(texto) {
+            if (typeof texto !== 'string') return '';
+            return texto
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#x27;')
+                .trim();
+        }
+
+        // Alternar pestañas (Formulario / Recuperación por Correo)
+        function cambiarTabModo(modo) {
+            const tabRegistro = document.getElementById('tab-registro');
+            const tabRecuperacion = document.getElementById('tab-recuperacion');
+            const btnRegistro = document.getElementById('tab-btn-registro');
+            const btnRecuperacion = document.getElementById('tab-btn-recuperacion');
+
+            if (modo === 'registro') {
+                tabRegistro.classList.add('active');
+                tabRecuperacion.classList.remove('active');
+                btnRegistro.classList.add('active');
+                btnRecuperacion.classList.remove('active');
+            } else {
+                tabRegistro.classList.remove('active');
+                tabRecuperacion.classList.add('active');
+                btnRegistro.classList.remove('active');
+                btnRecuperacion.classList.add('active');
+            }
+        }
+
+        // 1. Inicialización Dinámica según el Estado de la Sesión (Modo Admin vs Auto-Registro Público)
+        function inicializarModoVista() {
+            const esAdmin = esAdministradorActual();
+
+            // A. Conmutación de visibilidad para controles exclusivos de Administrador (.admin-only-controls)
+            document.querySelectorAll('.admin-only-controls').forEach(el => {
+                if (el.tagName === 'BUTTON' || el.tagName === 'INPUT') {
+                    el.style.display = esAdmin ? 'inline-block' : 'none';
+                } else {
+                    el.style.display = esAdmin ? 'block' : 'none';
+                }
+            });
+
+            // B. Gestión de opciones en el desplegable de roles (<select id="input-rol">)
+            const selectRol = document.getElementById('input-rol');
+            if (selectRol) {
+                let optAdmin = selectRol.querySelector('option[value="1"]');
+                if (esAdmin) {
+                    if (!optAdmin) {
+                        optAdmin = document.createElement('option');
+                        optAdmin.value = '1';
+                        optAdmin.textContent = '👑 Administrador (Rol 1)';
+                        selectRol.appendChild(optAdmin);
+                    }
+                } else {
+                    if (optAdmin) optAdmin.remove();
+                }
+            }
+
+            // C. Personalización de textos de cabecera según el modo
+            const viewTitle = document.getElementById('view-title');
+            const viewSubtitle = document.getElementById('view-subtitle');
+            const formSectionHeading = document.getElementById('form-section-heading');
+
+            if (esAdmin) {
+                if (viewTitle) viewTitle.textContent = 'PANEL DE GESTIÓN DE USUARIOS (CRUD)';
+                if (viewSubtitle) viewSubtitle.textContent = 'Control de cuentas de usuario, asignación de roles y actualización de credenciales';
+                if (formSectionHeading) formSectionHeading.textContent = 'Gestión de Cuentas y Registro de Personal';
+            } else {
+                if (viewTitle) viewTitle.textContent = 'REGISTRO Y RECUPERACIÓN DE CUENTA';
+                if (viewSubtitle) viewSubtitle.textContent = 'Crea tu cuenta de acceso a SIGEPOR o solicita instrucciones de recuperación';
+                if (formSectionHeading) formSectionHeading.textContent = 'Información de Registro de Usuario';
+            }
+        }
+
+        // 2. Envío de Registro o Creación de Usuario (POST /api/users)
+        const btnGuardar = document.getElementById('btn-guardar');
+        const inputId = document.getElementById('input-id');
+        const inputNombre = document.getElementById('input-nombre');
+        const inputCorreo = document.getElementById('input-correo');
+        const inputUsuario = document.getElementById('input-usuario');
+        const inputContrasena = document.getElementById('input-contrasena');
+        const inputRol = document.getElementById('input-rol');
+
+        if (btnGuardar) {
+            btnGuardar.addEventListener('click', async () => {
+                const nombreVal = sanitizarEntrada(inputNombre.value);
+                const correoVal = sanitizarEntrada(inputCorreo.value);
+                const usuarioVal = sanitizarEntrada(inputUsuario.value);
+                const contrasenaVal = inputContrasena.value;
+                let rolVal = parseInt(inputRol.value, 10) || 2;
+
+                const esAdmin = esAdministradorActual();
+
+                // Validación de seguridad: auto-registro público no permite rol Administrador
+                if (!esAdmin && (rolVal === 1 || String(inputRol.value).toLowerCase().includes('admin'))) {
+                    console.warn('⚠️ Intento no permitido de auto-registro como Administrador. Asignando rol Empleado por defecto.');
+                    alert('Nota de seguridad: No está permitido auto-registrarse como Administrador desde la web pública. Se asignará el rol Empleado / Operador.');
+                    rolVal = 2;
+                }
+
+                if (!nombreVal || !correoVal || !usuarioVal || (!contrasenaVal && !esAdmin)) {
+                    alert('Por favor, completa todos los campos obligatorios (*).');
+                    return;
+                }
+
+                if (contrasenaVal && contrasenaVal.length < 6) {
+                    alert('La contraseña debe tener una longitud mínima de 6 caracteres.');
+                    return;
+                }
+
+                const datosUsuario = {
+                    nombre: nombreVal,
+                    correo: correoVal,
+                    usuario: usuarioVal,
+                    contraseña: contrasenaVal,
+                    idRol: rolVal
+                };
+
+                const headers = { 'Content-Type': 'application/json' };
+                const token = localStorage.getItem('sigepor_token') || localStorage.getItem('token');
+                if (token) headers['Authorization'] = `Bearer ${token}`;
+
+                try {
+                    const response = typeof fetchConFallbackOffline === 'function'
+                        ? await fetchConFallbackOffline(API_URL, {
+                            method: 'POST',
+                            headers: headers,
+                            body: JSON.stringify(datosUsuario)
+                        })
+                        : await fetch(API_URL, {
+                            method: 'POST',
+                            headers: headers,
+                            body: JSON.stringify(datosUsuario)
+                        });
+
+                    const resultado = await response.json();
+
+                    if (response.ok || response.offline) {
+                        alert('¡Operación exitosa! ' + (resultado.message || 'Usuario guardado correctamente.'));
+                        document.getElementById('formulario-usuarios').reset();
+                        if (!esAdmin) {
+                            window.location.href = 'index.html';
+                        }
+                    } else {
+                        alert('Atención: ' + (resultado.message || 'No se pudo guardar el usuario.'));
+                    }
+                } catch (error) {
+                    console.error('Error al guardar el usuario:', error);
+                    const cached = JSON.parse(localStorage.getItem(LOCAL_KEY_USERS) || '[]');
+                    cached.push({ ...datosUsuario, id: Date.now() });
+                    localStorage.setItem(LOCAL_KEY_USERS, JSON.stringify(cached));
+                    alert('✓ Usuario guardado en modo local (Offline).');
+                    if (!esAdmin) window.location.href = 'index.html';
+                }
+            });
+        }
+
+        // 3. CONSULTAR USUARIO (Exclusivo Administrador)
+        async function consultarUsuario() {
+            if (!esAdministradorActual()) {
+                alert('Acceso Denegado: La consulta de usuarios por ID está reservada exclusivamente para el Administrador.');
+                return;
+            }
+
+            const id = inputId.value.trim();
+            if (!id) {
+                alert('Por favor, ingresa el número ID del usuario a consultar.');
+                return;
+            }
+
+            const token = localStorage.getItem('sigepor_token') || localStorage.getItem('token');
+            const headers = { 'Content-Type': 'application/json' };
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+
+            try {
+                const response = await fetch(`${API_URL}/${id}`, { headers });
+                if (response.ok) {
+                    const resultado = await response.json();
+                    const userObj = resultado.data || resultado;
+                    inputNombre.value = userObj.nombre || '';
+                    inputCorreo.value = userObj.correo || userObj.email || '';
+                    inputUsuario.value = userObj.usuario || '';
+                    if (userObj.idRol) inputRol.value = String(userObj.idRol);
+                    inputContrasena.value = '';
+                    alert('✓ Datos del usuario cargados exitosamente desde la base de datos.');
+                    return;
+                } else {
+                    const errRes = await response.json();
+                    alert('⚠️ ' + (errRes.message || 'Usuario no encontrado en la base de datos.'));
+                }
+            } catch (error) {
+                console.warn('Buscando en caché local:', error);
+            }
+
+            const cached = JSON.parse(localStorage.getItem(LOCAL_KEY_USERS) || '[]');
+            const userObj = cached.find(u => Number(u.id) === Number(id));
+            if (userObj) {
+                inputNombre.value = userObj.nombre || '';
+                inputCorreo.value = userObj.correo || userObj.email || '';
+                inputUsuario.value = userObj.usuario || '';
+                if (userObj.idRol) inputRol.value = String(userObj.idRol);
+                inputContrasena.value = '';
+                alert('✓ Datos de usuario cargados desde almacenamiento local.');
+            } else {
+                alert('⚠️ Usuario no encontrado.');
+            }
+        }
+
+        // 4. ACTUALIZAR USUARIO (Exclusivo Administrador)
+        async function actualizarUsuario() {
+            if (!esAdministradorActual()) {
+                alert('Acceso Denegado: La actualización directa por ID está reservada exclusivamente para el Administrador.');
+                return;
+            }
+
+            const id = inputId.value.trim();
+            if (!id) {
+                alert('Se requiere ingresar el número ID del usuario que deseas actualizar.');
+                return;
+            }
+
+            const datosActualizados = {
+                id: parseInt(id, 10),
+                nombre: sanitizarEntrada(inputNombre.value),
+                correo: sanitizarEntrada(inputCorreo.value),
+                usuario: sanitizarEntrada(inputUsuario.value),
+                idRol: parseInt(inputRol.value, 10)
+            };
+
+            if (inputContrasena.value.trim()) {
+                datosActualizados.contraseña = inputContrasena.value;
+            }
+
+            const token = localStorage.getItem('sigepor_token') || localStorage.getItem('token');
+            const headers = { 'Content-Type': 'application/json' };
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+
+            try {
+                const response = typeof fetchConFallbackOffline === 'function'
+                    ? await fetchConFallbackOffline(`${API_URL}/${id}`, {
+                        method: 'PUT',
+                        headers: headers,
+                        body: JSON.stringify(datosActualizados)
+                    })
+                    : await fetch(`${API_URL}/${id}`, {
+                        method: 'PUT',
+                        headers: headers,
+                        body: JSON.stringify(datosActualizados)
+                    });
+
+                const resultado = await response.json();
+
+                const cached = JSON.parse(localStorage.getItem(LOCAL_KEY_USERS) || '[]');
+                const idx = cached.findIndex(u => Number(u.id) === Number(id));
+                if (idx >= 0) {
+                    cached[idx] = { ...cached[idx], ...datosActualizados };
+                    localStorage.setItem(LOCAL_KEY_USERS, JSON.stringify(cached));
+                }
+
+                if (response.ok || response.offline) {
+                    alert('¡Datos de usuario actualizados con éxito!');
+                } else {
+                    alert('Error al actualizar: ' + (resultado.message || 'No se pudo actualizar el usuario.'));
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Error de red al intentar actualizar los datos del usuario.');
+            }
+        }
+
+        // 5. BORRAR USUARIO (Exclusivo Administrador)
+        async function borrarUsuario() {
+            if (!esAdministradorActual()) {
+                alert('Acceso Denegado: La eliminación de usuarios está reservada exclusivamente para el Administrador.');
+                return;
+            }
+
+            const id = inputId.value.trim();
+            if (!id) {
+                alert('Debe ingresar el ID del usuario que desea eliminar.');
+                return;
+            }
+
+            const confirmar = confirm(`¿Está seguro de eliminar definitivamente al usuario con ID ${id}?`);
+            if (!confirmar) return;
+
+            const token = localStorage.getItem('sigepor_token') || localStorage.getItem('token');
+            const headers = { 'Content-Type': 'application/json' };
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+
+            try {
+                const response = typeof fetchConFallbackOffline === 'function'
+                    ? await fetchConFallbackOffline(`${API_URL}/${id}`, { method: 'DELETE', headers: headers })
+                    : await fetch(`${API_URL}/${id}`, { method: 'DELETE', headers: headers });
+
+                const resultado = await response.json();
+
+                const cached = JSON.parse(localStorage.getItem(LOCAL_KEY_USERS) || '[]');
+                const filtrados = cached.filter(u => Number(u.id) !== Number(id));
+                localStorage.setItem(LOCAL_KEY_USERS, JSON.stringify(filtrados));
+
+                if (response.ok || response.offline) {
+                    alert('🗑️ ' + (resultado.message || 'Usuario eliminado.'));
+                    document.getElementById('formulario-usuarios').reset();
+                } else {
+                    alert('Error al borrar: ' + (resultado.message || 'No se pudo eliminar el usuario.'));
+                }
+            } catch (error) {
+                console.error(error);
+                const cached = JSON.parse(localStorage.getItem(LOCAL_KEY_USERS) || '[]');
+                const filtrados = cached.filter(u => Number(u.id) !== Number(id));
+                localStorage.setItem(LOCAL_KEY_USERS, JSON.stringify(filtrados));
+                alert('🗑️ Usuario eliminado en modo local.');
+                document.getElementById('formulario-usuarios').reset();
+            }
+        }
+
+        // 6. Solicitud de recuperación por correo
+        async function procesarRecuperacionCorreo(e) {
+            e.preventDefault();
+            const correoInput = document.getElementById('input-correo-recuperacion');
+            const correoVal = sanitizarEntrada(correoInput.value);
+
+            if (!correoVal) {
+                alert('Por favor, ingresa un correo electrónico válido.');
+                return;
+            }
+
+            try {
+                await fetch('http://localhost:3001/api/users/restaurar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ correo: correoVal })
+                }).catch(() => {});
+            } catch (err) {}
+
+            alert('Si el correo electrónico ingresado está registrado en SIGEPOR, recibirás un mensaje con las instrucciones para restaurar tu contraseña.');
+            document.getElementById('formulario-recuperacion').reset();
+        }
+
+        // Inicializar modo de vista al cargar la página
+        document.addEventListener('DOMContentLoaded', () => {
+            inicializarModoVista();
+        });
+    </script>
+</body>
+</html>

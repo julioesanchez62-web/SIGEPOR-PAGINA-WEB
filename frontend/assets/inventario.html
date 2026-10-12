@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIGEPOR - Gestión de Inventarios (HU-05)</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="main-container">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <img src="images/logo.jpg" alt="SIGEPOR">
+                </div>
+                <h3>SIGEPOR</h3>
+            </div>
+            <ul>
+                <li><a href="index.html">🏠 Inicio</a></li>
+                <li><a href="registro_usuarios.html">👤 Usuarios</a></li>
+                <li><a href="registroporcino.html">🐷 Gestión Porcina</a></li>
+                <li><a href="reproduccion.html">🍼 Reproducción</a></li>
+                <li><a href="vacunas.html">🩺 Vacunas</a></li>
+                <li><a href="inventario.html" class="active">📦 Inventario</a></li>
+                <li><a href="veterinarios.html">👨‍⚕️ Veterinarios</a></li>                 
+                <li><a href="reportes.html">📊 Reportes & Alertas</a></li>
+                <li><a href="javascript:void(0)" onclick="cerrarSesion()">🔒 Cerrar Sesión</a></li>
+            </ul>
+        </nav>
+
+        <section class="content">
+            <div class="page-header">
+                <div class="header-icon">📦</div>
+                <div class="header-content">
+                    <h2>GESTIÓN DE INVENTARIOS Y ALIMENTACIÓN</h2>
+                    <p>Control de alimento balanceado, proveedores y capacidad de corrales en MySQL</p>
+                </div>
+            </div>
+
+            <!-- Formulario de Alimento -->
+            <div class="card-wrapper">
+                <div class="form-section-title">
+                    <span class="section-icon">🌾</span>
+                    <h3>Registrar Suministro de Alimento</h3>
+                </div>
+
+                <form id="alimentoForm" class="grid-form">
+                    <div class="field">
+                        <label>Tipo / Nombre de Alimento:</label>
+                        <input type="text" id="tipo_alimento" placeholder="Ej: Concentrado Iniciación 20kg" required>
+                    </div>
+                    <div class="field">
+                        <label>Cantidad (kg):</label>
+                        <input type="number" id="cantidad" placeholder="0.0" step="0.5" required>
+                    </div>
+                    <div class="field">
+                        <label>Fecha de Suministro:</label>
+                        <input type="date" id="fecha_suministro" required>
+                    </div>
+                    <div class="field">
+                        <label>Proveedor:</label>
+                        <input type="text" id="proveedor" placeholder="Ej: Agroveterinaria El Granero">
+                    </div>
+                    <div class="field">
+                        <label>Corral Asignado:</label>
+                        <input type="text" id="corral" placeholder="Ej: Corral A-01">
+                    </div>
+
+                    <button type="submit" class="btn-save btn-add">🌾 REGISTRAR ALIMENTO EN INVENTARIO</button>
+                </form>
+            </div>
+
+            <!-- Tabla de Inventario de Alimentos -->
+            <div class="table-wrapper">
+                <div class="table-header">
+                    <div class="header-icon-table">📋</div>
+                    <h3>Stock de Alimentos Registrados</h3>
+                </div>
+                
+                <div class="table-container">
+                    <table id="alimentoTable">
+                        <thead>
+                            <tr>
+                                <th>🆔 ID</th>
+                                <th>🌾 Tipo de Alimento</th>
+                                <th>⚖️ Cantidad</th>
+                                <th>📅 Fecha Suministro</th>
+                                <th>🚚 Proveedor</th>
+                                <th>🏠 Corral</th>
+                                <th>⚙️ Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Filas dinámicas -->
+                        </tbody>
+                    </table>
+                    <div class="table-empty" id="tableEmpty" style="display: none;">
+                        <p>📭 Aún no hay alimentos en el inventario. ¡Añade uno para comenzar!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estadísticas -->
+            <div class="stats-section">
+                <div class="stat-card">
+                    <div class="stat-icon">🌾</div>
+                    <h4>Total Alimento Almacenado</h4>
+                    <p class="stat-number" id="statKilosAlimento">0 kg</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="js/script.js"></script>
+    <script src="js/offline_sync.js"></script>
+    <script src="js/auth_guard.js"></script>
+    <script src="js/inventario.js"></script>
+</body>
+</html>

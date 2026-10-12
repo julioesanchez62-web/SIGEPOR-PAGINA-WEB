@@ -1,0 +1,32 @@
+{
+  "name": "sigepor-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Este proyecto está configurado para seguir una arquitectura modular con Node.js en CommonJS, Express y MySQL usando mysql2/promise.",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "src/server.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "node --test --test-force-exit",
+    "test:e2e": "node --test --test-force-exit test/e2e-integration.test.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.6",
+    "dotenv": "^16.6.1",
+    "express": "^4.22.2",
+    "jsonwebtoken": "^9.0.3",
+    "mysql2": "^3.24.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14",
+    "supertest": "^7.0.0"
+  },
+  "keywords": []
+}

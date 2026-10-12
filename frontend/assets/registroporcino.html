@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIGEPOR - Gestión Porcina</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .badge-status {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .table-actions {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+        }
+        .btn-table-action {
+            border: none;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+        .btn-table-action:hover {
+            opacity: 0.85;
+        }
+        .btn-table-edit {
+            background-color: #e2e8f0;
+            color: #2b6cb0;
+        }
+        .btn-table-delete {
+            background-color: #fed7d7;
+            color: #9b2c2c;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <img src="images/logo.jpg" alt="SIGEPOR">
+                </div>
+                <h3>SIGEPOR</h3>
+            </div>
+            <ul>
+                <li><a href="index.html">🏠 Inicio</a></li>
+                <li><a href="registro_usuarios.html">👤 Usuarios</a></li>
+                <li><a href="registroporcino.html" class="active">🐷 Gestión Porcina</a></li>
+                <li><a href="reproduccion.html">🍼 Reproducción</a></li>
+                <li><a href="vacunas.html">🩺 Vacunas</a></li>
+                <li><a href="inventario.html">📦 Inventario</a></li>
+                <li><a href="veterinarios.html">👨‍⚕️ Veterinarios</a></li>                 
+                <li><a href="reportes.html">📊 Reportes & Alertas</a></li>
+                <li><a href="javascript:void(0)" onclick="cerrarSesion()">🔒 Cerrar Sesión</a></li>
+            </ul>
+        </nav>
+
+        <section class="content">
+            <div class="page-header">
+                <div class="header-icon">🐷</div>
+                <div class="header-content">
+                    <h2>GESTIÓN DE INVENTARIO PORCINO</h2>
+                    <p>Administra y registra información detallada de tu rebaño en MySQL</p>
+                </div>
+            </div>
+
+            <!-- Sección de formulario de registro -->
+            <div class="card-wrapper">
+                <div class="form-section-title">
+                    <span class="section-icon" id="formIcon">➕</span>
+                    <h3 id="formTitle">Registrar Nuevo Porcino</h3>
+                </div>
+
+                <form id="pigForm" class="grid-form">
+                    <div class="field">
+                        <label>Identificación / Código (ID):</label>
+                        <input type="text" id="pigId" placeholder="Ej: P-001" required>
+                    </div>
+                    <div class="field">
+                        <label>Raza:</label>
+                        <select id="pigBreed" required>
+                            <option value="">Seleccione una raza</option>
+                            <option value="Landrace">🐷 Landrace</option>
+                            <option value="Duroc">🐷 Duroc</option>
+                            <option value="Yorkshire">🐷 Yorkshire</option>
+                            <option value="Pietrain">🐷 Pietrain</option>
+                            <option value="Mixta">🐷 Mixta</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Peso (kg):</label>
+                        <input type="number" id="pigWeight" placeholder="0.0" step="0.1" required>
+                    </div>
+                    <div class="field">
+                        <label>Estado de Salud:</label>
+                        <select id="pigHealth" required>
+                            <option value="">Seleccione estado</option>
+                            <option value="Saludable">✓ Saludable</option>
+                            <option value="En Observación">⚠ En Observación</option>
+                            <option value="Enfermo">🏥 Enfermo</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Fecha de Nacimiento:</label>
+                        <input type="date" id="pigBirth" required>
+                    </div>
+                    <div class="field">
+                        <label>Género:</label>
+                        <select id="pigGender" required>
+                            <option value="">Seleccione género</option>
+                            <option value="Macho">Macho</option>
+                            <option value="Hembra">Hembra</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Veterinario Asignado:</label>
+                        <select id="veterinario_id">
+                            <option value="">Seleccione veterinario</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" id="btnSubmitForm" class="btn-add btn-save">🐷 AÑADIR PORCINO</button>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn-reset" onclick="limpiarFormularioPorcino()">↻ LIMPIAR FORMULARIO</button>
+                        <button type="button" class="btn-consult" onclick="consultarPorcino()">🔍 CONSULTAR PORCINO</button>
+                        <button type="button" class="btn-update" onclick="actualizarPorcino()">✏️ ACTUALIZAR PORCINO</button>
+                        <button type="button" class="btn-delete" onclick="borrarPorcino()">🗑️ BORRAR PORCINO</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Sección de tabla de inventario -->
+            <div class="table-wrapper">
+                <div class="table-header">
+                    <div class="header-icon-table">📋</div>
+                    <h3>Inventario de Porcinos en Base de Datos</h3>
+                </div>
+                
+                <div class="table-container">
+                    <table id="pigTable">
+                        <thead>
+                            <tr>
+                                <th>🆔 Código / ID</th>
+                                <th>🐷 Raza</th>
+                                <th>⚖️ Peso</th>
+                                <th>❤️ Estado de Salud</th>
+                                <th>📅 Nacimiento</th>
+                                <th>⚧ Género</th>
+                                <th>👨‍⚕️ Veterinario</th>
+                                <th>⚙️ Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Las filas se inyectan con JS -->
+                        </tbody>
+                    </table>
+                    <div class="table-empty" id="tableEmpty" style="display: none;">
+                        <p>📭 Aún no hay porcinos registrados. ¡Añade uno para comenzar!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estadísticas rápidas -->
+            <div class="stats-section">
+                <div class="stat-card">
+                    <div class="stat-icon">🐷</div>
+                    <h4>Total de Porcinos</h4>
+                    <p class="stat-number" id="statTotal">0</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✓</div>
+                    <h4>Saludables</h4>
+                    <p class="stat-number" id="statHealthy">0</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⚠</div>
+                    <h4>En Observación</h4>
+                    <p class="stat-number" id="statObserving">0</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🏥</div>
+                    <h4>Enfermos</h4>
+                    <p class="stat-number" id="statSick">0</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="js/offline_sync.js"></script>
+    <script src="js/auth_guard.js"></script>
+    <script src="js/registro_porcino.js"></script>
+</body>
+</html>

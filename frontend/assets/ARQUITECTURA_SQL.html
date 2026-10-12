@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arquitectura SIGEPOR - SQL Integration</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        
+        .architecture {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+        
+        .layer {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            border-radius: 15px;
+            color: white;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            transition: transform 0.3s;
+        }
+        
+        .layer:hover {
+            transform: translateY(-10px);
+        }
+        
+        .layer h2 {
+            font-size: 1.8em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .layer ul {
+            list-style: none;
+            text-align: left;
+        }
+        
+        .layer li {
+            margin: 10px 0;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .layer li:last-child {
+            border-bottom: none;
+        }
+        
+        .flow {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .flow h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        
+        .flow-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .flow-step {
+            background: white;
+            border: 2px solid #667eea;
+            padding: 20px;
+            border-radius: 10px;
+            min-width: 150px;
+            text-align: center;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .arrow {
+            color: #667eea;
+            font-size: 2em;
+            font-weight: bold;
+        }
+        
+        .endpoints {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .endpoints h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        
+        .endpoint {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #667eea;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        
+        .endpoint .method {
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .database {
+            background: #fff3cd;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .database h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+        
+        .database code {
+            background: #fff8e1;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+        
+        .checklist {
+            background: #d4edda;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #28a745;
+        }
+        
+        .checklist h4 {
+            color: #155724;
+            margin-bottom: 15px;
+        }
+        
+        .checklist ul {
+            list-style: none;
+        }
+        
+        .checklist li {
+            padding: 8px 0;
+            color: #155724;
+        }
+        
+        .checklist li::before {
+            content: "✓ ";
+            color: #28a745;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏗️ Arquitectura SIGEPOR - SQL Integration</h1>
+        
+        <!-- ARQUITECTURA -->
+        <div class="section">
+            <h2>Capas de la Aplicación</h2>
+            <div class="architecture">
+                <div class="layer">
+                    <h2>💻 Frontend</h2>
+                    <ul>
+                        <li>index.html</li>
+                        <li>registro_veterinarios.html</li>
+                        <li>vacunas.html</li>
+                        <li>HTML + CSS + JavaScript</li>
+                        <li>Peticiones AJAX/Fetch</li>
+                    </ul>
+                </div>
+                
+                <div class="layer">
+                    <h2>🔌 Backend API</h2>
+                    <ul>
+                        <li>Node.js + Express</li>
+                        <li>server.js</li>
+                        <li>Puerto 3001</li>
+                        <li>JWT Auth</li>
+                        <li>CORS habilitado</li>
+                    </ul>
+                </div>
+                
+                <div class="layer">
+                    <h2>🗄️ Base de Datos</h2>
+                    <ul>
+                        <li>MySQL 8.0+</li>
+                        <li>Base: sigepor</li>
+                        <li>localhost:3306</li>
+                        <li>4 tablas</li>
+                        <li>Relaciones FK</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- FLUJOS -->
+        <div class="section">
+            <h2>Flujos de Datos</h2>
+            
+            <div class="flow">
+                <h3>1. Registro de Veterinario</h3>
+                <div class="flow-diagram">
+                    <div class="flow-step">Formulario</div>
+                    <div class="arrow">→</div>
+                    <div class="flow-step">Validación</div>
+                    <div class="arrow">→</div>
+                    <div class="flow-step">POST /api/...</div>
+                    <div class="arrow">→</div>
+                    <div class="flow-step">Hash + BD</div>
+                    <div class="arrow">→</div>
+                    <div class="flow-step">✓ Registrado</div>
+                </div>
+            </div>
+            
+            <div class="flow">
+                <h3>2. Login y Autenticación</h3>
+                <div class="flow-diagram">
+                    <div class="flow-step">Usuario/Pass</div>
+                    <div class="arrow">→</div>
+                    <div class="flow-step">POST /login</div>
+                    <div class="arrow">→</div>
+                    <div class="flow-step">Verifica BD</div>
+                    <div class="arrow">→</div>
+                    <div class="flow-step">Genera JWT</div>
+                    <div class="arrow">→</div>
+                    <div class="flow-step">Sesión Activa</div>
+                </div>
+            </div>
+            
+            <div class="flow">
+                <h3>3. Crear Vacunación</h3>
+                <div class="flow-diagram">
+                    <div class="flow-step">Datos Vacuna</div>
+                    <div class="arrow">→</div>
+                    <div class="flow-step">POST + Token</div>
+                    <div class="arrow">→</div>
+                    <div class="flow-step">Valida Auth</div>
+                    <div class="arrow">→</div>
+                    <div class="flow-step">INSERT BD</div>
+                    <div class="arrow">→</div>
+                    <div class="flow-step">Actualiza Tabla</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ENDPOINTS -->
+        <div class="section">
+            <h2>API Endpoints</h2>
+            <div class="endpoints">
+                <h3>Veterinarios</h3>
+                <div class="endpoint">
+                    <span class="method">POST</span> /api/veterinarios/registrar
+                    <br><small>Registrar nuevo veterinario</small>
+                </div>
+                <div class="endpoint">
+                    <span class="method">POST</span> /api/veterinarios/login
+                    <br><small>Iniciar sesión y obtener token</small>
+                </div>
+                <div class="endpoint">
+                    <span class="method">GET</span> /api/veterinarios/perfil
+                    <br><small>Obtener datos del veterinario logueado</small>
+                </div>
+                
+                <h3 style="margin-top: 20px;">Vacunaciones</h3>
+                <div class="endpoint">
+                    <span class="method">POST</span> /api/vacunas
+                    <br><small>Crear nueva vacunación</small>
+                </div>
+                <div class="endpoint">
+                    <span class="method">GET</span> /api/vacunas
+                    <br><small>Obtener todas las vacunaciones del veterinario</small>
+                </div>
+                <div class="endpoint">
+                    <span class="method">GET</span> /api/vacunas/:id
+                    <br><small>Obtener una vacunación específica</small>
+                </div>
+                <div class="endpoint">
+                    <span class="method">PUT</span> /api/vacunas/:id
+                    <br><small>Actualizar vacunación</small>
+                </div>
+                <div class="endpoint">
+                    <span class="method">DELETE</span> /api/vacunas/:id
+                    <br><small>Eliminar vacunación</small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- BASE DE DATOS -->
+        <div class="section">
+            <h2>Tablas de Base de Datos</h2>
+            
+            <div class="database">
+                <h4>📌 veterinarios</h4>
+                <code>id, nombre, email, usuario, contraseña (hash), fecha_registro, activo</code>
+            </div>
+            
+            <div class="database">
+                <h4>💉 vacunaciones</h4>
+                <code>id, veterinario_id (FK), porcino_id, nombre_vacuna, fecha_aplicacion, estado, dosis, proxima_vacuna_dias, notas, fecha_registro</code>
+            </div>
+            
+            <div class="database">
+                <h4>🐷 porcinos</h4>
+                <code>id, veterinario_id (FK), identificacion, raza, peso, estado_salud, fecha_nacimiento, genero, fecha_registro</code>
+            </div>
+            
+            <div class="database">
+                <h4>📋 logs_actividad</h4>
+                <code>id, veterinario_id (FK), accion, descripcion, fecha_hora</code>
+            </div>
+        </div>
+        
+        <!-- INSTALACIÓN -->
+        <div class="section">
+            <h2>Instalación Rápida</h2>
+            
+            <div class="checklist">
+                <h4>Pasos a seguir:</h4>
+                <ul>
+                    <li>Crear BD ejecutando database.sql en MySQL</li>
+                    <li>Instalar dependencias: npm install</li>
+                    <li>Configurar .env con credenciales MySQL</li>
+                    <li>Iniciar servidor: npm start</li>
+                    <li>Abrir index.html en navegador</li>
+                    <li>Registrarse e iniciar sesión</li>
+                    <li>Gestionar vacunaciones</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- SEGURIDAD -->
+        <div class="section">
+            <h2>🔒 Características de Seguridad</h2>
+            
+            <div class="checklist">
+                <h4>Implementado:</h4>
+                <ul>
+                    <li>Hash de contraseñas con bcryptjs</li>
+                    <li>Autenticación JWT sin estado</li>
+                    <li>CORS con control de orígenes</li>
+                    <li>Validación en servidor y cliente</li>
+                    <li>Foreign Key constraints</li>
+                    <li>Índices para optimización</li>
+                    <li>Variables de entorno para credenciales</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- ESTRUCTURA DE ARCHIVOS -->
+        <div class="section">
+            <h2>📁 Estructura de Archivos</h2>
+            <pre style="background: #f8f9fa; padding: 20px; border-radius: 10px; overflow-x: auto;">
+SIGEPOR PAGINA WEB/
+├── server.js                    ⚙️ Backend Node.js
+├── package.json                 📦 Dependencias
+├── .env                         🔐 Configuración
+├── database.sql                 🗄️ Script SQL
+├── index.html                   🏠 Inicio
+├── registro_veterinarios.html   👨‍⚕️ Auth
+├── vacunas.html                 💉 Vacunaciones
+├── registroporcino.html         🐷 Porcinos
+├── style.css                    🎨 Estilos
+├── script.js                    📜 Scripts
+├── INICIO_RAPIDO.md             ⚡ Guía rápida
+├── INSTALACION_SQL.md           📚 Instalación
+├── PRUEBA_RAPIDA.md             🧪 Pruebas
+└── RESUMEN_SQL.md               📋 Resumen
+            </pre>
+        </div>
+    </div>
+</body>
+</html>

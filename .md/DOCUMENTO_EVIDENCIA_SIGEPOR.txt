@@ -1,0 +1,92 @@
+DOCUMENTO DE EVIDENCIA DE DESARROLLO - SIGEPOR
+
+1. Información del proyecto
+Proyecto: SIGEPOR
+Tipo: Sistema de gestión web con módulos de veterinarios, vacunas y gestión de datos porcinos.
+Objetivo: Implementar una solución web con backend funcional, conexión a base de datos MySQL y módulos de registro, autenticación y gestión de información.
+
+2. Enlace al repositorio
+Repositorio Git del proyecto:
+https://github.com/julioesanchez62-web/sigepor-backend.git
+
+3. Configuración del proyecto
+- Lenguaje de programación: JavaScript
+- Entorno de ejecución: Node.js
+- Framework backend: Express
+- Base de datos: MySQL
+- Autenticación: JWT
+- Encriptación: bcryptjs
+- Variables de entorno: dotenv
+
+Archivos principales:
+- server.js
+- package.json
+- .env
+- backend/README.md
+
+4. Implementación de módulos funcionales
+Módulos implementados:
+- Módulo de veterinarios
+  - Registro
+  - Login
+  - Perfil de usuario autenticado
+- Módulo de vacunas
+  - Registro de vacunación
+  - Consulta de vacunaciones
+  - Consulta por identificación
+  - Actualización de vacunación
+
+5. Aplicación de programación orientada a objetos
+El proyecto se estructura de forma modular con separación de responsabilidades:
+- Servidor principal en server.js
+- Lógica de rutas y control de peticiones
+- Manejo de autenticación con middleware
+- Consultas a base de datos centralizadas
+
+Aunque el proyecto no está implementado con clases formales en todos los módulos, sí aplica una estructura organizada y modular que facilita la mantenibilidad y la escalabilidad.
+
+6. Persistencia de datos
+- Se usa MySQL como motor de base de datos.
+- Se almacenan datos de veterinarios y vacunaciones.
+- La conexión se gestiona mediante un pool de conexiones.
+- Se realiza inserción, consulta y actualización de registros.
+
+7. Desarrollo de servicios de acceso a datos
+Se implementaron servicios de acceso a datos mediante consultas SQL directamente al motor MySQL desde el backend, permitiendo:
+- registrar usuarios,
+- autenticar veterinarios,
+- consultar perfiles,
+- registrar y consultar vacunaciones.
+
+8. Control de versiones
+- El proyecto está bajo control de versiones con Git.
+- Se evidencia un historial de commits en el repositorio.
+- El repositorio remoto configurado es:
+  https://github.com/julioesanchez62-web/sigepor-backend.git
+
+9. Buenas prácticas de desarrollo
+- Uso de variables de entorno para configuración sensible
+- Separación de lógica de servidor y base de datos
+- Validación de datos de entrada
+- Manejo de errores en respuestas HTTP
+- Uso de JWT para autenticación segura
+- Uso de bcrypt para proteger contraseñas
+
+10. Evidencia de desarrollo
+Evidencia funcional verificada:
+- El servidor quedó levantado en localhost:3001
+- Se comprobó la respuesta del backend en el puerto configurado
+- Se verificó el funcionamiento del endpoint de registro de veterinarios
+- Se verificó la existencia de la base de datos y del esquema de datos asociado
+
+11. Contenido del archivo README
+El archivo README del proyecto presenta información sobre:
+- el sistema SIGEPOR,
+- mejoras visuales del frontend,
+- archivos modificados,
+- estructura del proyecto,
+- guía de uso,
+- mejoras de diseño y documentación.
+
+12. Conclusiones breves
+El proyecto presenta una base sólida para el desarrollo de un sistema de gestión orientado a veterinarios y vacunación. Se logró implementar una arquitectura backend funcional con conexión a MySQL, autenticación segura y módulos básicos de gestión. La estructura modular facilita futuras ampliaciones y mejora la organización del código.
