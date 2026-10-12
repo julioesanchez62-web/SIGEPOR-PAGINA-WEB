@@ -18,15 +18,27 @@ const app = express();
  * nunca las rutas lo verán.
  */
 
+const session = require('express-session');
+const passport = require('./config/passport');
+
 // 1. Middlewares globales
 app.use(cors()); // <--- 🔥 ¡ESTA LÍNEA ES LA QUE ACTIVA EL PERMISO PARA EL NAVEGADOR!
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// 2. Rutas
-app.use('/api/porcinos', require('./modules/porcinos/porcinos.routes'));
-app.use('/api/veterinarios', require('./modules/veterinarios/veterinarios.routes'));
+// Configuración de sesión requerida para Passport OAuth flow
+app.use(session({
+  secret: process.env.SESSION_SECRET || process.env.JWT_SECRET || 'sigepor_session_secret_2026',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { secure: false } // secure: true si se usa HTTPS en producción
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+// 2. Rutas principales
 app.use('/', indexRoutes);
-
 
 // 3. Capturador de 404
 app.use((req, res, next) => {

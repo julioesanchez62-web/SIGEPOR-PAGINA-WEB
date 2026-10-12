@@ -24,7 +24,7 @@ async function findByEmailOrUsername(identificador) {
     if (!identificador) return null;
 
     const [rows] = await pool.execute(
-      `SELECT id, nombre, email AS correo, usuario, contraseña, idRol, fecha_registro, activo
+      `SELECT id, nombre, email AS correo, usuario, contraseña, idRol, telefono, fecha_registro, activo
        FROM usuarios
        WHERE LOWER(TRIM(email)) = LOWER(TRIM(?))
          OR LOWER(TRIM(usuario)) = LOWER(TRIM(?))
@@ -46,7 +46,7 @@ async function findByEmailOrUsername(identificador) {
 async function getUserById(id) {
   try {
     const [rows] = await pool.execute(
-      'SELECT id, nombre, email AS correo, usuario, idRol, fecha_registro, activo FROM usuarios WHERE id = ? LIMIT 1',
+      'SELECT id, nombre, email AS correo, usuario, idRol, telefono, fecha_registro, activo FROM usuarios WHERE id = ? LIMIT 1',
       [id]
     );
     return rows[0] || null;
@@ -62,14 +62,14 @@ async function getUserById(id) {
  */
 async function createUser(datos) {
   try {
-    const { nombre, correo, contraseña, idRol } = datos;
-    // Usamos el correo también como nombre de usuario por defecto
-    const usuarioPorDefecto = correo.split('@')[0]; 
+    const { nombre, correo, usuario, contraseña, idRol, telefono } = datos;
+    // Usamos el usuario provisto o el correo como nombre de usuario por defecto
+    const usuarioFinal = usuario || (correo ? correo.split('@')[0] : 'user_' + Date.now()); 
 
-    // 1. Ejecutar la inserción en MySQL
+    // 1. Ejecutar la inserción en MySQL con consulta preparada parametrizada (Seguridad anti-SQL Injection)
     const [result] = await pool.execute(
-      'INSERT INTO usuarios (nombre, email, usuario, contraseña, idRol, fecha_registro, activo) VALUES (?, ?, ?, ?, ?, NOW(), 1)',
-      [nombre, correo, usuarioPorDefecto, contraseña, idRol || 2] // Por defecto rol 2 si no se envía
+      'INSERT INTO usuarios (nombre, email, usuario, contraseña, idRol, telefono, fecha_registro, activo) VALUES (?, ?, ?, ?, ?, ?, NOW(), 1)',
+      [nombre, correo, usuarioFinal, contraseña, idRol || 2, telefono || null]
     );
 
     // 2. Control de seguridad
@@ -105,12 +105,22 @@ async function getAllUsers() {
  */
 async function updateUser(id, datos) {
   try {
-    const { nombre, correo, contraseña, idRol } = datos;
+    const { nombre, correo, usuario, contraseña, idRol, telefono } = datos;
+    const telefono_db = telefono !== undefined && telefono !== null && String(telefono).trim() !== '' 
+      ? String(telefono).trim() 
+      : null;
 
-    await pool.execute(
-      'UPDATE usuarios SET nombre = ?, email = ?, contraseña = ?, idRol = ? WHERE id = ?',
-      [nombre, correo, contraseña, idRol, id]
-    );
+    if (contraseña) {
+      await pool.execute(
+        'UPDATE usuarios SET nombre = ?, email = ?, contraseña = ?, idRol = ?, telefono = ? WHERE id = ?',
+        [nombre, correo, contraseña, idRol, telefono_db, id]
+      );
+    } else {
+      await pool.execute(
+        'UPDATE usuarios SET nombre = ?, email = ?, idRol = ?, telefono = ? WHERE id = ?',
+        [nombre, correo, idRol, telefono_db, id]
+      );
+    }
 
     return await getUserById(id);
   } catch (error) {

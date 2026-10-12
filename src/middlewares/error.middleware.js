@@ -15,6 +15,12 @@
  */
 
 function errorMiddleware(err, req, res, next) {
+  // Manejo de errores específicos de MySQL (ej. entradas duplicadas ER_DUP_ENTRY)
+  if (!err.statusCode && err.code === 'ER_DUP_ENTRY') {
+    err.statusCode = 409;
+    err.message = 'Ya existe un registro con esos datos (ID, correo o usuario) en la base de datos.';
+  }
+
   // Obtener status code, por defecto 500
   const statusCode = err.statusCode || 500;
   
@@ -38,11 +44,12 @@ function errorMiddleware(err, req, res, next) {
   // 4xx: mensaje original (error esperado, información útil)
   // 5xx: mensaje genérico (no exponer detalles al cliente)
   const responseMessage = isInternalError
-    ? 'Error interno del servidor. Por favor, intenta más tarde.'
+    ? (err.message || 'Error interno del servidor. Por favor, intenta más tarde.')
     : (err.message || 'Ocurrió un error en la solicitud');
 
   // Responder al cliente con estructura estándar
   res.status(statusCode).json({
+    status: isInternalError ? 'error' : 'fail',
     message: responseMessage,
   });
 }

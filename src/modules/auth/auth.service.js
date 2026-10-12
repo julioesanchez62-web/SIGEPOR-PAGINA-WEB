@@ -1,33 +1,58 @@
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const authRepository = require('./auth.repository');
+const { JWT_SECRET, ROLES } = require('../../middlewares/auth.middleware');
 
 async function login(email, contraseña) {
-  // 1. Buscamos al usuario en MySQL usando el repositorio
   const usuario = await authRepository.findUserByEmail(email);
   
   if (!usuario) {
-    const error = new Error('Credenciales inválidas');
+    const error = new Error('Credenciales inválidas. Correo electrónico o contraseña incorrectos.');
     error.statusCode = 401;
     throw error;
   }
 
-  // 2. OBTENER LA CONTRASEÑA DE MYSQL (Mapeo flexible de columnas comunes)
-  // Tu servicio de usuarios utiliza 'usuario.contraseña', aseguramos capturar esa propiedad
+  // VALIDACIÓN ESTRICTA: Validar si el usuario está activo antes de emitir token JWT
+  if (usuario.activo !== undefined && (Number(usuario.activo) === 0 || usuario.activo === false)) {
+    const error = new Error('Acceso denegado: El usuario se encuentra inactivo en el sistema. Contacte al administrador.');
+    error.statusCode = 403;
+    throw error;
+  }
+
   const contrasenaBD = usuario.contraseña || usuario.contrasena || usuario.password;
 
-  // 3. COMPARACIÓN EN TEXTO PLANO (Igual que en tu users.service.js)
-  const passwordMatch = (contraseña === contrasenaBD);
-  
+  // Verificación estricta con Bcrypt: Rechazar contraseñas no cifradas o en texto plano
+  let passwordMatch = false;
+  if (contrasenaBD && (contrasenaBD.startsWith('$2a$') || contrasenaBD.startsWith('$2b$'))) {
+    passwordMatch = await bcrypt.compare(contraseña, contrasenaBD);
+  } else {
+    // No permitir acceso con contraseñas en texto plano
+    passwordMatch = false;
+  }
+
   if (!passwordMatch) {
-    const error = new Error('Credenciales inválidas');
+    const error = new Error('Credenciales inválidas. Correo electrónico o contraseña incorrectos.');
     error.statusCode = 401;
     throw error;
   }
 
-  // 4. Excluimos los campos de contraseña del objeto de respuesta por seguridad
+  // Generar Token JWT
+  const tokenPayload = {
+    id: usuario.id,
+    nombre: usuario.nombre,
+    email: usuario.email || usuario.correo,
+    idRol: usuario.idRol || 2,
+    rolNombre: ROLES[usuario.idRol] || 'Empleado'
+  };
+
+  const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: '24h' });
+
   const { contraseña: _, contrasena: __, password: ___, ...userWithoutPassword } = usuario;
   
   return {
-    user: userWithoutPassword
+    user: userWithoutPassword,
+    token,
+    rol: ROLES[usuario.idRol] || 'Empleado'
   };
 }
 

@@ -7,19 +7,83 @@
  * - Responder con códigos HTTP correctos
  */
 
+const jwt = require('jsonwebtoken');
 const usersService = require('./users.service');
+const { JWT_SECRET } = require('../../middlewares/auth.middleware');
 
 /**
  * 🟢 Asociado al botón: GUARDAR CAMBIOS
  * Crear nuevo usuario
  * POST /users
+ * 
+ * NOTA TÉCNICA DE INTEGRACIÓN A FUTURO:
+ * - Para autenticación social con Google y Facebook se requerirán los paquetes:
+ *   - 'passport'
+ *   - 'passport-google-oauth20'
+ *   - 'passport-facebook'
+ * - Para verificación de teléfono con confirmación por SMS se requerirá:
+ *   - 'twilio' (Twilio Verify API / Twilio SMS SDK)
  */
 async function createUser(req, res, next) {
   try {
-    const { nombre, correo, contraseña, idRol } = req.body;
-    const usuario = await usersService.createUser(nombre, correo, contraseña, idRol);
+    const { nombre, correo, usuario: usuarioCustom, contraseña, idRol, telefono, requerirSMS } = req.body;
+
+    // SEGURIDAD: Bloquear asignación del rol Administrador a peticiones públicas o sin privilegios
+    if (Number(idRol) === 1 || String(idRol).toLowerCase() === 'administrador') {
+      const authHeader = req.headers['authorization'] || req.headers['x-access-token'];
+      let requesterIsAdmin = false;
+
+      if (authHeader) {
+        try {
+          const token = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : authHeader;
+          const decoded = jwt.verify(token, JWT_SECRET);
+          if (Number(decoded.idRol) === 1 || (decoded.rolNombre && decoded.rolNombre.toLowerCase() === 'administrador')) {
+            requesterIsAdmin = true;
+          }
+        } catch (err) {
+          requesterIsAdmin = false;
+        }
+      }
+
+      if (!requesterIsAdmin) {
+        return res.status(403).json({
+          status: 'fail',
+          message: 'Acceso denegado: Se requieren privilegios de Administrador autenticado para asignar el rol Administrador.'
+        });
+      }
+    }
+
+    // STUB PARA CONFIRMACIÓN POR SMS (Twilio SDK):
+    if (requerirSMS && telefono) {
+      console.log(`[SMS-STUB] Enviando código de confirmación por SMS vía Twilio al número: ${telefono}`);
+      // Ejemplo de implementación con Twilio:
+      // const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+      // await client.messages.create({ body: 'Tu código SIGEPOR es: 123456', from: process.env.TWILIO_PHONE, to: telefono });
+    }
+
+    // Control de nulos antes de persistir para evitar errores con undefined en MySQL
+    const telefono_db = (telefono !== undefined && telefono !== null && String(telefono).trim() !== '') 
+      ? String(telefono).trim() 
+      : null;
+
+    const usuario = await usersService.createUser({
+      nombre,
+      correo,
+      usuario: usuarioCustom,
+      contraseña,
+      idRol,
+      telefono: telefono_db
+    });
+
+    // Enviar correo de bienvenida asíncrono con plantilla de SIGEPOR 2026
+    const { sendWelcomeEmail } = require('../../utils/mailer');
+    sendWelcomeEmail({
+      email: correo,
+      nombre,
+      origen: 'formulario web'
+    }).catch(err => console.error('[Welcome Mail Error]:', err.message));
     
-    // Entrega confirmación exitosa dinámica al Postman
+    // Entrega confirmación exitosa dinámica al cliente HTTP
     return res.status(201).json({
       message: 'Usuario creado exitosamente',
       user: usuario
@@ -58,12 +122,16 @@ async function login(req, res, next) {
     // Respuesta exitosa entregada al cliente HTTP (Postman / Frontend)
     return res.status(200).json({
       message: '¡Autenticación exitosa! Bienvenido al sistema SIGEPOR',
+      token: usuarioValido.token,
       data: {
         id: usuarioValido.id,
         nombre: usuarioValido.nombre,
-        email: usuarioValido.email,
-        idRol: usuarioValido.idRol
-      }
+        email: usuarioValido.email || usuarioValido.correo,
+        idRol: usuarioValido.idRol,
+        rolNombre: usuarioValido.rolNombre,
+        token: usuarioValido.token
+      },
+      user: usuarioValido
     });
   } catch (error) {
     next(error); // Pasa el error al middleware global de errores
@@ -99,7 +167,11 @@ async function getUserById(req, res, next) {
       });
     }
     
-    return res.status(200).json(usuario);
+    return res.status(200).json({
+      status: 'success',
+      data: usuario,
+      ...usuario
+    });
   } catch (error) {
     next(error);
   }
@@ -113,9 +185,19 @@ async function getUserById(req, res, next) {
 async function updateUser(req, res, next) {
   try {
     const { id } = req.params;
-    const { nombre, correo, contraseña, idRol } = req.body;
+    const { nombre, correo, usuario, contraseña, idRol, telefono } = req.body;
     
-    const usuarioActualizado = await usersService.updateUser(id, { nombre, correo, contraseña, idRol });
+    // Control de nulos antes de persistir para evitar errores con undefined en MySQL
+    const telefono_db = telefono !== undefined ? (telefono ? String(telefono).trim() : null) : null;
+
+    const usuarioActualizado = await usersService.updateUser(id, { 
+      nombre, 
+      correo, 
+      usuario, 
+      contraseña, 
+      idRol, 
+      telefono: telefono_db 
+    });
     
     return res.status(200).json({
       message: 'Usuario actualizado exitosamente',
@@ -164,6 +246,20 @@ async function deleteUser(req, res, next) {
   }
 }
 
+/**
+ * Obtener perfil del usuario autenticado
+ */
+async function getProfile(req, res, next) {
+  try {
+    return res.status(200).json({
+      status: 'success',
+      user: req.user || null
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 // Exportación unificada de todas las funciones mapeadas en las rutas
 module.exports = {
   createUser,
@@ -172,5 +268,6 @@ module.exports = {
   getUserById,
   updateUser,
   patchUser,
-  deleteUser
+  deleteUser,
+  getProfile
 };
