@@ -3,152 +3,1005 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIGEPOR - Sistema de Gestión Porcina</title>
-    <!-- 🔥 CORREGIDO: Se cambia class por rel para que el CSS cargue perfectamente -->
+    <title>SIGEPOR 2026 | Sistema de Gestión Porcina</title>
+
+    <!-- Enlace a estilos previos si existen en el proyecto -->
     <link rel="stylesheet" href="css/style.css">
+
+    <!-- Fuentes Futuristas 2026 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-dark: #07090e;
+            --bg-card: rgba(15, 23, 42, 0.75);
+            --bg-card-hover: rgba(30, 41, 59, 0.88);
+            --border-glass: rgba(255, 255, 255, 0.1);
+            --border-glow: rgba(16, 185, 129, 0.4);
+            --primary-emerald: #10b981;
+            --primary-glow: #059669;
+            --accent-cyan: #06b6d4;
+            --accent-violet: #8b5cf6;
+            --whatsapp-green: #25d366;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --error-red: #ef4444;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        html, body {
+            width: 100%;
+            min-height: 100vh;
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 10% 15%, rgba(16, 185, 129, 0.12) 0%, transparent 40%),
+                radial-gradient(circle at 90% 85%, rgba(6, 182, 212, 0.1) 0%, transparent 40%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* --- Header Top Navigation Bar (Línea Horizontal Unificada) --- */
+        .top-navbar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            background: rgba(7, 9, 14, 0.9);
+            border-bottom: 1px solid var(--border-glass);
+            padding: 0.8rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-left-group {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+        }
+
+        .logo-container-top {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-frame-top {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, var(--primary-emerald), var(--accent-cyan));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 18px rgba(16, 185, 129, 0.4);
+            overflow: hidden;
+        }
+
+        .logo-frame-top img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .brand-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(90deg, #ffffff, var(--text-muted));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Status Badge Integrado Arriba */
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            padding: 0.35rem 0.85rem;
+            border-radius: 99px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--primary-emerald);
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--primary-emerald);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--primary-emerald);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        /* Botones en la misma Línea Superior */
+        .nav-right-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .btn-nav {
+            padding: 0.6rem 1.2rem;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.25s ease;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-whatsapp {
+            background: rgba(37, 211, 102, 0.12);
+            color: #4ade80;
+            border: 1px solid rgba(37, 211, 102, 0.35);
+        }
+
+        .btn-whatsapp:hover {
+            background: rgba(37, 211, 102, 0.25);
+            box-shadow: 0 0 15px rgba(37, 211, 102, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn-register {
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text-main);
+            border: 1px solid var(--border-glass);
+        }
+
+        .btn-register:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .btn-login-modal {
+            background: linear-gradient(135deg, var(--primary-emerald), var(--primary-glow));
+            color: #000;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.35);
+        }
+
+        .btn-login-modal:hover {
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.6);
+            transform: translateY(-2px);
+        }
+
+        /* --- Ticker / Marquesina Flotante --- */
+        .news-ticker-bar {
+            background: rgba(16, 185, 129, 0.08);
+            border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            height: 40px;
+            font-size: 0.85rem;
+        }
+
+        .ticker-label {
+            background: var(--primary-emerald);
+            color: #000;
+            font-weight: 800;
+            padding: 0 1.2rem;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            white-space: nowrap;
+            font-family: 'Outfit', sans-serif;
+            z-index: 2;
+            box-shadow: 5px 0 15px rgba(0,0,0,0.5);
+        }
+
+        .ticker-track {
+            display: flex;
+            white-space: nowrap;
+            will-change: transform;
+            animation: marquee 25s linear infinite;
+        }
+
+        .ticker-track:hover {
+            animation-play-state: paused;
+        }
+
+        .ticker-item {
+            display: inline-flex;
+            align-items: center;
+            padding: 0 2rem;
+            color: var(--text-main);
+        }
+
+        .ticker-item span {
+            color: var(--accent-cyan);
+            font-weight: 600;
+            margin-right: 0.5rem;
+        }
+
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* --- Hero Section --- */
+        .hero-section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3.5rem 1.5rem 2rem;
+            text-align: center;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            padding: 0.35rem 1.2rem;
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: var(--primary-emerald);
+            border-radius: 99px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .hero-section h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: clamp(2.3rem, 5vw, 3.8rem);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1.2rem;
+        }
+
+        .hero-section h1 span {
+            background: linear-gradient(135deg, var(--primary-emerald), var(--accent-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-section p {
+            color: var(--text-muted);
+            font-size: 1.15rem;
+            max-width: 700px;
+            margin: 0 auto 2.5rem;
+            line-height: 1.6;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1.2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 3.5rem;
+        }
+
+        .btn-cta {
+            padding: 0.9rem 2rem;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-emerald), var(--primary-glow));
+            color: #000;
+            border: none;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.35);
+            cursor: pointer;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 0 30px rgba(16, 185, 129, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            border: 1px solid var(--border-glass);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+
+        /* Feature Cards */
+        .hero-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3.5rem;
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 2rem;
+            border-radius: 20px;
+            text-align: left;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            border-color: var(--border-glow);
+            transform: translateY(-4px);
+            background: var(--bg-card-hover);
+        }
+
+        .feature-icon {
+            font-size: 2.2rem;
+            margin-bottom: 1rem;
+            display: inline-block;
+        }
+
+        .feature-card h3 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        /* --- CARRUSEL SLIDER DE NOTICIAS DESLIZANTES --- */
+        .news-slider-section {
+            max-width: 100vw;
+            overflow: hidden;
+            padding: 2.5rem 0;
+            background: rgba(15, 23, 42, 0.4);
+            border-top: 1px solid var(--border-glass);
+            border-bottom: 1px solid var(--border-glass);
+            margin-bottom: 4rem;
+            position: relative;
+        }
+
+        .news-section-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .news-section-header h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+        }
+
+        .news-slider-container {
+            display: flex;
+            width: max-content;
+            animation: slideNews 35s linear infinite;
+        }
+
+        .news-slider-container:hover {
+            animation-play-state: paused;
+        }
+
+        @keyframes slideNews {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        .news-card {
+            width: 340px;
+            margin: 0 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 20px;
+            padding: 1.5rem;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .news-card:hover {
+            border-color: var(--border-glow);
+            transform: translateY(-6px);
+            background: var(--bg-card-hover);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        }
+
+        .news-tag {
+            display: inline-block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            background: rgba(6, 182, 212, 0.12);
+            padding: 0.25rem 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        .news-card h3 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.1rem;
+            line-height: 1.35;
+            margin-bottom: 0.8rem;
+        }
+
+        .news-card p {
+            color: var(--text-muted);
+            font-size: 0.88rem;
+            line-height: 1.5;
+            margin-bottom: 1.2rem;
+        }
+
+        .news-date {
+            font-size: 0.78rem;
+            color: var(--primary-emerald);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        /* --- Section Info Beneficios --- */
+        .info-section {
+            border-top: 1px solid var(--border-glass);
+            border-bottom: 1px solid var(--border-glass);
+            background: rgba(15, 23, 42, 0.3);
+            padding: 4rem 1.5rem;
+            margin-bottom: 4rem;
+        }
+
+        .info-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .info-container h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.2rem;
+            margin-bottom: 3rem;
+        }
+
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .benefit {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            padding: 1.5rem;
+            border-radius: 16px;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            text-align: left;
+        }
+
+        .benefit h4 {
+            color: var(--primary-emerald);
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .benefit p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        /* --- MODAL EMERGENTE GLASSMORPHISM --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.82);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            padding: 1rem;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .login-container-modal {
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid var(--border-glow);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-radius: 24px;
+            padding: 2.5rem 2rem;
+            max-width: 480px;
+            width: 100%;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
+            position: relative;
+            transform: scale(0.92);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            overflow: hidden;
+        }
+
+        .modal-overlay.active .login-container-modal {
+            transform: scale(1);
+        }
+
+        .login-container-modal::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-emerald), var(--accent-cyan));
+        }
+
+        .close-modal-btn {
+            position: absolute;
+            top: 1.2rem;
+            right: 1.5rem;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.6rem;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .close-modal-btn:hover {
+            color: #fff;
+        }
+
+        .logo-login-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1.2rem;
+        }
+
+        .logo-frame-login {
+            width: 68px;
+            height: 68px;
+            border-radius: 18px;
+            overflow: hidden;
+            border: 2px solid var(--border-glow);
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.3);
+        }
+
+        .logo-frame-login img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .role-selector-tabs {
+            display: flex;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border-glass);
+            border-radius: 14px;
+            padding: 0.3rem;
+            gap: 0.3rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .role-tab {
+            flex: 1;
+            padding: 0.6rem 0.4rem;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .role-tab.active {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--primary-emerald);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+        }
+
+        #loginTitle {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.35rem;
+            text-align: center;
+            margin-bottom: 0.3rem;
+        }
+
+        .login-subtitle {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            text-align: center;
+            margin-bottom: 1.8rem;
+        }
+
+        #loginForm {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        #loginForm label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: -0.6rem;
+        }
+
+        #loginForm input[type="text"],
+        #loginForm input[type="password"] {
+            width: 100%;
+            padding: 0.9rem 1.2rem;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        #loginForm input:focus {
+            outline: none;
+            border-color: var(--primary-emerald);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.25);
+        }
+
+        #loginForm button[type="submit"] {
+            margin-top: 0.5rem;
+            padding: 1rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.85rem;
+        }
+
+        .links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .links a:hover {
+            color: var(--primary-emerald);
+        }
+
+        .error-msg {
+            display: none;
+            margin-top: 1.5rem;
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            padding: 1rem;
+            border-radius: 12px;
+            color: #fca5a5;
+            font-size: 0.85rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .error-msg .close-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.8rem;
+            cursor: pointer;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .footer {
+            margin-top: auto;
+            border-top: 1px solid var(--border-glass);
+            padding: 1.8rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            background: rgba(7, 9, 14, 0.95);
+        }
+    </style>
 </head>
-<body> 
-<main class="main">
-    <section class="form-section">
-        <!-- Sección Hero Principal -->
-        <div class="hero-section">
-            <div class="hero-content">
-                <div class="logo-hero-container">
-                    <div class="logo-frame">
-                        <img src="images/logo.jpg" alt="SIGEPOR Logo" class="icon-hero"> 
-                    </div>
-                    <div class="logo-glow"></div>
-                    <div class="logo-particles">
-                        <span class="particle">🐷</span>
-                        <span class="particle">🐷</span>
-                        <span class="particle">🐷</span>
-                        <span class="particle">🐷</span>
-                        <span class="particle">🐷</span>
-                    </div>
+<body>
+    <!-- Navegación Superior Unificada -->
+    <nav class="top-navbar">
+        <div class="nav-left-group">
+            <div class="logo-container-top">
+                <div class="logo-frame-top">
+                    <img src="images/logo.jpg" alt="SIGEPOR Logo" class="icon">
                 </div>
-                <h1></h1>
-                <p class="hero-subtitle"></p>
-                <p class="hero-description">Administra tu negocio porcícola de manera eficiente, moderna y confiable</p>
-                
-                <div class="cta-buttons">
-                    <a href="#" onclick="scrollToLogin(); return false;" class="btn-primary btn-cta">ACCEDER AHORA</a>
-                    <a href="registro_usuarios.html" class="btn-secondary btn-cta">CREAR CUENTA</a>
-                </div>
+                <span class="brand-title">SIGEPOR <span style="font-size:0.75rem; color:var(--primary-emerald);">2026</span></span>
             </div>
 
-            <div class="hero-features">
-                <div class="feature-card">
-                    <div class="feature-icon">📊</div>
-                    <h3>Análisis y Reportes</h3>
-                    <p>Visualiza métricas en tiempo real de tu producción</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🐷</div>
-                    <h3>Registro Porcino</h3>
-                    <p>Gestiona información completa de tus animales</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🔒</div>
-                    <h3>Datos Seguros</h3>
-                    <p>Protección avanzada de tu información</p>
-                </div>
+            <!-- Indicador Único de Conexión al lado del Logo -->
+            <div class="status-badge" id="syncStatus">
+                <div class="pulse-dot"></div>
+                <span>Inventario Activo • MySQL</span>
             </div>
         </div>
 
-        <!-- Sección de Información -->
-        <div class="info-section">
-            <div class="info-container">
-                <h2>¿Por qué elegir SIGEPOR?</h2>
-                
-                <div class="benefits-grid">
-                    <div class="benefit">
-                        <h4>✓ Fácil de Usar</h4>
-                        <p>Interfaz intuitiva diseñada para ti un porcicultor colombiano</p>
-                    </div>
-                    <div class="benefit">
-                        <h4>✓ Eficiente</h4>
-                        <p>Optimiza tu tiempo y recursos en la gestión diaria</p>
-                    </div>
-                    <div class="benefit">
-                        <h4>✓ Completo</h4>
-                        <p>Todas las herramientas que necesitas en un solo lugar</p>
-                    </div>
-                    <div class="benefit">
-                        <h4>✓ Confiable</h4>
-                        <p>Sistema robusto respaldado por tecnología moderna</p>
-                    </div>
+            
+
+        <!-- Botonera Horizontal: WhatsApp, Registrarse, Iniciar Sesión -->
+        <div class="nav-right-actions">
+            <a href="https://wa.me/573227112827?text=Hola,%20deseo%20m%C3%A1s%20informaci%C3%B3n%20sobre%20SIGEPOR" target="_blank" class="btn-nav btn-whatsapp">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12.012 2c-5.508 0-9.989 4.481-9.989 9.989 0 1.83.493 3.548 1.353 5.034l-1.376 5.027 5.176-1.358c1.432.78 3.064 1.286 4.836 1.286 5.507 0 9.989-4.48 9.989-9.989 0-5.508-4.482-9.989-9.989-9.989zm0 18.232c-1.572 0-3.04-.438-4.305-1.192l-.309-.185-3.071.805.819-2.993-.203-.323c-.838-1.332-1.283-2.883-1.283-4.555 0-4.542 3.696-8.239 8.239-8.239 4.544 0 8.24 3.697 8.24 8.239 0 4.543-3.696 8.24-8.24 8.24z"/>
+                </svg>
+                Contáctanos
+            </a>
+
+            <a href="registro_usuarios.html" class="btn-nav btn-register">Registrarse</a>
+
+            <button class="btn-nav btn-login-modal" onclick="toggleModal(true)">Iniciar Sesión</button>
+        </div>
+    </nav>
+
+    <!-- Ticker de Noticias Rápidas en Movimiento CONTINUO -->
+    <div class="news-ticker-bar">
+        <div class="ticker-label">📡 LIVE FEED</div>
+        <div class="ticker-track">
+            <div class="ticker-item"><span>MERCADO:</span> El precio del cerdo en pie registra alza del 3.8% en el mercado nacional.</div>
+            <div class="ticker-item"><span>BIOSEGURIDAD:</span> Nuevas pautas ICA 2026 para el control de peste porcina africana.</div>
+            <div class="ticker-item"><span>TECNOLOGÍA:</span> Sensores de monitoreo térmico reducen mortalidad neonatal un 15%.</div>
+            <div class="ticker-item"><span>NUTRICIÓN:</span> Alimentos balanceados con proteoproteína bajan costos operativos.</div>
+            <!-- Loop Infinito -->
+            <div class="ticker-item"><span>MERCADO:</span> El precio del cerdo en pie registra alza del 3.8% en el mercado nacional.</div>
+            <div class="ticker-item"><span>BIOSEGURIDAD:</span> Nuevas pautas ICA 2026 para el control de peste porcina africana.</div>
+            <div class="ticker-item"><span>TECNOLOGÍA:</span> Sensores de monitoreo térmico reducen mortalidad neonatal un 15%.</div>
+            <div class="ticker-item"><span>NUTRICIÓN:</span> Alimentos balanceados con proteoproteína bajan costos operativos.</div>
+        </div>
+    </div>
+
+    <!-- SECCIÓN DE NOTICIAS Y TENDENCIAS PORCINAS (CARRUSEL SLIDER) -->
+    <div class="news-slider-section">
+        <div class="news-section-header">
+            <h2>📰 Noticias & Actualidad Porcina 2026</h2>
+            <p style="color:var(--text-muted); font-size:0.9rem; margin-top:0.3rem;">Desplaza el cursor o presiona para pausar la lectura</p>
+        </div>
+
+        <div class="news-slider-container">
+            <div class="news-card">
+                <div>
+                    <span class="news-tag">Sanidad & Vacunas</span>
+                    <h3>Avances en Vacunación Multivalente para Lechones</h3>
+                    <p>Nuevos esquemas de inmunización combinada reducen en un 40% la incidencia de problemas respiratorios en fase de destete.</p>
+                </div>
+                <div class="news-date">⏱️ Hace 2 horas • Sector Sanitario</div>
+            </div>
+
+            <div class="news-card">
+                <div>
+                    <span class="news-tag" style="color:var(--primary-emerald); background:rgba(16,185,129,0.12);">Nutrición Inteligente</span>
+                    <h3>Estrategias de Alimentación de Precisión en Cerdas Lactantes</h3>
+                    <p>Uso de dosificadores automáticos con microchips incrementa la producción lechera y mantiene la condición corporal materna.</p>
+                </div>
+                <div class="news-date">⏱️ Hace 5 horas • Nutrición Porcina</div>
+            </div>
+
+            <div class="news-card">
+                <div>
+                    <span class="news-tag" style="color:var(--accent-violet); background:rgba(139,92,246,0.12);">Trazabilidad QR</span>
+                    <h3>Normativa de Identificación Digital Obligatoria en Granjas</h3>
+                    <p>Entra en vigencia el estándar unificado de código QR y RFID para la movilización y exportación de carne porcina.</p>
+                </div>
+                <div class="news-date">⏱️ Ayer • Regulaciones Agro</div>
+            </div>
+
+            <div class="news-card">
+                <div>
+                    <span class="news-tag">Biotecnología</span>
+                    <h3>Selección Genómica Automatizada para Mayor Prolificidad</h3>
+                    <p>Algoritmos de IA integrados a bases de datos genealógicas optimizan el cruce de hembras hiperprolíficas.</p>
+                </div>
+                <div class="news-date">⏱️ Hace 2 días • Genética Porcina</div>
+            </div>
+
+            <!-- Copias para scroll infinito -->
+            <div class="news-card">
+                <div>
+                    <span class="news-tag">Sanidad & Vacunas</span>
+                    <h3>Avances en Vacunación Multivalente para Lechones</h3>
+                    <p>Nuevos esquemas de inmunización combinada reducen en un 40% la incidencia de problemas respiratorios en fase de destete.</p>
+                </div>
+                <div class="news-date">⏱️ Hace 2 horas • Sector Sanitario</div>
+            </div>
+
+            <div class="news-card">
+                <div>
+                    <span class="news-tag" style="color:var(--primary-emerald); background:rgba(16,185,129,0.12);">Nutrición Inteligente</span>
+                    <h3>Estrategias de Alimentación de Precisión en Cerdas Lactantes</h3>
+                    <p>Uso de dosificadores automáticos con microchips incrementa la producción lechera y mantiene la condición corporal materna.</p>
+                </div>
+                <div class="news-date">⏱️ Hace 5 horas • Nutrición Porcina</div>
+            </div>
+
+            <div class="news-card">
+                <div>
+                    <span class="news-tag" style="color:var(--accent-violet); background:rgba(139,92,246,0.12);">Trazabilidad QR</span>
+                    <h3>Normativa de Identificación Digital Obligatoria en Granjas</h3>
+                    <p>Entra en vigencia el estándar unificado de código QR y RFID para la movilización y exportación de carne porcina.</p>
+                </div>
+                <div class="news-date">⏱️ Ayer • Regulaciones Agro</div>
+            </div>
+
+            <div class="news-card">
+                <div>
+                    <span class="news-tag">Biotecnología</span>
+                    <h3>Selección Genómica Automatizada para Mayor Prolificidad</h3>
+                    <p>Algoritmos de IA integrados a bases de datos genealógicas optimizan el cruce de hembras hiperprolíficas.</p>
+                </div>
+                <div class="news-date">⏱️ Hace 2 días • Genética Porcina</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sección de Información Beneficios -->
+    <div class="info-section">
+        <div class="info-container">
+            <h2>¿Por qué elegir SIGEPOR?</h2>
+            
+            <div class="benefits-grid">
+                <div class="benefit">
+                    <h4>✓ Fácil de Usar</h4>
+                    <p>Interfaz intuitiva diseñada para el porcicultor colombiano</p>
+                </div>
+                <div class="benefit">
+                    <h4>✓ Eficiente</h4>
+                    <p>Optimiza tu tiempo y recursos en la gestión diaria</p>
+                </div>
+                <div class="benefit">
+                    <h4>✓ Completo</h4>
+                    <p>Todas las herramientas que necesitas en un solo lugar</p>
+                </div>
+                <div class="benefit">
+                    <h4>✓ Confiable</h4>
+                    <p>Sistema robusto respaldado por tecnología moderna</p>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Sección de Login -->
-        <div id="login-section" class="login-section">
-            <div class="login-container">
-                <header>
-                    <div class="logo-login-container">
-                        <div class="logo-frame-login">
-                            <img src="images/logo.jpg" alt="SIGEPOR Logo" class="icon"> 
-                        </div>
-                        <div class="logo-glow-login"></div>
+    <!-- MODAL DE LOGIN (Conserva IDs originales para script.js / auth_guard.js) -->
+    <div class="modal-overlay" id="loginModalOverlay" onclick="closeModalOnOverlay(event)">
+        <div id="login-section" class="login-container-modal login-container">
+            <button class="close-modal-btn" onclick="toggleModal(false)">&times;</button>
+            
+            <header>
+                <div class="logo-login-container">
+                    <div class="logo-frame-login">
+                        <img src="images/logo.jpg" alt="SIGEPOR Logo" class="icon"> 
                     </div>
-                    
-                    <!-- Pestañas de Control de Acceso por Roles (RBAC) -->
-                    <div class="role-selector-tabs" id="roleSelectorTabs">
-                        <button type="button" class="role-tab active" data-role="1" onclick="seleccionarRolIngreso(1, 'Administrador', '👑')">
-                            👑 Administrador
-                        </button>
-                        <button type="button" class="role-tab" data-role="3" onclick="seleccionarRolIngreso(3, 'Veterinario', '👨‍⚕️')">
-                            👨‍⚕️ Veterinario
-                        </button>
-                        <button type="button" class="role-tab" data-role="2" onclick="seleccionarRolIngreso(2, 'Usuario / Empleado', '👤')">
-                            👤 Usuario / Empleado
-                        </button>
-                    </div>
-
-                    <h2 id="loginTitle">👑 INGRESO DE ADMINISTRADOR</h2>
-                    <p class="login-subtitle" id="loginSubtitle">Acceso al portal de control y administración global SIGEPOR</p>
-                </header>
+                </div>
                 
-                <form id="loginForm">
-                    <input type="hidden" id="loginRolEsperado" value="1">
-
-                    <label for="loginIdentificador">Ingrese su usuario o correo</label>
-                    <input type="text" id="loginIdentificador" placeholder="Usuario o correo" autocomplete="username" required>
-
-                    <label>Ingrese su contraseña</label>
-                    <input type="password" id="loginPassword" placeholder="Contraseña" required>
-
-                    <button type="submit" class="btn-primary">INICIAR SESIÓN</button>
-                </form>
-
-                <div class="links">
-                    <a href="restaurar.html" class="link-forgot">¿Olvidaste tu contraseña? Recuperar aquí</a>
-                    <a href="registro_usuarios.html" class="link-create">Crear nueva cuenta</a>
+                <!-- Pestañas RBAC -->
+                <div class="role-selector-tabs" id="roleSelectorTabs">
+                    <button type="button" class="role-tab active" data-role="1" onclick="seleccionarRolIngreso(1, 'Administrador', '👑')">
+                        👑 Administrador
+                    </button>
+                    <button type="button" class="role-tab" data-role="3" onclick="seleccionarRolIngreso(3, 'Veterinario', '👨‍⚕️')">
+                        👨‍⚕️ Veterinario
+                    </button>
+                    <button type="button" class="role-tab" data-role="2" onclick="seleccionarRolIngreso(2, 'Usuario / Empleado', '👤')">
+                        👤 Usuario / Empleado
+                    </button>
                 </div>
 
-                <!-- Mensaje de error interno -->
-                <div class="error-msg" id="errorBox">
-                    <span class="close-btn" onclick="document.getElementById('errorBox').style.display='none'">X</span>
-                    <p>DATOS INCORRECTOS <br> INGRESARLOS NUEVAMENTE</p>
-                </div>
+                <h2 id="loginTitle">👑 INGRESO DE ADMINISTRADOR</h2>
+                <p class="login-subtitle" id="loginSubtitle">Acceso al portal de control y administración global SIGEPOR</p>
+            </header>
+            
+            <form id="loginForm">
+                <input type="hidden" id="loginRolEsperado" value="1">
+
+                <label for="loginIdentificador">Ingrese su usuario o correo</label>
+                <input type="text" id="loginIdentificador" placeholder="Usuario o correo" autocomplete="username" required>
+
+                <label for="loginPassword">Ingrese su contraseña</label>
+                <input type="password" id="loginPassword" placeholder="Contraseña" required>
+
+                <button type="submit" class="btn-primary">INICIAR SESIÓN</button>
+            </form>
+
+            <div class="links">
+                <a href="restaurar.html" class="link-forgot">¿Olvidaste tu contraseña? Recuperar aquí</a>
+                <a href="registro_usuarios.html" class="link-create">Crear nueva cuenta</a>
+            </div>
+
+            <div class="error-msg" id="errorBox">
+                <span class="close-btn" onclick="document.getElementById('errorBox').style.display='none'">X</span>
+                <p>DATOS INCORRECTOS <br> INGRESARLOS NUEVAMENTE</p>
             </div>
         </div>
+    </div>
 
-        <!-- Pie de página -->
-        <footer class="footer">
-            <p>&copy; 2026 SIGEPOR - Todos los derechos reservados</p>
-        </footer>
-    </section>
-</main>
+    <!-- Pie de página -->
+    <footer class="footer">
+        <p>&copy; 2026 SIGEPOR - Todos los derechos reservados</p>
+    </footer>
 
+    <!-- Scripts del Proyecto -->
     <script src="js/auth_guard.js"></script>
     <script src="js/script.js"></script>
     <script src="js/offline_sync.js"></script>
     <script>
-        // Función de desplazamiento suave
-        function scrollToLogin() {
-            document.getElementById('login-section')?.scrollIntoView({ behavior: 'smooth' });
+        // Modal Handlers
+        function toggleModal(show) {
+            const modal = document.getElementById('loginModalOverlay');
+            if (show) {
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            } else {
+                modal.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
         }
+
+        function closeModalOnOverlay(event) {
+            if (event.target.id === 'loginModalOverlay') {
+                toggleModal(false);
+            }
+        }
+
+        // Sincronización automática de estado con offline_sync.js
+        window.addEventListener('online', () => { if (typeof renderSyncBadge === 'function') renderSyncBadge(); });
+        window.addEventListener('offline', () => { if (typeof renderSyncBadge === 'function') renderSyncBadge(); });
+        document.addEventListener('DOMContentLoaded', () => { if (typeof renderSyncBadge === 'function') renderSyncBadge(); });
     </script>
 </body>
 </html>

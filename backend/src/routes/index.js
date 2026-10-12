@@ -24,6 +24,19 @@ router.get('/perfil', usersController.getProfile);
    2. MONTAJE DE MÓDULOS DEL SISTEMA (Soporta prefijos con /api y sin /api)
    ========================================================================== */
 
+// --- ENDPOINT PÚBLICO PARA SELECTORES DE PORCINOS ---
+const { pool } = require('../config/mysql');
+router.get(['/api/porcinos_lista', '/porcinos_lista'], async (req, res, next) => {
+  try {
+    const [rows] = await pool.query(
+      'SELECT id, identificacion, raza, estado_salud FROM porcinos ORDER BY identificacion ASC'
+    );
+    res.json(rows);
+  } catch (error) {
+    next(error);
+  }
+});
+
 // --- MÓDULO DE PORCINOS ---
 router.use('/api/porcinos', porcinosRoutes);
 router.use('/porcinos', porcinosRoutes);
@@ -57,5 +70,23 @@ router.use('/reproduccion', reproduccionRoutes);
 // --- MÓDULO DE REPORTES Y ALERTAS ---
 router.use('/api/reportes', reportesRoutes);
 router.use('/reportes', reportesRoutes);
+
+// --- RUTAS DIRECTAS PARA CRUD DE TABLAS (OptiPig) ---
+const corralesRoutes = require('../modules/corrales/corrales.routes');
+const enfermedadesRoutes = require('../modules/enfermedades/enfermedades.routes');
+const logsActividadRoutes = require('../modules/logs_actividad/logs_actividad.routes');
+const proveedoresRoutes = require('../modules/proveedores/proveedores.routes');
+
+router.use('/api/corrales', corralesRoutes);
+router.use('/corrales', corralesRoutes);
+
+router.use('/api/enfermedades', enfermedadesRoutes);
+router.use('/enfermedades', enfermedadesRoutes);
+
+router.use('/api/logs_actividad', logsActividadRoutes);
+router.use('/logs_actividad', logsActividadRoutes);
+
+router.use('/api/proveedores', proveedoresRoutes);
+router.use('/proveedores', proveedoresRoutes);
 
 module.exports = router;

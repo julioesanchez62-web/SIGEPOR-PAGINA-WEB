@@ -16,10 +16,26 @@ const veterinariosRepository = require('../veterinarios/veterinarios.repository'
 const { JWT_SECRET, ROLES } = require('../../middlewares/auth.middleware');
 
 /**
- * 🟢 Lógica para: GUARDAR CAMBIOS
- * Crear un nuevo usuario en el sistema con contraseña encriptada (Bcrypt)
- */
-async function createUser(nombre, correo, contraseña, idRol) {
+  * 🟢 Lógica para: GUARDAR CAMBIOS
+  * Crear un nuevo usuario en el sistema con contraseña encriptada (Bcrypt)
+  */
+async function createUser(datosOParam, correoArg, contrasenaArg, idRolArg) {
+  let nombre, correo, usuario, contraseña, idRol, telefono;
+
+  if (typeof datosOParam === 'object' && datosOParam !== null) {
+    nombre = datosOParam.nombre;
+    correo = datosOParam.correo;
+    usuario = datosOParam.usuario;
+    contraseña = datosOParam.contraseña;
+    idRol = datosOParam.idRol;
+    telefono = datosOParam.telefono;
+  } else {
+    nombre = datosOParam;
+    correo = correoArg;
+    contraseña = contrasenaArg;
+    idRol = idRolArg;
+  }
+
   const rolDefecto = Number(idRol) || 2;
   const salt = await bcrypt.genSalt(10);
   const hashContrasena = await bcrypt.hash(contraseña, salt);
@@ -27,8 +43,10 @@ async function createUser(nombre, correo, contraseña, idRol) {
   const nuevoUsuario = await usersRepository.createUser({
     nombre,
     correo,
+    usuario: usuario || (correo ? correo.split('@')[0] : 'user_' + Date.now()),
     contraseña: hashContrasena,
-    idRol: rolDefecto
+    idRol: rolDefecto,
+    telefono: telefono || null
   });
 
   // Si se registra con rol 3 (Veterinario), sincronizar con la tabla veterinarios

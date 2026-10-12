@@ -3,11 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIGEPOR - Gestión y Registro de Usuarios</title>
-    <link rel="stylesheet" href="css/style.css">
+    <title>SIGEPOR| Registro de Usuarios y Cuentas</title>
+    <!-- Fuentes Futuristas y Estilos Unificados -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/optipig-theme.css">
     <style>
         .public-registration-wrapper {
-            max-width: 850px;
+            max-width: 900px;
             margin: 0 auto;
             width: 100%;
         }
@@ -15,28 +19,29 @@
             display: flex;
             gap: 12px;
             margin-bottom: 25px;
-            border-bottom: 2px solid #e2e8f0;
+            border-bottom: 1px solid var(--border-glass);
             padding-bottom: 12px;
         }
         .tab-btn {
-            background: #edf2f7;
-            border: 1px solid #cbd5e0;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-glass);
             padding: 12px 22px;
-            border-radius: 8px;
-            font-weight: 600;
+            border-radius: 12px;
+            font-weight: 700;
             font-size: 0.95rem;
-            color: #4a5568;
+            color: var(--text-muted);
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.25s ease;
         }
         .tab-btn:hover {
-            background: #e2e8f0;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
         }
         .tab-btn.active {
-            background: #2b6cb0;
-            color: white;
-            border-color: #2b6cb0;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(135deg, var(--primary-emerald), var(--primary-glow));
+            color: #000;
+            border-color: var(--primary-emerald);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.35);
         }
         .tab-panel {
             display: none;
@@ -51,63 +56,213 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            color: #2b6cb0;
+            color: var(--accent-cyan);
             text-decoration: none;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 0.95rem;
         }
         .back-link:hover {
             text-decoration: underline;
         }
         .security-badge {
-            background: #ebf8ff;
-            border-left: 4px solid #3182ce;
-            padding: 12px 16px;
-            border-radius: 6px;
+            background: rgba(6, 182, 212, 0.12);
+            border-left: 4px solid var(--accent-cyan);
+            padding: 14px 18px;
+            border-radius: 12px;
             margin-top: 20px;
             font-size: 0.9rem;
-            color: #2b6cb0;
+            color: #bae6fd;
+            border: 1px solid rgba(6, 182, 212, 0.3);
         }
         .admin-badge-indicator {
             display: inline-block;
-            background: #2b6cb0;
-            color: white;
-            padding: 4px 10px;
-            border-radius: 12px;
+            background: var(--primary-emerald);
+            color: #000;
+            padding: 4px 12px;
+            border-radius: 99px;
             font-size: 0.8rem;
-            font-weight: 600;
+            font-weight: 800;
             margin-bottom: 10px;
         }
-        /* Controles exclusivos para Administrador */
         .admin-only-controls {
             display: none;
+        }
+
+        /* --- Estilos para Redes Sociales y Checkbox SMS Integrados al Dark Theme --- */
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 5px;
+            cursor: pointer;
+            user-select: none;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        .checkbox-container input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary-emerald);
+            cursor: pointer;
+        }
+        .social-divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 24px 0 16px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+        .social-divider::before,
+        .social-divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid var(--border-glass);
+        }
+        .social-divider span {
+            padding: 0 16px;
+        }
+        .social-buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 14px;
+            margin-bottom: 10px;
+        }
+        .btn-social {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 12px 18px;
+            border-radius: 12px;
+            font-size: 0.92rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.25s ease;
+            border: 1px solid transparent;
+        }
+        .btn-social-google {
+            background: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+            border-color: rgba(234, 67, 53, 0.35);
+        }
+        .btn-social-google:hover {
+            background: rgba(234, 67, 53, 0.15);
+            border-color: #ea4335;
+            box-shadow: 0 0 15px rgba(234, 67, 53, 0.3);
+            transform: translateY(-2px);
+        }
+        .btn-social-facebook {
+            background: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+            border-color: rgba(24, 119, 242, 0.35);
+        }
+        .btn-social-facebook:hover {
+            background: rgba(24, 119, 242, 0.15);
+            border-color: #1877f2;
+            box-shadow: 0 0 15px rgba(24, 119, 242, 0.3);
+            transform: translateY(-2px);
+        }
+        /* Botón LIMPIAR estilo secundario oscuro acorde a la interfaz */
+        .btn-reset {
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text-main);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.92rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .btn-reset:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+            transform: translateY(-2px);
+        }
+
+        /* Garantizar fondo oscuro y texto claro en input tel si algún estilo externo lo sobreescribe */
+        .field input[type="tel"] {
+            background: rgba(0, 0, 0, 0.55) !important;
+            color: var(--text-main) !important;
+            border: 1px solid var(--border-glass) !important;
+        }
+        .field input[type="tel"]:focus {
+            background: rgba(0, 0, 0, 0.75) !important;
+            border-color: var(--primary-emerald) !important;
+            box-shadow: 0 0 16px rgba(16, 185, 129, 0.3) !important;
+        }
+
+        .social-icon {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
         }
     </style>
 </head>
 <body>
+    <!-- Barra Superior Unificada -->
+    <header class="top-navbar">
+        <div class="nav-left-group">
+            <a href="indexpruebados.html" class="logo-container-top">
+                <div class="logo-frame-top">
+                    <img src="images/logo.jpg" alt="OptiPig Logo">
+                </div>
+                <span class="brand-title">SIGEPOR <span style="font-size:0.75rem; color:var(--primary-emerald);">2026</span></span>
+            </a>
+            <div class="status-badge" id="syncStatus">
+                <div class="pulse-dot"></div>
+                <span>Inventario Activo • MySQL</span>
+            </div>
+        </div>
+        <div class="nav-right-actions">
+            <a href="https://wa.me/573227112827?text=Hola,%20solicito%20asistencia%20en%20OptiPig" target="_blank" class="btn-nav btn-whatsapp">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12.012 2c-5.508 0-9.989 4.481-9.989 9.989 0 1.83.493 3.548 1.353 5.034l-1.376 5.027 5.176-1.358c1.432.78 3.064 1.286 4.836 1.286 5.507 0 9.989-4.48 9.989-9.989 0-5.508-4.482-9.989-9.989-9.989zm0 18.232c-1.572 0-3.04-.438-4.305-1.192l-.309-.185-3.071.805.819-2.993-.203-.323c-.838-1.332-1.283-2.883-1.283-4.555 0-4.542 3.696-8.239 8.239-8.239 4.544 0 8.24 3.697 8.24 8.239 0 4.543-3.696 8.24-8.24 8.24z"/>
+                </svg>
+                Soporte
+            </a>
+            <a href="indexpruebados.html" class="btn-nav btn-register">Iniciar Sesión</a>
+        </div>
+    </header>
+
     <div class="main-container">
-        <!-- Barra lateral de navegación (se oculta automáticamente en visitantes no autenticados) -->
+        <!-- Barra lateral de navegación -->
         <nav class="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-logo">
-                    <img src="images/logo.jpg" alt="SIGEPOR">
+                    <img src="images/logo.jpg" alt="OptiPig">
                 </div>
-                <h3>SIGEPOR</h3>
+                <h3>Panel Granja</h3>
             </div>
             <ul>
                 <li><a href="indexpruebados.html">🏠 Inicio</a></li>
+                <li><a href="registroporcino.html">🐖 Porcinos</a></li>
+                <li><a href="corrales.html">🏠 Corrales</a></li>
+                <li><a href="enfermedades.html">🦠 Enfermedades</a></li>
+                <li><a href="vacunas.html">💉 Vacunación</a></li>
+                <li><a href="reproduccion.html">🧬 Reproducción</a></li>
+                <li><a href="inventario.html">🌾 Inventario</a></li>
+                <li><a href="proveedores.html">🚚 Proveedores</a></li>
+                <li><a href="logs_actividad.html">📋 Logs de Actividad</a></li>
+                <li><a href="veterinarios.html">👨‍⚕️ Veterinarios</a></li>
                 <li><a href="registro_usuarios.html" class="active">👤 Usuarios</a></li>
-                
             </ul>
         </nav>
 
-        <section class="content">
+        <main class="content">
             <div class="public-registration-wrapper">
                 <div class="back-link-container">
                     <a href="index.html" class="back-link">← Volver al Inicio de Sesión</a>
                 </div>
-                
-                <
 
                 <!-- Pestañas de Navegación por Modo -->
                 <div class="tab-navigation">
@@ -128,49 +283,88 @@
 
                     <form class="grid-form" id="formulario-usuarios">
                         <!-- Campo de búsqueda por ID (visible ÚNICAMENTE para Administradores autenticados) -->
-                        <div class="field admin-only-controls" style="grid-column: span 2; background: #f7fafc; padding: 12px; border-radius: 8px; border: 1px dashed #cbd5e0; margin-bottom: 10px;">
-                            <label style="color: #2b6cb0; font-weight: bold;">🔍 Consultar / Gestionar Usuario por ID (Administración):</label>
+                        <div class="field admin-only-controls" style="grid-column: span 2; background: rgba(6, 182, 212, 0.08); padding: 14px; border-radius: 12px; border: 1px dashed rgba(6, 182, 212, 0.35); margin-bottom: 10px;">
+                            <label style="color: var(--accent-cyan); font-weight: bold;">🔍 Consultar / Gestionar Usuario por ID (Administración):</label>
                             <input type="number" id="input-id" placeholder="Ingrese el número ID de usuario (Ej: 1)">
                         </div>
 
                         <div class="field">
-                            <label>Nombres y Apellidos *:</label>
-                            <input type="text" id="input-nombre" placeholder="Ej: Juan Pérez" required autocomplete="name">
+                            <label for="input-nombre">Nombres y Apellidos *:</label>
+                            <input type="text" id="input-nombre" name="nombre" placeholder="Ej: Juan Pérez" required autocomplete="name">
                         </div>
 
                         <div class="field">
-                            <label>Correo Electrónico *:</label>
-                            <input type="email" id="input-correo" placeholder="usuario@ejemplo.com" required autocomplete="email">
+                            <label for="input-correo">Correo Electrónico *:</label>
+                            <input type="email" id="input-correo" name="email" placeholder="usuario@ejemplo.com" required autocomplete="email">
                         </div>
 
                         <div class="field">
-                            <label>Nombre de Usuario / Identificador *:</label>
-                            <input type="text" id="input-usuario" placeholder="Ej: jperez" required autocomplete="username">
+                            <label for="telefono">Número de Celular *:</label>
+                            <input type="tel" id="telefono" name="telefono" placeholder="Ej: +57 300 123 4567" required autocomplete="tel">
                         </div>
 
                         <div class="field">
-                            <label>Contraseña *:</label>
-                            <input type="password" id="input-contrasena" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+                            <label for="input-usuario">Nombre de Usuario / Identificador *:</label>
+                            <input type="text" id="input-usuario" name="usuario" placeholder="Ej: jperez" required autocomplete="username">
                         </div>
 
-                        <div class="field" style="grid-column: span 2;">
-                            <label>Rol de Usuario / Permisos (RBAC):</label>
-                            <select id="input-rol" style="padding: 10px; border-radius: 8px; border: 1px solid #cbd5e0; width: 100%;">
+                        <div class="field">
+                            <label for="input-contrasena">Contraseña *:</label>
+                            <input type="password" id="input-contrasena" name="contraseña" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+                        </div>
+
+                        <div class="field">
+                            <label for="input-rol">Rol de Usuario / Permisos (RBAC):</label>
+                            <select id="input-rol" name="idRol">
                                 <option value="2" selected>👤 Empleado / Operador (Rol 2)</option>
                                 <option value="3">👨‍⚕️ Veterinario (Rol 3)</option>
                                 <option value="4">👥 Cliente (Rol 4)</option>
-                                
                             </select>
                         </div>
+
+                        <!-- Checkbox: Requerir confirmación por SMS -->
+                        <div class="field" style="grid-column: span 2;">
+                            <label class="checkbox-container">
+                                <input type="checkbox" id="requerirSMS" name="requerirSMS">
+                                <span>📲 Requerir confirmación por SMS</span>
+                            </label>
+                        </div>
                         
-                        <div class="form-actions" style="grid-column: span 2; display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px;">
-                            <button type="button" id="btn-guardar" class="btn-save btn-primary" style="padding: 12px 20px;">✨ CREAR CUENTA NUEVA</button>
-                            <button type="reset" class="btn-reset" style="padding: 12px 20px;">↻ LIMPIAR FORMULARIO</button>
-                            
-                            <!-- Botones de Gestión CRUD (visibles ÚNICAMENTE en Modo Administrador) -->
-                            <button type="button" id="btn-consultar" class="btn-consult admin-only-controls" style="padding: 12px 20px; background: #3182ce; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;" onclick="consultarUsuario()">🔍 CONSULTAR</button>
-                            <button type="button" id="btn-actualizar" class="btn-update admin-only-controls" style="padding: 12px 20px; background: #dd6b20; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;" onclick="actualizarUsuario()">✏️ ACTUALIZAR</button>
-                            <button type="button" id="btn-eliminar" class="btn-delete admin-only-controls" style="padding: 12px 20px; background: #e53e3e; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;" onclick="borrarUsuario()">🗑️ ELIMINAR</button>
+                        <div class="form-actions" style="grid-column: span 2; display: flex; flex-direction: column; gap: 12px; margin-top: 15px;">
+                            <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                                <button type="button" id="btn-guardar" class="btn-save btn-primary" style="padding: 12px 24px; flex: 2; min-width: 220px;">✨ CREAR CUENTA NUEVA</button>
+                                <button type="reset" class="btn-reset" style="padding: 12px 20px; flex: 1;">↻ LIMPIAR</button>
+                                
+                                <!-- Botones de Gestión CRUD (visibles ÚNICAMENTE en Modo Administrador) -->
+                                <button type="button" id="btn-consultar" class="btn-consult admin-only-controls" style="padding: 12px 20px; background: #3182ce; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;" onclick="consultarUsuario()">🔍 CONSULTAR</button>
+                                <button type="button" id="btn-actualizar" class="btn-update admin-only-controls" style="padding: 12px 20px; background: #dd6b20; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;" onclick="actualizarUsuario()">✏️ ACTUALIZAR</button>
+                                <button type="button" id="btn-eliminar" class="btn-delete admin-only-controls" style="padding: 12px 20px; background: #e53e3e; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;" onclick="borrarUsuario()">🗑️ ELIMINAR</button>
+                            </div>
+
+                            <!-- Divisor Visual Social -->
+                            <div class="social-divider">
+                                <span>O regístrate con</span>
+                            </div>
+
+                            <!-- Botones de Registro con Redes Sociales -->
+                            <div class="social-buttons-grid">
+                                <button type="button" class="btn-social btn-social-google" onclick="iniciarOAuth('Google')">
+                                    <svg class="social-icon" viewBox="0 0 24 24">
+                                        <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.4l3.7 2.9C6.5 7.4 9 5 12 5z"/>
+                                        <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/>
+                                        <path fill="#FBBC05" d="M5.6 14.7c-.2-.7-.4-1.5-.4-2.7 0-1.2.2-2 .4-2.7L1.9 6.4C.7 8.8 0 10.6 0 12s.7 3.2 1.9 5.6l3.7-2.9z"/>
+                                        <path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.4-6.4-5.3L1.9 16C3.7 19.8 7.5 23 12 23z"/>
+                                    </svg>
+                                    Registrarse con Google
+                                </button>
+
+                                <button type="button" class="btn-social btn-social-facebook" onclick="iniciarOAuth('Facebook')">
+                                    <svg class="social-icon" viewBox="0 0 24 24">
+                                        <path fill="#1877F2" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                                    </svg>
+                                    Registrarse con Facebook
+                                </button>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -199,8 +393,13 @@
                     <strong>🔒 Protección de Datos Sensibles:</strong> En modo auto-registro público no se exponen datos de cuentas ni se permite la consulta de registros por ID.
                 </div>
             </div>
-        </section>
+        </main>
     </div>
+
+    <!-- Pie de página -->
+    <footer class="footer">
+        <p>&copy; 2026 OptiPig / SIGEPOR - Sistema Integral de Gestión Porcina. Todos los derechos reservados.</p>
+    </footer>
 
     <script src="js/offline_sync.js"></script>
     <script src="js/auth_guard.js"></script>
@@ -299,6 +498,8 @@
         const inputNombre = document.getElementById('input-nombre');
         const inputCorreo = document.getElementById('input-correo');
         const inputUsuario = document.getElementById('input-usuario');
+        const inputTelefono = document.getElementById('telefono');
+        const checkRequerirSMS = document.getElementById('requerirSMS');
         const inputContrasena = document.getElementById('input-contrasena');
         const inputRol = document.getElementById('input-rol');
 
@@ -307,6 +508,8 @@
                 const nombreVal = sanitizarEntrada(inputNombre.value);
                 const correoVal = sanitizarEntrada(inputCorreo.value);
                 const usuarioVal = sanitizarEntrada(inputUsuario.value);
+                const telefonoVal = inputTelefono ? sanitizarEntrada(inputTelefono.value) : '';
+                const requerirSMSVal = checkRequerirSMS ? checkRequerirSMS.checked : false;
                 const contrasenaVal = inputContrasena.value;
                 let rolVal = parseInt(inputRol.value, 10) || 2;
 
@@ -319,8 +522,8 @@
                     rolVal = 2;
                 }
 
-                if (!nombreVal || !correoVal || !usuarioVal || (!contrasenaVal && !esAdmin)) {
-                    alert('Por favor, completa todos los campos obligatorios (*).');
+                if (!nombreVal || !correoVal || !usuarioVal || !telefonoVal || (!contrasenaVal && !esAdmin)) {
+                    alert('Por favor, completa todos los campos obligatorios (*), incluyendo el Número de Celular.');
                     return;
                 }
 
@@ -333,6 +536,8 @@
                     nombre: nombreVal,
                     correo: correoVal,
                     usuario: usuarioVal,
+                    telefono: telefonoVal,
+                    requerirSMS: requerirSMSVal,
                     contraseña: contrasenaVal,
                     idRol: rolVal
                 };
@@ -376,6 +581,15 @@
             });
         }
 
+        // Manejador funcional para botones de autenticación social
+        function iniciarOAuth(provider) {
+            const providerKey = String(provider).toLowerCase();
+            // Redirección directa al endpoint de autenticación OAuth del backend
+            const authUrl = `http://localhost:3001/auth/${providerKey}`;
+            console.log(`[OAuth] Redirigiendo a autenticación con ${provider}: ${authUrl}`);
+            window.location.href = authUrl;
+        }
+
         // 3. CONSULTAR USUARIO (Exclusivo Administrador)
         async function consultarUsuario() {
             if (!esAdministradorActual()) {
@@ -401,6 +615,7 @@
                     inputNombre.value = userObj.nombre || '';
                     inputCorreo.value = userObj.correo || userObj.email || '';
                     inputUsuario.value = userObj.usuario || '';
+                    if (inputTelefono) inputTelefono.value = userObj.telefono || '';
                     if (userObj.idRol) inputRol.value = String(userObj.idRol);
                     inputContrasena.value = '';
                     alert('✓ Datos del usuario cargados exitosamente desde la base de datos.');
@@ -419,6 +634,7 @@
                 inputNombre.value = userObj.nombre || '';
                 inputCorreo.value = userObj.correo || userObj.email || '';
                 inputUsuario.value = userObj.usuario || '';
+                if (inputTelefono) inputTelefono.value = userObj.telefono || '';
                 if (userObj.idRol) inputRol.value = String(userObj.idRol);
                 inputContrasena.value = '';
                 alert('✓ Datos de usuario cargados desde almacenamiento local.');
@@ -445,6 +661,7 @@
                 nombre: sanitizarEntrada(inputNombre.value),
                 correo: sanitizarEntrada(inputCorreo.value),
                 usuario: sanitizarEntrada(inputUsuario.value),
+                telefono: inputTelefono ? sanitizarEntrada(inputTelefono.value) : '',
                 idRol: parseInt(inputRol.value, 10)
             };
 
@@ -559,9 +776,24 @@
             document.getElementById('formulario-recuperacion').reset();
         }
 
-        // Inicializar modo de vista al cargar la página
+        // Inicializar modo de vista al cargar la página y verificar retorno de OAuth
         document.addEventListener('DOMContentLoaded', () => {
             inicializarModoVista();
+
+            // Detectar si el usuario regresó de autenticación social con token o error
+            const urlParams = new URLSearchParams(window.location.search);
+            const tokenOAuth = urlParams.get('token');
+            const userOAuth = urlParams.get('usuario');
+            const errorOAuth = urlParams.get('error');
+
+            if (tokenOAuth) {
+                localStorage.setItem('sigepor_token', tokenOAuth);
+                localStorage.setItem('token', tokenOAuth);
+                alert(`¡Bienvenido a SIGEPOR! Sesión iniciada con éxito${userOAuth ? ' como ' + decodeURIComponent(userOAuth) : ''}.`);
+                window.location.href = 'indexpruebados.html';
+            } else if (errorOAuth) {
+                alert('⚠️ No se pudo completar la autenticación con la red social. Intenta nuevamente.');
+            }
         });
     </script>
 </body>

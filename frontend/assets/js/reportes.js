@@ -47,35 +47,55 @@ function renderizarAlertas(alertas) {
     const { salud, reproduccion, vacunacion } = alertas || {};
 
     if ((!salud || salud.length === 0) && (!reproduccion || reproduccion.length === 0) && (!vacunacion || vacunacion.length === 0)) {
-        alertBox.innerHTML = `<div style="background:#c6f6d5; color:#22543d; padding:15px; border-radius:10px; font-weight:bold;">🎉 ¡Todo en orden! No hay alertas sanitarias ni reproductivas pendientes.</div>`;
+        alertBox.innerHTML = `
+            <div class="clinical-alert-card clinical-alert-ok" style="font-weight: 600; display: flex; flex-direction: row; align-items: center; gap: 8px;">
+                <span style="font-size: 1.25rem;">🎉</span>
+                <span>¡Todo en orden! No hay alertas sanitarias ni reproductivas pendientes en la granja.</span>
+            </div>
+        `;
         return;
     }
 
+    // 1. Alertas de salud (rojas): Fondo oscuro con tinte rojo + borde rojo brillante + texto blanco/claro
     if (salud && salud.length > 0) {
         salud.forEach(p => {
             alertBox.innerHTML += `
-                <div style="background:#fff5f5; border-left:5px solid #e53e3e; padding:12px; border-radius:8px; margin-bottom:10px;">
-                    <strong>🏥 Atención Sanitaria:</strong> Porcino #${p.id} (${p.identificacion || p.id}) raza ${p.raza || p.breed || ''} se encuentra en estado <strong>'${p.estado_salud || p.health}'</strong>.
+                <div class="clinical-alert-card clinical-alert-salud">
+                    <div>
+                        <strong style="color: #fca5a5; display: inline-flex; align-items: center; gap: 5px;">🏥 Atención Sanitaria:</strong> 
+                        Porcino <span style="color: #ffffff; font-weight: 700;">#${p.id}</span> (${p.identificacion || p.id}) raza ${p.raza || p.breed || 'Sin especificar'} se encuentra en estado 
+                        <strong style="color: #f87171; background: rgba(239, 68, 68, 0.25); padding: 2px 8px; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.4); font-weight: 700;">'${p.estado_salud || p.health}'</strong>.
+                    </div>
                 </div>
             `;
         });
     }
 
+    // 2. Partos próximos (amarillas/naranjas): Fondo oscuro con tinte amarillo + borde amarillo brillante + texto blanco/claro
     if (reproduccion && reproduccion.length > 0) {
         reproduccion.forEach(r => {
             alertBox.innerHTML += `
-                <div style="background:#feebc8; border-left:5px solid #dd6b20; padding:12px; border-radius:8px; margin-bottom:10px;">
-                    <strong>🍼 Parto Próximo:</strong> Porcino #${r.porcino_id} tiene fecha probable de parto estimada para el <strong>${r.fecha_probable_parto}</strong>.
+                <div class="clinical-alert-card clinical-alert-repro">
+                    <div>
+                        <strong style="color: #fde68a; display: inline-flex; align-items: center; gap: 5px;">🍼 Parto Próximo:</strong> 
+                        Porcino <span style="color: #ffffff; font-weight: 700;">#${r.porcino_id}</span> tiene fecha probable de parto estimada para el 
+                        <strong style="color: #fbbf24; background: rgba(245, 158, 11, 0.25); padding: 2px 8px; border-radius: 6px; border: 1px solid rgba(245, 158, 11, 0.4); font-weight: 700;">${r.fecha_probable_parto}</strong>.
+                    </div>
                 </div>
             `;
         });
     }
 
+    // 3. Vacunas pendientes (azules): Fondo oscuro con tinte azul/cian + borde azul claro + texto blanco/claro
     if (vacunacion && vacunacion.length > 0) {
         vacunacion.forEach(v => {
             alertBox.innerHTML += `
-                <div style="background:#ebf8ff; border-left:5px solid #3182ce; padding:12px; border-radius:8px; margin-bottom:10px;">
-                    <strong>💉 Vacuna Pendiente:</strong> Porcino #${v.porcino_id || v.pigId} tiene pendiente la vacuna <strong>'${v.nombre_vacuna || v.nombre}'</strong>.
+                <div class="clinical-alert-card clinical-alert-vacuna">
+                    <div>
+                        <strong style="color: #a5f3fc; display: inline-flex; align-items: center; gap: 5px;">💉 Vacuna Pendiente:</strong> 
+                        Porcino <span style="color: #ffffff; font-weight: 700;">#${v.porcino_id || v.pigId}</span> tiene pendiente la aplicación de la vacuna 
+                        <strong style="color: #38bdf8; background: rgba(6, 182, 212, 0.25); padding: 2px 8px; border-radius: 6px; border: 1px solid rgba(6, 182, 212, 0.4); font-weight: 700;">'${v.nombre_vacuna || v.nombre}'</strong>.
+                    </div>
                 </div>
             `;
         });

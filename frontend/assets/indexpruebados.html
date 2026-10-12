@@ -758,12 +758,6 @@
     </style>
 </head>
 <body>
-<!-- Indicador Conectado en Línea arriba -->
-            <div class="status-badge" id="syncStatus">
-                <div class="pulse-dot"></div>
-                <span>Conectado • En línea</span>
-            </div>
-        </div>
     <!-- Navegación Superior Unificada -->
     <nav class="top-navbar">
         <div class="nav-left-group">
@@ -773,6 +767,13 @@
                 </div>
                 <span class="brand-title">SIGEPOR <span style="font-size:0.75rem; color:var(--primary-emerald);">2026</span></span>
             </div>
+
+            <!-- Indicador Único de Conexión al lado del Logo -->
+            <div class="status-badge" id="syncStatus">
+                <div class="pulse-dot"></div>
+                <span>Inventario Activo • MySQL</span>
+            </div>
+        </div>
 
             
 
@@ -997,23 +998,10 @@
             }
         }
 
-        // Detección automática de estado de red para el indicador superior
-        window.addEventListener('online', updateOnlineBadge);
-        window.addEventListener('offline', updateOnlineBadge);
-
-        function updateOnlineBadge() {
-            const badge = document.getElementById('syncStatus');
-            if (!badge) return;
-            if (navigator.onLine) {
-                badge.style.borderColor = 'rgba(16, 185, 129, 0.35)';
-                badge.style.color = 'var(--primary-emerald)';
-                badge.innerHTML = '<div class="pulse-dot"></div><span>Conectado • En línea</span>';
-            } else {
-                badge.style.borderColor = 'rgba(239, 68, 68, 0.35)';
-                badge.style.color = '#ef4444';
-                badge.innerHTML = '<div class="pulse-dot" style="background:#ef4444; box-shadow:0 0 10px #ef4444;"></div><span>Sin Conexión • Offline</span>';
-            }
-        }
+        // Sincronización automática de estado con offline_sync.js
+        window.addEventListener('online', () => { if (typeof renderSyncBadge === 'function') renderSyncBadge(); });
+        window.addEventListener('offline', () => { if (typeof renderSyncBadge === 'function') renderSyncBadge(); });
+        document.addEventListener('DOMContentLoaded', () => { if (typeof renderSyncBadge === 'function') renderSyncBadge(); });
     </script>
 </body>
 </html>

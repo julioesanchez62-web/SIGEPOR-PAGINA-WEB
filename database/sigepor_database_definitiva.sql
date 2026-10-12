@@ -221,13 +221,18 @@ INSERT INTO `proveedores` (`id`, `nombre`, `telefono`, `email`, `direccion`) VAL
 DROP TABLE IF EXISTS `logs_actividad`;
 CREATE TABLE `logs_actividad` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `usuario_id` INT DEFAULT NULL,
-  `usuario_nombre` VARCHAR(100) DEFAULT NULL,
-  `accion` VARCHAR(100) NOT NULL,
-  `detalles` TEXT,
-  `fecha` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
+  `veterinario_id` INT DEFAULT NULL,
+  `accion` VARCHAR(255) NOT NULL,
+  `descripcion` TEXT,
+  `fecha_hora` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `fk_logs_veterinarios` (`veterinario_id`),
+  CONSTRAINT `fk_logs_veterinarios` FOREIGN KEY (`veterinario_id`) REFERENCES `veterinarios` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `logs_actividad` (`id`, `veterinario_id`, `accion`, `descripcion`, `fecha_hora`) VALUES
+(1, 1, 'Registro Sanitario', 'Aplicación de vacuna PPC y chequeo general del lote 1', NOW()),
+(2, 1, 'Diagnóstico Clínico', 'Diagnóstico de neumonía en porcino POR-1003 e inicio de tratamiento', NOW());
 
 SET FOREIGN_KEY_CHECKS = 1;
 

@@ -185,58 +185,55 @@ function refrescarUIActual() {
 }
 
 /**
- * Renderiza y actualiza la insignia visual permanente de red en la interfaz (UI/UX)
+ * Renderiza y actualiza el único indicador visual de red en la barra superior (#syncStatus)
  * @param {boolean} isSyncing Indica si el proceso de sincronización está activo
  */
 function renderSyncBadge(isSyncing = false) {
-    let badge = document.getElementById('network-sync-badge');
-    
-    if (!badge) {
-        badge = document.createElement('div');
-        badge.id = 'network-sync-badge';
-        badge.style.cssText = `
-            position: fixed;
-            top: 15px;
-            right: 20px;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: bold;
-            z-index: 99999;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.18);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s ease;
-            font-family: system-ui, -apple-system, sans-serif;
-        `;
-        document.body.appendChild(badge);
+    // Si existía un badge redundante flotante creado previamente, eliminarlo
+    const legacyBadge = document.getElementById('network-sync-badge');
+    if (legacyBadge) {
+        legacyBadge.remove();
     }
+
+    const badge = document.getElementById('syncStatus');
+    if (!badge) return;
 
     const isOnline = navigator.onLine;
     const queue = getOfflineQueue();
     const count = queue.length;
 
     if (isSyncing) {
-        badge.style.background = '#feebc8';
-        badge.style.color = '#744210';
-        badge.style.border = '1px solid #f6ad55';
-        badge.innerHTML = `🔄 <span>Sincronizando datos (${count} pendientes)...</span>`;
+        badge.style.borderColor = 'rgba(245, 158, 11, 0.45)';
+        badge.style.background = 'rgba(245, 158, 11, 0.15)';
+        badge.style.color = '#fbbf24';
+        badge.innerHTML = `
+            <div class="pulse-dot" style="background:#fbbf24; box-shadow:0 0 10px #fbbf24;"></div>
+            <span>Sincronizando (${count} pendientes)...</span>
+        `;
     } else if (!isOnline) {
-        badge.style.background = '#feebc8';
-        badge.style.color = '#9c4221';
-        badge.style.border = '1px solid #f6ad55';
-        badge.innerHTML = `🟠 <span>Sin Conexión / Modo Offline (${count} cambios pendientes)</span>`;
+        badge.style.borderColor = 'rgba(239, 68, 68, 0.45)';
+        badge.style.background = 'rgba(239, 68, 68, 0.15)';
+        badge.style.color = '#f87171';
+        badge.innerHTML = `
+            <div class="pulse-dot" style="background:#ef4444; box-shadow:0 0 10px #ef4444;"></div>
+            <span>Fuera de línea - ${count} modificaciones pendientes</span>
+        `;
     } else if (count > 0) {
-        badge.style.background = '#ebf8ff';
-        badge.style.color = '#2b6cb0';
-        badge.style.border = '1px solid #63b3ed';
-        badge.innerHTML = `⚡ <span>${count} cambios pendientes</span> <button style="border:none; background:#3182ce; color:white; padding:3px 10px; border-radius:12px; cursor:pointer; font-weight:bold; font-size:0.75rem;" onclick="syncPendingData()">Sincronizar Ya</button>`;
+        badge.style.borderColor = 'rgba(245, 158, 11, 0.45)';
+        badge.style.background = 'rgba(245, 158, 11, 0.15)';
+        badge.style.color = '#fbbf24';
+        badge.innerHTML = `
+            <div class="pulse-dot" style="background:#f59e0b; box-shadow:0 0 10px #f59e0b;"></div>
+            <span>En línea - ${count} pendientes por guardar</span>
+        `;
     } else {
-        badge.style.background = '#c6f6d5';
-        badge.style.color = '#22543d';
-        badge.style.border = '1px solid #68d391';
-        badge.innerHTML = `🟢 <span>Conectado / En Línea</span>`;
+        badge.style.borderColor = 'rgba(16, 185, 129, 0.35)';
+        badge.style.background = 'rgba(16, 185, 129, 0.12)';
+        badge.style.color = 'var(--primary-emerald, #10b981)';
+        badge.innerHTML = `
+            <div class="pulse-dot" style="background:var(--primary-emerald, #10b981); box-shadow:0 0 10px var(--primary-emerald, #10b981);"></div>
+            <span>Inventario Activo • MySQL</span>
+        `;
     }
 }
 

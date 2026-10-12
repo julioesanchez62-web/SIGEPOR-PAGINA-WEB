@@ -15,10 +15,18 @@ const { JWT_SECRET } = require('../../middlewares/auth.middleware');
  * 🟢 Asociado al botón: GUARDAR CAMBIOS
  * Crear nuevo usuario
  * POST /users
+ * 
+ * NOTA TÉCNICA DE INTEGRACIÓN A FUTURO:
+ * - Para autenticación social con Google y Facebook se requerirán los paquetes:
+ *   - 'passport'
+ *   - 'passport-google-oauth20'
+ *   - 'passport-facebook'
+ * - Para verificación de teléfono con confirmación por SMS se requerirá:
+ *   - 'twilio' (Twilio Verify API / Twilio SMS SDK)
  */
 async function createUser(req, res, next) {
   try {
-    const { nombre, correo, contraseña, idRol } = req.body;
+    const { nombre, correo, usuario: usuarioCustom, contraseña, idRol, telefono, requerirSMS } = req.body;
 
     // SEGURIDAD: Bloquear asignación del rol Administrador a peticiones públicas o sin privilegios
     if (Number(idRol) === 1 || String(idRol).toLowerCase() === 'administrador') {
@@ -45,9 +53,32 @@ async function createUser(req, res, next) {
       }
     }
 
-    const usuario = await usersService.createUser(nombre, correo, contraseña, idRol);
+    // STUB PARA CONFIRMACIÓN POR SMS (Twilio SDK):
+    if (requerirSMS && telefono) {
+      console.log(`[SMS-STUB] Enviando código de confirmación por SMS vía Twilio al número: ${telefono}`);
+      // Ejemplo de implementación con Twilio:
+      // const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+      // await client.messages.create({ body: 'Tu código SIGEPOR es: 123456', from: process.env.TWILIO_PHONE, to: telefono });
+    }
+
+    const usuario = await usersService.createUser({
+      nombre,
+      correo,
+      usuario: usuarioCustom,
+      contraseña,
+      idRol,
+      telefono: telefono || null
+    });
+
+    // Enviar correo de bienvenida asíncrono con plantilla de SIGEPOR 2026
+    const { sendWelcomeEmail } = require('../../utils/mailer');
+    sendWelcomeEmail({
+      email: correo,
+      nombre,
+      origen: 'formulario web'
+    }).catch(err => console.error('[Welcome Mail Error]:', err.message));
     
-    // Entrega confirmación exitosa dinámica al Postman
+    // Entrega confirmación exitosa dinámica al cliente HTTP
     return res.status(201).json({
       message: 'Usuario creado exitosamente',
       user: usuario

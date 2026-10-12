@@ -224,6 +224,12 @@ async function connectMySQL() {
     await ensureColumn('porcinos', 'identificacion', "VARCHAR(50) NOT NULL DEFAULT 'P-001'");
     await ensureColumn('porcinos', 'genero', "VARCHAR(20) NOT NULL DEFAULT 'Hembra'");
 
+    await ensureColumn('usuarios', 'telefono', 'VARCHAR(50) NULL');
+    await ensureColumn('logs_actividad', 'veterinario_id', 'INT NULL DEFAULT 1');
+    await ensureColumn('logs_actividad', 'accion', "VARCHAR(255) NOT NULL DEFAULT 'Acción General'");
+    await ensureColumn('logs_actividad', 'descripcion', 'TEXT NULL');
+    await ensureColumn('logs_actividad', 'fecha_hora', 'TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP');
+
     console.log('✓ Auto-migración de columnas en MySQL Workbench completada exitosamente.');
     return true;
   } catch (error) {
