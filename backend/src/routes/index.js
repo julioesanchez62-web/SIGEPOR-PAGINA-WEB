@@ -24,14 +24,53 @@ router.get('/perfil', usersController.getProfile);
    2. MONTAJE DE MÓDULOS DEL SISTEMA (Soporta prefijos con /api y sin /api)
    ========================================================================== */
 
-// --- ENDPOINT PÚBLICO PARA SELECTORES DE PORCINOS ---
+// --- ENDPOINT PÚBLICO / SELECTORES PARA SELECTS DESPLEGABLES ---
 const { pool } = require('../config/mysql');
+
 router.get(['/api/porcinos_lista', '/porcinos_lista'], async (req, res, next) => {
   try {
     const [rows] = await pool.query(
       'SELECT id, identificacion, raza, estado_salud FROM porcinos ORDER BY identificacion ASC'
     );
     res.json(rows);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Middleware JWT para endpoints protegidos
+const { verifyToken } = require('../middlewares/auth.middleware');
+
+// Endpoint para lista de veterinarios (usado en selects como logs_actividad y porcinos)
+router.get(['/api/veterinarios_lista', '/veterinarios_lista'], verifyToken, async (req, res, next) => {
+  try {
+    // 1. Consultar tabla veterinarios
+    const [vets] = await pool.query(
+      'SELECT id, nombre, email, usuario FROM veterinarios WHERE activo = 1 ORDER BY nombre ASC'
+    );
+
+    if (vets && vets.length > 0) {
+      return res.json(vets);
+    }
+
+    // 2. Si no hay registros en la tabla veterinarios, consultar usuarios con rol Veterinario (idRol = 3)
+    const [userVets] = await pool.query(
+      'SELECT id, nombre, email, usuario FROM usuarios WHERE idRol = 3 AND activo = 1 ORDER BY nombre ASC'
+    );
+
+    return res.json(userVets || []);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Endpoint para lista de proveedores (usado en selects como inventarios y compras)
+router.get(['/api/proveedores_lista', '/proveedores_lista'], verifyToken, async (req, res, next) => {
+  try {
+    const [rows] = await pool.query(
+      'SELECT id, nombre AS nombre_proveedor, telefono, email, direccion FROM proveedores ORDER BY nombre ASC'
+    );
+    return res.json(rows || []);
   } catch (error) {
     next(error);
   }
@@ -89,4 +128,4 @@ router.use('/logs_actividad', logsActividadRoutes);
 router.use('/api/proveedores', proveedoresRoutes);
 router.use('/proveedores', proveedoresRoutes);
 
-module.exports = router;
+module.exports = router;

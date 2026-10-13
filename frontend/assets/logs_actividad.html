@@ -16,7 +16,7 @@
         <div class="nav-left-group">
             <a href="indexpruebados.html" class="logo-container-top">
                 <div class="logo-frame-top">
-                    <img src="images/logo.jpg" alt="OptiPig Logo">
+                    <img src="images/logo.jpg" alt="SIGEPOR Logo">
                 </div>
                 <span class="brand-title">SIGEPOR <span style="font-size:0.75rem; color:var(--primary-emerald);">2026</span></span>
             </a>
@@ -26,13 +26,14 @@
             </div>
         </div>
         <div class="nav-right-actions">
-            <a href="https://wa.me/573227112827?text=Hola,%20solicito%20asistencia%20en%20OptiPig" target="_blank" class="btn-nav btn-whatsapp">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12.012 2c-5.508 0-9.989 4.481-9.989 9.989 0 1.83.493 3.548 1.353 5.034l-1.376 5.027 5.176-1.358c1.432.78 3.064 1.286 4.836 1.286 5.507 0 9.989-4.48 9.989-9.989 0-5.508-4.482-9.989-9.989-9.989zm0 18.232c-1.572 0-3.04-.438-4.305-1.192l-.309-.185-3.071.805.819-2.993-.203-.323c-.838-1.332-1.283-2.883-1.283-4.555 0-4.542 3.696-8.239 8.239-8.239 4.544 0 8.24 3.697 8.24 8.239 0 4.543-3.696 8.24-8.24 8.24z"/>
+            <a href="javascript:void(0)" onclick="cerrarSesion()" class="btn-nav btn-logout">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
                 </svg>
-                Soporte
+                Cerrar Sesión
             </a>
-            <a href="indexpruebados.html" class="btn-nav btn-register">Portal Inicio</a>
         </div>
     </header>
 
@@ -41,7 +42,7 @@
         <nav class="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-logo">
-                    <img src="images/logo.jpg" alt="OptiPig">
+                    <img src="images/logo.jpg" alt="SIGEPOR">
                 </div>
                 <h3>Panel Granja</h3>
             </div>
@@ -57,6 +58,7 @@
                 <li><a href="logs_actividad.html" class="active">📋 Logs de Actividad</a></li>
                 <li><a href="veterinarios.html">👨‍⚕️ Veterinarios</a></li>
                 <li><a href="reportes.html">📊 Reportes & Alertas</a></li>
+                <li><a href="registro_usuarios.html">👤 Usuarios</a></li>
             </ul>
         </nav>
 
@@ -81,8 +83,10 @@
 
                 <form id="formLogs" class="grid-form">
                     <div class="field">
-                        <label for="veterinario_id">ID Veterinario / Usuario:</label>
-                        <input type="number" id="veterinario_id" name="veterinario_id" placeholder="Ej: 1" required>
+                        <label for="id_veterinario">Veterinario Responsable *:</label>
+                        <select id="id_veterinario" name="id_veterinario" required>
+                            <option value="">Seleccione un veterinario...</option>
+                        </select>
                     </div>
 
                     <div class="field">
@@ -129,13 +133,15 @@
 
     <!-- Pie de página -->
     <footer class="footer">
-        <p>&copy; 2026 OptiPig / SIGEPOR - Sistema Integral de Gestión Porcina. Todos los derechos reservados.</p>
+        <p>&copy; 2026 SIGEPOR - Sistema de Gestión Porcina. Todos los derechos reservados.</p>
     </footer>
 
     <!-- Scripts del Proyecto -->
+    <script src="js/auth_guard.js"></script>
     <script src="js/offline_sync.js"></script>
     <script>
         const API_URL = 'http://localhost:3001/api/logs_actividad';
+        const API_VETS_URL = 'http://localhost:3001/api/veterinarios_lista';
 
         function showAlert(msg, isSuccess = true) {
             const alertBox = document.getElementById('alertBox');
@@ -145,13 +151,72 @@
             setTimeout(() => { alertBox.style.display = 'none'; }, 4000);
         }
 
-        // READ: Cargar registros
+        // Helper para obtener el token JWT de la sesión
+        function obtenerTokenSesion() {
+            let token = localStorage.getItem('sigepor_token') || 
+                        localStorage.getItem('token') || 
+                        sessionStorage.getItem('sigepor_token') || 
+                        sessionStorage.getItem('token');
+
+            if (!token) {
+                try {
+                    const u = JSON.parse(localStorage.getItem('usuarioSesion') || localStorage.getItem('usuario_sigepor') || '{}');
+                    if (u.token) token = u.token;
+                } catch (e) {}
+            }
+            return token;
+        }
+
+        // CARGAR SELECT DESPLEGABLE DE VETERINARIOS (GET /api/veterinarios_lista con JWT)
+        async function cargarVeterinariosSelect() {
+            const select = document.getElementById('id_veterinario');
+            if (!select) return;
+
+            const token = obtenerTokenSesion();
+            const headers = { 'Content-Type': 'application/json' };
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+
+            try {
+                const res = await fetch(API_VETS_URL, { headers });
+                if (!res.ok) {
+                    const errJson = await res.json().catch(() => ({}));
+                    throw new Error(errJson.message || `Error HTTP ${res.status}`);
+                }
+                const veterinarios = await res.json();
+
+                select.innerHTML = '<option value="">Seleccione un veterinario...</option>';
+                const lista = Array.isArray(veterinarios) ? veterinarios : (veterinarios.data || []);
+
+                if (lista.length === 0) {
+                    select.innerHTML = '<option value="">No hay veterinarios registrados</option>';
+                    return;
+                }
+
+                lista.forEach(v => {
+                    const option = document.createElement('option');
+                    option.value = v.id;
+                    const emailTexto = v.email ? ` (${v.email})` : '';
+                    option.textContent = `👨‍⚕️ ${v.nombre || v.usuario || 'Veterinario #' + v.id}${emailTexto}`;
+                    select.appendChild(option);
+                });
+            } catch (err) {
+                console.error('Error al cargar veterinarios:', err);
+                select.innerHTML = '<option value="">Error al cargar lista de veterinarios</option>';
+            }
+        }
+
+        // READ: Cargar registros de logs
         async function cargarLogs() {
             const tbody = document.getElementById('logsTableBody');
+            const token = localStorage.getItem('sigepor_token') || localStorage.getItem('token');
+            const headers = {};
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+
             try {
-                const res = await fetch(API_URL);
+                const res = await fetch(API_URL, { headers });
                 if (!res.ok) throw new Error('Error al conectar con el servidor');
-                const data = await res.json();
+                const respuesta = await res.json();
+                const data = respuesta.data || respuesta;
 
                 tbody.innerHTML = '';
                 if (!Array.isArray(data) || data.length === 0) {
@@ -162,9 +227,10 @@
                 data.forEach(log => {
                     const row = document.createElement('tr');
                     const fechaFormateada = log.fecha_hora ? new Date(log.fecha_hora).toLocaleString() : 'N/A';
+                    const nombreVet = log.veterinario_nombre || (log.veterinario_id ? `Vet #${log.veterinario_id}` : 'General');
                     row.innerHTML = `
                         <td><strong>#${log.id}</strong></td>
-                        <td><span class="pill pill-limpio">Vet #${log.veterinario_id || 'N/A'}</span></td>
+                        <td><span class="pill pill-limpio">${nombreVet}</span></td>
                         <td style="font-weight:700; color:var(--text-main);">${log.accion || ''}</td>
                         <td style="max-width: 350px; line-height: 1.4;">${log.descripcion || ''}</td>
                         <td style="color:var(--accent-cyan); font-weight:600;">${fechaFormateada}</td>
@@ -179,16 +245,28 @@
         // CREATE: Guardar nuevo log
         document.getElementById('formLogs').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const selectVet = document.getElementById('id_veterinario');
+            const vetId = selectVet ? parseInt(selectVet.value, 10) : null;
+
+            if (!vetId) {
+                showAlert('Por favor, selecciona un veterinario de la lista.', false);
+                return;
+            }
+
             const payload = {
-                veterinario_id: parseInt(document.getElementById('veterinario_id').value, 10),
+                veterinario_id: vetId,
                 accion: document.getElementById('accion').value.trim(),
                 descripcion: document.getElementById('descripcion').value.trim()
             };
 
+            const token = localStorage.getItem('sigepor_token') || localStorage.getItem('token');
+            const headers = { 'Content-Type': 'application/json' };
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+
             try {
                 const res = await fetch(API_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: headers,
                     body: JSON.stringify(payload)
                 });
 
@@ -205,7 +283,11 @@
             }
         });
 
-        window.addEventListener('DOMContentLoaded', cargarLogs);
+        // Carga secuencial al inicializar la vista
+        window.addEventListener('DOMContentLoaded', () => {
+            cargarVeterinariosSelect();
+            cargarLogs();
+        });
     </script>
 </body>
 </html>

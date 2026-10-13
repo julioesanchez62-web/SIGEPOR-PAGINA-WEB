@@ -9,12 +9,13 @@ router.get('/', async (req, res, next) => {
       SELECT 
         l.id, 
         l.veterinario_id, 
-        COALESCE(v.nombre, 'Administrador / Sistema') AS veterinario_nombre,
+        COALESCE(v.nombre, u.nombre, 'Administrador / Personal') AS veterinario_nombre,
         l.accion, 
         l.descripcion, 
         DATE_FORMAT(l.fecha_hora, '%Y-%m-%d %H:%i:%s') AS fecha_hora 
       FROM logs_actividad l
       LEFT JOIN veterinarios v ON l.veterinario_id = v.id
+      LEFT JOIN usuarios u ON l.veterinario_id = u.id
       ORDER BY l.id DESC
     `);
     return res.status(200).json({

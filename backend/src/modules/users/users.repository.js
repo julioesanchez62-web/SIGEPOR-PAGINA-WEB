@@ -105,12 +105,22 @@ async function getAllUsers() {
  */
 async function updateUser(id, datos) {
   try {
-    const { nombre, correo, contraseña, idRol } = datos;
+    const { nombre, correo, usuario, contraseña, idRol, telefono } = datos;
+    const telefono_db = telefono !== undefined && telefono !== null && String(telefono).trim() !== '' 
+      ? String(telefono).trim() 
+      : null;
 
-    await pool.execute(
-      'UPDATE usuarios SET nombre = ?, email = ?, contraseña = ?, idRol = ? WHERE id = ?',
-      [nombre, correo, contraseña, idRol, id]
-    );
+    if (contraseña) {
+      await pool.execute(
+        'UPDATE usuarios SET nombre = ?, email = ?, contraseña = ?, idRol = ?, telefono = ? WHERE id = ?',
+        [nombre, correo, contraseña, idRol, telefono_db, id]
+      );
+    } else {
+      await pool.execute(
+        'UPDATE usuarios SET nombre = ?, email = ?, idRol = ?, telefono = ? WHERE id = ?',
+        [nombre, correo, idRol, telefono_db, id]
+      );
+    }
 
     return await getUserById(id);
   } catch (error) {

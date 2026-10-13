@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIGEPOR 2026 | Sistema de Gestión Porcina</title>
+    <title>SIGEPOR - Sistema de Gestión Porcina</title>
 
-    <!-- Enlace a estilos previos si existen en el proyecto -->
-    <link rel="stylesheet" href="css/style.css">
+
 
     <!-- Fuentes Futuristas 2026 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -24,7 +23,6 @@
             --primary-glow: #059669;
             --accent-cyan: #06b6d4;
             --accent-violet: #8b5cf6;
-            --whatsapp-green: #25d366;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
             --error-red: #ef4444;
@@ -158,17 +156,7 @@
             border: none;
         }
 
-        .btn-whatsapp {
-            background: rgba(37, 211, 102, 0.12);
-            color: #4ade80;
-            border: 1px solid rgba(37, 211, 102, 0.35);
-        }
 
-        .btn-whatsapp:hover {
-            background: rgba(37, 211, 102, 0.25);
-            box-shadow: 0 0 15px rgba(37, 211, 102, 0.4);
-            transform: translateY(-2px);
-        }
 
         .btn-register {
             background: rgba(255, 255, 255, 0.06);
@@ -623,32 +611,46 @@
 
         .role-selector-tabs {
             display: flex;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(7, 9, 14, 0.75);
             border: 1px solid var(--border-glass);
             border-radius: 14px;
-            padding: 0.3rem;
-            gap: 0.3rem;
+            padding: 0.35rem;
+            gap: 0.4rem;
             margin-bottom: 1.5rem;
+            box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.5);
         }
 
         .role-tab {
             flex: 1;
-            padding: 0.6rem 0.4rem;
-            border: none;
+            padding: 0.75rem 0.5rem;
+            border: 1px solid transparent;
             background: transparent;
             color: var(--text-muted);
-            font-size: 0.8rem;
+            font-size: 0.82rem;
             font-weight: 600;
             border-radius: 10px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+            white-space: nowrap;
+        }
+
+        .role-tab:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
         }
 
         .role-tab.active {
-            background: rgba(16, 185, 129, 0.2);
-            color: var(--primary-emerald);
-            border: 1px solid rgba(16, 185, 129, 0.4);
-            box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.28), rgba(6, 182, 212, 0.16));
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.55);
+            box-shadow: 0 0 18px rgba(16, 185, 129, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+            font-weight: 700;
         }
 
         #loginTitle {
@@ -656,6 +658,7 @@
             font-size: 1.35rem;
             text-align: center;
             margin-bottom: 0.3rem;
+            letter-spacing: -0.3px;
         }
 
         .login-subtitle {
@@ -682,7 +685,7 @@
         #loginForm input[type="password"] {
             width: 100%;
             padding: 0.9rem 1.2rem;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(7, 9, 14, 0.75);
             border: 1px solid var(--border-glass);
             border-radius: 12px;
             color: #fff;
@@ -693,7 +696,8 @@
         #loginForm input:focus {
             outline: none;
             border-color: var(--primary-emerald);
-            box-shadow: 0 0 15px rgba(16, 185, 129, 0.25);
+            background: rgba(7, 9, 14, 0.95);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
         }
 
         #loginForm button[type="submit"] {
@@ -703,6 +707,79 @@
             font-size: 1rem;
             font-weight: 700;
             letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        /* --- Estilos para Acceso Social OAuth en Modal de Login --- */
+        .social-login-separator {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 1.2rem 0 1rem;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .social-login-separator::before,
+        .social-login-separator::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid var(--border-glass);
+        }
+
+        .social-login-separator span {
+            padding: 0 14px;
+        }
+
+        .social-login-buttons {
+            display: flex;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .btn-social {
+            flex: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 0.85rem 1rem;
+            border-radius: 12px;
+            background-color: #1a2332;
+            color: #f8fafc;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.25s ease;
+            border: 1px solid var(--border-glass);
+            outline: none;
+        }
+
+        .btn-social .social-icon {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        .btn-social.btn-google:hover {
+            background-color: #222f44;
+            border-color: #EA4335;
+            color: #ffffff;
+            box-shadow: 0 0 16px rgba(234, 67, 53, 0.35);
+            transform: translateY(-2px);
+        }
+
+        .btn-social.btn-facebook:hover {
+            background-color: #222f44;
+            border-color: #1877F2;
+            color: #ffffff;
+            box-shadow: 0 0 16px rgba(24, 119, 242, 0.35);
+            transform: translateY(-2px);
         }
 
         .links {
@@ -777,17 +854,9 @@
 
             
 
-        <!-- Botonera Horizontal: WhatsApp, Registrarse, Iniciar Sesión -->
+        <!-- Botonera Horizontal: Registrarse, Iniciar Sesión -->
         <div class="nav-right-actions">
-            <a href="https://wa.me/573227112827?text=Hola,%20deseo%20m%C3%A1s%20informaci%C3%B3n%20sobre%20SIGEPOR" target="_blank" class="btn-nav btn-whatsapp">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12.012 2c-5.508 0-9.989 4.481-9.989 9.989 0 1.83.493 3.548 1.353 5.034l-1.376 5.027 5.176-1.358c1.432.78 3.064 1.286 4.836 1.286 5.507 0 9.989-4.48 9.989-9.989 0-5.508-4.482-9.989-9.989-9.989zm0 18.232c-1.572 0-3.04-.438-4.305-1.192l-.309-.185-3.071.805.819-2.993-.203-.323c-.838-1.332-1.283-2.883-1.283-4.555 0-4.542 3.696-8.239 8.239-8.239 4.544 0 8.24 3.697 8.24 8.239 0 4.543-3.696 8.24-8.24 8.24z"/>
-                </svg>
-                Contáctanos
-            </a>
-
             <a href="registro_usuarios.html" class="btn-nav btn-register">Registrarse</a>
-
             <button class="btn-nav btn-login-modal" onclick="toggleModal(true)">Iniciar Sesión</button>
         </div>
     </nav>
@@ -956,6 +1025,31 @@
                 <input type="password" id="loginPassword" placeholder="Contraseña" required>
 
                 <button type="submit" class="btn-primary">INICIAR SESIÓN</button>
+
+                <!-- Divisor Visual Social -->
+                <div class="social-login-separator">
+                    <span>O INICIA SESIÓN CON</span>
+                </div>
+
+                <!-- Botones de Inicio de Sesión Social -->
+                <div class="social-login-buttons">
+                    <button type="button" class="btn-social btn-google" onclick="window.location.href='/api/auth/google'">
+                        <svg class="social-icon" viewBox="0 0 24 24">
+                            <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.4l3.7 2.9C6.5 7.4 9 5 12 5z"/>
+                            <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/>
+                            <path fill="#FBBC05" d="M5.6 14.7c-.2-.7-.4-1.5-.4-2.7 0-1.2.2-2 .4-2.7L1.9 6.4C.7 8.8 0 10.6 0 12s.7 3.2 1.9 5.6l3.7-2.9z"/>
+                            <path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.4-6.4-5.3L1.9 16C3.7 19.8 7.5 23 12 23z"/>
+                        </svg>
+                        Google
+                    </button>
+
+                    <button type="button" class="btn-social btn-facebook" onclick="window.location.href='/api/auth/facebook'">
+                        <svg class="social-icon" viewBox="0 0 24 24">
+                            <path fill="#1877F2" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                        </svg>
+                        Facebook
+                    </button>
+                </div>
             </form>
 
             <div class="links">
@@ -1001,7 +1095,40 @@
         // Sincronización automática de estado con offline_sync.js
         window.addEventListener('online', () => { if (typeof renderSyncBadge === 'function') renderSyncBadge(); });
         window.addEventListener('offline', () => { if (typeof renderSyncBadge === 'function') renderSyncBadge(); });
-        document.addEventListener('DOMContentLoaded', () => { if (typeof renderSyncBadge === 'function') renderSyncBadge(); });
+        document.addEventListener('DOMContentLoaded', () => { 
+            if (typeof renderSyncBadge === 'function') renderSyncBadge(); 
+
+            // Detectar retorno de autenticación social con OAuth (?token=...&usuario=...)
+            const urlParams = new URLSearchParams(window.location.search);
+            const tokenOAuth = urlParams.get('token');
+            const userOAuth = urlParams.get('usuario');
+            const errorOAuth = urlParams.get('error');
+
+            if (tokenOAuth) {
+                localStorage.setItem('sigepor_token', tokenOAuth);
+                localStorage.setItem('token', tokenOAuth);
+                
+                try {
+                    // Decodificar payload JWT para guardar usuarioSesion
+                    const base64Url = tokenOAuth.split('.')[1];
+                    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                    }).join(''));
+                    const payload = JSON.parse(jsonPayload);
+                    localStorage.setItem('usuarioSesion', JSON.stringify(payload));
+                    localStorage.setItem('usuario_sigepor', JSON.stringify(payload));
+                } catch(e) {
+                    console.warn('No se pudo decodificar el payload JWT localmente:', e);
+                }
+
+                alert(`¡Bienvenido a SIGEPOR!\nSesión iniciada correctamente con OAuth${userOAuth ? ' como ' + decodeURIComponent(userOAuth) : ''}.`);
+                // Redirigir según el rol o limpiar URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+            } else if (errorOAuth) {
+                alert('⚠️ No se pudo completar la autenticación con la red social. Intenta nuevamente.');
+            }
+        });
     </script>
 </body>
 </html>

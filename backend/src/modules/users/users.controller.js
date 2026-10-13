@@ -61,13 +61,18 @@ async function createUser(req, res, next) {
       // await client.messages.create({ body: 'Tu código SIGEPOR es: 123456', from: process.env.TWILIO_PHONE, to: telefono });
     }
 
+    // Control de nulos antes de persistir para evitar errores con undefined en MySQL
+    const telefono_db = (telefono !== undefined && telefono !== null && String(telefono).trim() !== '') 
+      ? String(telefono).trim() 
+      : null;
+
     const usuario = await usersService.createUser({
       nombre,
       correo,
       usuario: usuarioCustom,
       contraseña,
       idRol,
-      telefono: telefono || null
+      telefono: telefono_db
     });
 
     // Enviar correo de bienvenida asíncrono con plantilla de SIGEPOR 2026
@@ -180,9 +185,19 @@ async function getUserById(req, res, next) {
 async function updateUser(req, res, next) {
   try {
     const { id } = req.params;
-    const { nombre, correo, contraseña, idRol } = req.body;
+    const { nombre, correo, usuario, contraseña, idRol, telefono } = req.body;
     
-    const usuarioActualizado = await usersService.updateUser(id, { nombre, correo, contraseña, idRol });
+    // Control de nulos antes de persistir para evitar errores con undefined en MySQL
+    const telefono_db = telefono !== undefined ? (telefono ? String(telefono).trim() : null) : null;
+
+    const usuarioActualizado = await usersService.updateUser(id, { 
+      nombre, 
+      correo, 
+      usuario, 
+      contraseña, 
+      idRol, 
+      telefono: telefono_db 
+    });
     
     return res.status(200).json({
       message: 'Usuario actualizado exitosamente',

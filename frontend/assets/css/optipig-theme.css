@@ -13,7 +13,6 @@
     --primary-glow: #059669;
     --accent-cyan: #06b6d4;
     --accent-violet: #8b5cf6;
-    --whatsapp-green: #25d366;
     --text-main: #f8fafc;
     --text-muted: #94a3b8;
     --error-red: #ef4444;
@@ -146,18 +145,6 @@ html, body {
     border: none;
 }
 
-.btn-whatsapp {
-    background: rgba(37, 211, 102, 0.12);
-    color: #4ade80;
-    border: 1px solid rgba(37, 211, 102, 0.35);
-}
-
-.btn-whatsapp:hover {
-    background: rgba(37, 211, 102, 0.25);
-    box-shadow: 0 0 15px rgba(37, 211, 102, 0.4);
-    transform: translateY(-2px);
-}
-
 .btn-register {
     background: rgba(255, 255, 255, 0.06);
     color: var(--text-main);
@@ -167,6 +154,20 @@ html, body {
 .btn-register:hover {
     background: rgba(255, 255, 255, 0.12);
     border-color: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+}
+
+.btn-logout {
+    background: rgba(239, 68, 68, 0.12);
+    color: #fca5a5;
+    border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+.btn-logout:hover {
+    background: rgba(239, 68, 68, 0.25);
+    border-color: rgba(239, 68, 68, 0.6);
+    color: #ffffff;
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.35);
     transform: translateY(-2px);
 }
 
@@ -180,6 +181,9 @@ html, body {
 
 .sidebar {
     width: 260px;
+    min-width: 260px;
+    max-width: 260px;
+    flex-shrink: 0;
     background: rgba(11, 17, 32, 0.85);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
@@ -188,6 +192,7 @@ html, body {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+    box-sizing: border-box;
 }
 
 .sidebar-header {
@@ -254,6 +259,8 @@ html, body {
 /* --- Área de Contenido Central --- */
 .content {
     flex: 1;
+    min-width: 0;
+    box-sizing: border-box;
     padding: 2.2rem 2.5rem;
     max-width: 1350px;
     margin: 0 auto;

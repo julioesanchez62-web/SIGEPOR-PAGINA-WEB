@@ -34,6 +34,7 @@ DROP TABLE IF EXISTS `usuarios`;
 CREATE TABLE `usuarios` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `nombre` VARCHAR(255) NOT NULL,
+  `telefono` VARCHAR(20) NOT NULL,
   `email` VARCHAR(255) NOT NULL,
   `usuario` VARCHAR(100) NOT NULL,
   `contraseña` VARCHAR(255) NOT NULL,

@@ -73,20 +73,137 @@ function actualizarStatsAlimento(lista) {
     statKilos.textContent = totalKilos.toFixed(1) + ' kg';
 }
 
+// URL para endpoint de lista de proveedores
+const API_PROVEEDORES_LISTA = 'http://localhost:3001/api/proveedores_lista';
+
+// Función para obtener el token JWT de la sesión
+function obtenerTokenSesionInventario() {
+    let token = localStorage.getItem('sigepor_token') || 
+                localStorage.getItem('token') || 
+                sessionStorage.getItem('sigepor_token') || 
+                sessionStorage.getItem('token');
+
+    if (!token) {
+        try {
+            const u = JSON.parse(localStorage.getItem('usuarioSesion') || localStorage.getItem('usuario_sigepor') || '{}');
+            if (u.token) token = u.token;
+        } catch (e) {}
+    }
+    return token;
+}
+
+// CARGAR SELECT DESPLEGABLE DE PROVEEDORES (GET /api/proveedores_lista con JWT)
+async function cargarProveedoresSelect() {
+    const select = document.getElementById('proveedor_id');
+    if (!select) return;
+
+    const token = obtenerTokenSesionInventario();
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    try {
+        const res = await fetch(API_PROVEEDORES_LISTA, { headers });
+        if (!res.ok) {
+            const errJson = await res.json().catch(() => ({}));
+            throw new Error(errJson.message || `Error HTTP ${res.status}`);
+        }
+        const proveedores = await res.json();
+
+        select.innerHTML = '<option value="">Seleccione un proveedor...</option>';
+        const lista = Array.isArray(proveedores) ? proveedores : (proveedores.data || []);
+
+        if (lista.length === 0) {
+            select.innerHTML = '<option value="">No hay proveedores registrados</option>';
+            return;
+        }
+
+        lista.forEach(p => {
+            const option = document.createElement('option');
+            option.value = p.id;
+            // Guardar nombre como data-attribute o usar el nombre para alimentar el texto
+            const nombreProveedor = p.nombre_proveedor || p.nombre || `Proveedor #${p.id}`;
+            option.dataset.nombre = nombreProveedor;
+            option.textContent = `🚚 ${nombreProveedor}`;
+            select.appendChild(option);
+        });
+    } catch (err) {
+        console.error('Error al cargar proveedores en inventario:', err);
+        select.innerHTML = '<option value="">Error al cargar lista de proveedores</option>';
+    }
+}
+// URL para endpoint de lista de corrales
+const API_CORRALES = 'http://localhost:3001/api/corrales';
+
+// CARGAR SELECT DESPLEGABLE DE CORRALES (GET /api/corrales con JWT)
+async function cargarCorralesSelect() {
+    const select = document.getElementById('corral_id');
+    if (!select) return;
+
+    const token = localStorage.getItem('sigepor_token') || obtenerTokenSesionInventario();
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    try {
+        const res = await fetch(API_CORRALES, { headers });
+        if (!res.ok) {
+            const errJson = await res.json().catch(() => ({}));
+            throw new Error(errJson.message || `Error HTTP ${res.status}`);
+        }
+        const corrales = await res.json();
+
+        select.innerHTML = '<option value="">Seleccione un corral...</option>';
+        const lista = Array.isArray(corrales) ? corrales : (corrales.data || []);
+
+        if (lista.length === 0) {
+            select.innerHTML = '<option value="">No hay corrales registrados</option>';
+            return;
+        }
+
+        lista.forEach(c => {
+            const option = document.createElement('option');
+            option.value = c.id;
+            const nombreCorral = c.nombre || `Corral #${c.id}`;
+            option.dataset.nombre = nombreCorral;
+            option.textContent = `🏠 ${nombreCorral} (Cap: ${c.capacidad || 0})`;
+            select.appendChild(option);
+        });
+    } catch (err) {
+        console.error('Error al cargar corrales en inventario:', err);
+        select.innerHTML = '<option value="">Error al cargar corrales</option>';
+    }
+}
+window.cargarCorralesSelect = cargarCorralesSelect;
+
 if (alimentoForm) {
     alimentoForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const token = localStorage.getItem('sigepor_token') || localStorage.getItem('token');
+        const token = obtenerTokenSesionInventario();
         const headers = { 'Content-Type': 'application/json' };
         if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const selectProveedor = document.getElementById('proveedor_id');
+        let nombreProveedor = '';
+        if (selectProveedor && selectProveedor.selectedIndex >= 0) {
+            const optSeleccionada = selectProveedor.options[selectProveedor.selectedIndex];
+            nombreProveedor = optSeleccionada.dataset.nombre || optSeleccionada.textContent.replace('🚚 ', '').trim();
+        }
+
+        const selectCorral = document.getElementById('corral_id');
+        let nombreCorral = '';
+        if (selectCorral && selectCorral.selectedIndex >= 0) {
+            const optCorral = selectCorral.options[selectCorral.selectedIndex];
+            nombreCorral = optCorral.dataset.nombre || optCorral.textContent.replace('🏠 ', '').split(' (Cap:')[0].trim();
+        }
 
         const datos = {
             id: Date.now(),
             tipo_alimento: document.getElementById('tipo_alimento').value,
             cantidad: parseFloat(document.getElementById('cantidad').value),
             fecha_suministro: document.getElementById('fecha_suministro').value,
-            proveedor: document.getElementById('proveedor').value.trim(),
-            corral: document.getElementById('corral').value.trim()
+            proveedor: nombreProveedor,
+            proveedor_id: selectProveedor ? parseInt(selectProveedor.value, 10) : null,
+            corral: nombreCorral,
+            corral_id: selectCorral ? parseInt(selectCorral.value, 10) : null
         };
 
         try {
@@ -135,7 +252,7 @@ async function eliminarAlimento(id) {
     }
     if (!confirm('¿Eliminar registro de alimento?')) return;
     try {
-        const token = localStorage.getItem('sigepor_token') || localStorage.getItem('token');
+        const token = obtenerTokenSesionInventario();
         const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
 
         const res = typeof fetchConFallbackOffline === 'function'
@@ -158,5 +275,7 @@ async function eliminarAlimento(id) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    cargarProveedoresSelect();
+    cargarCorralesSelect();
     cargarInventario();
 });
