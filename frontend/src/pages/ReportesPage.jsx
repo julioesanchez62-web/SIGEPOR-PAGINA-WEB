@@ -14,13 +14,63 @@ export const ReportesPage = () => {
     loadAlertas();
   }, []);
 
+  // Función auxiliar para normalizar la estructura devuelta por el backend
+  const normalizarAlertas = (raw) => {
+    if (!raw) return [];
+    if (Array.isArray(raw)) return raw;
+
+    const dataObj = raw.data || raw;
+    if (Array.isArray(dataObj)) return dataObj;
+
+    // Si viene agrupado como { salud: [], reproduccion: [], vacunacion: [] }
+    const listaCombinada = [];
+    if (Array.isArray(dataObj.salud)) {
+      dataObj.salud.forEach((p) => {
+        listaCombinada.push({
+          tipo: 'Crítica',
+          categoria: 'Salud Animal',
+          mensaje: `Porcino #${p.identificacion || p.id} (${p.raza || 'General'}) se encuentra en estado: ${p.estado_salud}`,
+          fecha: new Date().toISOString()
+        });
+      });
+    }
+    if (Array.isArray(dataObj.vacunacion)) {
+      dataObj.vacunacion.forEach((v) => {
+        listaCombinada.push({
+          tipo: 'Urgente',
+          categoria: 'Vacunación',
+          mensaje: `Vacuna ${v.nombre_vacuna} pendiente para porcino #${v.identificacion || v.porcino_id}`,
+          fecha: v.fecha_aplicacion || new Date().toISOString()
+        });
+      });
+    }
+    if (Array.isArray(dataObj.reproduccion)) {
+      dataObj.reproduccion.forEach((r) => {
+        listaCombinada.push({
+          tipo: 'Informativa',
+          categoria: 'Reproducción',
+          mensaje: `Parto próximo para hembra #${r.identificacion || r.porcino_id} (Fecha estimada: ${r.fecha_probable_parto})`,
+          fecha: r.fecha_probable_parto || new Date().toISOString()
+        });
+      });
+    }
+
+    return listaCombinada;
+  };
+
   const loadAlertas = async () => {
     try {
       setLoadingAlertas(true);
       const data = await reportesService.getAlertas();
-      setAlertas(Array.isArray(data) ? data : data.data || []);
+      const lista = normalizarAlertas(data);
+      setAlertas(lista);
     } catch (err) {
-      setAlert({ type: 'danger', message: err.message || 'Error cargando alertas' });
+      console.error('Error al cargar alertas en Reportes:', err);
+      setAlert({ 
+        type: 'danger', 
+        message: err.message || 'No fue posible conectar con el servicio de alertas. Mostrando estado por defecto.' 
+      });
+      setAlertas([]);
     } finally {
       setLoadingAlertas(false);
     }
@@ -135,11 +185,12 @@ export const ReportesPage = () => {
               </div>
 
               {/* Vacunas aplicadas */}
-              {trazabilidadData.vacunas && trazabilidadData.vacunas.length > 0 && (
+              {((trazabilidadData.vacunas && trazabilidadData.vacunas.length > 0) || 
+                (trazabilidadData.historial?.vacunas && trazabilidadData.historial.vacunas.length > 0)) && (
                 <div style={{ marginTop: '1rem' }}>
                   <h5 style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.5rem' }}>💉 Vacunas Aplicadas:</h5>
                   <ul style={{ paddingLeft: '1.25rem', fontSize: '0.85rem' }}>
-                    {trazabilidadData.vacunas.map((v, i) => (
+                    {(trazabilidadData.vacunas || trazabilidadData.historial?.vacunas || []).map((v, i) => (
                       <li key={i}>{v.nombre_vacuna} ({v.fecha_aplicacion ? String(v.fecha_aplicacion).slice(0, 10) : ''}) - Dosis: {v.dosis}ml</li>
                     ))}
                   </ul>
@@ -147,11 +198,12 @@ export const ReportesPage = () => {
               )}
 
               {/* Eventos reproductivos */}
-              {trazabilidadData.eventos && trazabilidadData.eventos.length > 0 && (
+              {((trazabilidadData.eventos && trazabilidadData.eventos.length > 0) || 
+                (trazabilidadData.historial?.reproduccion && trazabilidadData.historial.reproduccion.length > 0)) && (
                 <div style={{ marginTop: '1rem' }}>
                   <h5 style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.5rem' }}>🧬 Eventos Reproductivos:</h5>
                   <ul style={{ paddingLeft: '1.25rem', fontSize: '0.85rem' }}>
-                    {trazabilidadData.eventos.map((ev, i) => (
+                    {(trazabilidadData.eventos || trazabilidadData.historial?.reproduccion || []).map((ev, i) => (
                       <li key={i}>{ev.tipo_evento} ({ev.fecha_evento ? String(ev.fecha_evento).slice(0, 10) : ''}) - Lechones nacidos: {ev.lechones_nacidos || 0}</li>
                     ))}
                   </ul>
@@ -164,3 +216,5 @@ export const ReportesPage = () => {
     </div>
   );
 };
+
+export default ReportesPage;

@@ -23,9 +23,53 @@
 
 ## Descripción del Proyecto
 
-**SIGEPOR** es una plataforma integral de software de gestión porcícola diseñada para optimizar y controlar el ciclo biológico, zootécnico y operativo de hatos porcinos. Integra una Single Page Application (**SPA**) moderna construida en **React 18** y **Vite**, con una arquitectura backend desacoplada en capas sobre **Node.js / Express**, respaldada por **MySQL** como motor relacional transaccional.
+**SIGEPOR** es una plataforma integral de gestión porcícola diseñada para optimizar y controlar el ciclo biológico, zootécnico y operativo de hatos porcinos. Integra una Single Page Application (**SPA**) moderna construida en **React 18** y **Vite**, con una arquitectura backend desacoplada en capas sobre **Node.js / Express**, respaldada por **MySQL** como motor relacional transaccional.
 
 La plataforma cuenta con control de acceso basado en roles (**RBAC**), enrutamiento protegido, soporte para operación sin conexión (**PWA con IndexedDB y Service Workers**) y sincronización estricta sin falsos positivos.
+
+---
+
+## Historial de Últimas Modificaciones (Paso a Paso)
+
+A continuación se detalla cronológicamente la evolución técnica y las mejoras implementadas en la plataforma:
+
+### 1. Estandarización Visual, Tema Corporativo y Botones Sociales OAuth
+- **Index y Formularios:** Se unificó el diseño visual con la paleta corporativa oscura/verde esmeralda (`#07090e`, `#10b981`, `#1a2332`), eliminando textos rezagados o inconsistencias estéticas.
+- **Acceso Social (Google y Facebook):** Integración de botones interactivos con SVG vectoriales oficiales en las vistas de login y registro, conectándolos a `/api/auth/google` y `/api/auth/facebook` con Passport.js y captura automática de parámetros de redirección (`?token=...&usuario=...`) en `localStorage`.
+- **Listas Desplegables Dinámicas:** Reemplazo de inputs de texto plano por elementos `<select>` enlazados a la base de datos (Veterinarios en Logs de Actividad, Proveedores en Inventario, Corrales en Inventario y Porcinos en Vacunación).
+- **Gestión de Teléfono:** Inclusión y procesamiento íntegro del campo `telefono` en el módulo de usuarios y bases de datos MySQL, resolviendo errores de parámetros indefinidos.
+
+### 2. Unificación y Estandarización de Respuesta del Login (JWT)
+- **Problema Detectado:** El frontend arrojaba la alerta *"La respuesta del servidor no incluyó un token válido"* debido a una disparidad entre la envoltura JSON del backend y la expectativa de captura en React.
+- **Backend (`POST /api/auth/login`):** Se adaptaron `auth.controller.js` y `users.controller.js` para entregar una estructura limpia y estandarizada:
+  ```json
+  {
+    "status": "success",
+    "message": "¡Login exitoso!",
+    "token": "eyJhbGciOi...",
+    "usuario": { "id": 1, "nombre": "...", "email": "...", "rol": 1, "idRol": 1, "rolNombre": "Administrador" },
+    "user": { ... },
+    "data": { ... }
+  }
+  ```
+- **Frontend (`AuthContext.jsx`):** Se implementó una extracción flexible y robusta del token (`response?.token || response?.data?.token || response?.user?.token`) y su almacenamiento estricto bajo `localStorage.setItem('sigepor_token', jwtToken)` y `usuario_sigepor`.
+- **Redirección por Rol:** En `LoginPage.jsx` se configuró la redirección inteligente pos-autenticación según el perfil (`Veterinario` $\rightarrow$ `/vacunas`, `Cliente` $\rightarrow$ `/reportes`, `Administrador`/`Empleado` $\rightarrow$ `/porcinos`).
+
+### 3. Corrección del Renderizado del Módulo de Reportes
+- **Problema Detectado:** Al ingresar a la vista de "Reportes y Alertas" en React, la pantalla quedaba completamente en blanco.
+- **Diagnóstico:** El backend agrupaba las alertas en sub-objetos (`{ salud: [...], reproduccion: [...], vacunacion: [...] }`) mientras el frontend intentaba iterar un arreglo plano (`alertas.map(...)`). Adicionalmente, el router del backend sólo exponía `/alertas` y no la raíz `/reportes`.
+- **Backend (`reportes.routes.js`):** Se expuso `router.get('/', controller.getAlertas)` junto con `router.get('/alertas', controller.getAlertas)`.
+- **Frontend (`ReportesPage.jsx` y `reportes.service.js`):**
+  - Implementación de la función `normalizarAlertas(raw)` para aplanar y formatear las alertas sanitarias, reproductivas y clínicas.
+  - Inclusión de estados de carga (`loadingAlertas`), bloques `try/catch` y pantallas amigables de estado vacío en lugar de colapsar la interfaz.
+  - Aseguramiento de la exportación por defecto `export default ReportesPage;`.
+
+### 4. Auditoría de Seguridad y Pruebas End-to-End
+- **Modo Solo Lectura para Clientes:** En `PorcinosPage.jsx` y `App.jsx`, el rol Cliente (Rol 4) no tiene acceso a botones de creación, edición o borrado (`canEdit = false`, `canDelete = false`).
+- **Validación de Usuario Activo:** El backend exige `activo = 1` antes de firmar cualquier token JWT; de lo contrario responde con `HTTP 403 Forbidden`.
+- **Blindaje de Creación de Administradores:** `POST /api/users` rechaza con `HTTP 403` cualquier intento público o no autenticado de registrar usuarios con `idRol = 1`.
+- **Limpieza de Secretos:** Centralización estricta de variables en `backend/.env` y `backend/src/config/env.js`, eliminando valores por defecto o secretos quemados en el código.
+- **Aserciones en Pruebas:** Las 15 pruebas automatizadas del backend con `node --test` y Supertest exigen códigos válidos (`200`, `201`, `401`, `403`) y rechazan explícitamente códigos `500`.
 
 ---
 
@@ -37,7 +81,7 @@ La plataforma cuenta con control de acceso basado en roles (**RBAC**), enrutamie
   - **👑 Administrador (Rol 1):** Acceso total a usuarios, personal veterinario, inventarios, porcinos y reportes.
   - **👨‍⚕️ Veterinario (Rol 3):** Gestión sanitaria, vacunas, diagnósticos, historial reproductivo y porcinos.
   - **👷 Empleado (Rol 2):** Registro de porcinos, eventos reproductivos y raciones de alimentos.
-  - **🛒 Cliente (Rol 4):** Consulta de porcinos en modo lectura.
+  - **🛒 Cliente (Rol 4):** Consulta de porcinos en modo solo lectura.
 - Restricción estricta en `POST /api/users`: Bloqueo de asignación del rol Administrador a peticiones públicas o sin privilegios de administrador.
 - Verificación del estado activo (`activo = 1`) antes de emitir tokens en el login.
 
@@ -80,16 +124,17 @@ SIGEPOR PAGINA WEB/
 │   └── sigepor_database_definitiva.sql  # Script SQL canónico unificado con datos semilla
 ├── backend/                             # API REST en Node.js / Express
 │   ├── src/
-│   │   ├── app.js                       # Configuración de Express, CORS y middlewares
+│   │   ├── app.js                       # Configuración de Express, CORS y sesiones
 │   │   ├── server.js                    # Inicialización del servidor HTTP
 │   │   ├── config/
 │   │   │   ├── env.js                   # Variables de entorno estrictas (.env)
-│   │   │   └── mysql.js                 # Pool mysql2/promise y auto-migración
+│   │   │   ├── mysql.js                 # Pool mysql2/promise y auto-migración
+│   │   │   └── passport.js              # Configuración de OAuth Social
 │   │   ├── middlewares/
 │   │   │   ├── auth.middleware.js       # Verificación JWT y requireRole (RBAC)
 │   │   │   └── error.middleware.js      # Manejador centralizado de errores HTTP
 │   │   ├── modules/                     # Arquitectura modular por capas
-│   │   │   ├── auth/                    # Login y validación de usuarios
+│   │   │   ├── auth/                    # Login, OAuth y validación de usuarios
 │   │   │   ├── porcinos/                # CRUD de Porcinos
 │   │   │   ├── sanidad/                 # Vacunas y Enfermedades
 │   │   │   ├── reproduccion/            # Eventos Reproductivos
@@ -111,7 +156,11 @@ SIGEPOR PAGINA WEB/
 │   │   └── sw.js                        # Service Worker para funcionamiento offline
 │   ├── src/
 │   │   ├── api/
-│   │   │   └── axiosClient.js           # Cliente Axios con interceptor Bearer Token
+│   │   │   ├── axiosClient.js           # Cliente Axios con interceptor Bearer Token
+│   │   │   ├── auth.service.js
+│   │   │   ├── porcinos.service.js
+│   │   │   ├── reportes.service.js
+│   │   │   └── ...
 │   │   ├── context/
 │   │   │   ├── AuthContext.jsx          # Estado de sesión y control RBAC
 │   │   │   └── NetworkSyncContext.jsx   # Gestor de conectividad e IndexedDB
@@ -170,10 +219,10 @@ La aplicación React se abrirá en `http://localhost:5173`.
 
 | Perfil / Rol | Correo Electrónico | Contraseña | Nivel de Acceso |
 | :--- | :--- | :--- | :--- |
-| **Administrador** | `admin@sigepor.com` | `admin123` | Total (Módulos operativos y Gestión de Usuarios) |
-| **Veterinario** | `vet@sigepor.com` | `vet123` | Salud, Vacunas, Porcinos, Reproducción, Inventario y Reportes |
-| **Empleado** | `operario@sigepor.com` | `empleado123` | Porcinos, Reproducción e Inventario |
-| **Cliente** | `cliente@sigepor.com` | `cliente123` | Consulta de Porcinos |
+| **👑 Administrador** | `admin@sigepor.com` | `admin123` | Total (Módulos operativos y Gestión de Usuarios) |
+| **👨‍⚕️ Veterinario** | `vet@sigepor.com` | `vet123` | Salud, Vacunas, Porcinos, Reproducción, Inventario y Reportes |
+| **👷 Empleado** | `operario@sigepor.com` | `empleado123` | Porcinos, Reproducción e Inventario |
+| **🛒 Cliente** | `cliente@sigepor.com` | `cliente123` | Consulta de Porcinos (Solo lectura) |
 
 ---
 
@@ -186,7 +235,7 @@ Para realizar una demostración continua del flujo completo entre **React**, **E
    - Inicia el backend en una terminal (`npm run dev` en `backend/`).
    - Inicia el frontend en otra terminal (`npm run dev` en `frontend/`).
 2. **Acceder a la Aplicación:**
-   - Abre en el navegador `http://localhost:5173/`.
+   - Abre en el navegador `http://localhost:5173/login`.
    - Haz clic en la pestaña **👑 Administrador** (se autocompleta `admin@sigepor.com`).
    - Digita la contraseña `admin123` e inicia sesión.
 3. **Verificar Token JWT en Navegador:**
@@ -222,7 +271,7 @@ El backend incluye pruebas automatizadas con el **Node Test Runner** nativo (`no
 cd backend
 npm test
 ```
-Las aserciones validan estrictamente códigos de respuesta `200`, `201`, `401` y `403`. **Ningún código HTTP 500 se valida como respuesta exitosa.**
+Las 15 pruebas unitarias y de integración validan estrictamente códigos de respuesta `200`, `201`, `401` y `403`. **Ningún código HTTP 500 se valida como respuesta exitosa.**
 
 Para ejecutar el test de integración End-to-End automatizado:
 ```bash

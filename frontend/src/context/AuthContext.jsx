@@ -42,24 +42,41 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (identificador, contraseña) => {
-    const data = await authService.login(identificador, contraseña);
-    const jwtToken = data.token || (data.data && data.data.token);
-    const userData = data.user || data.data || data;
+    const response = await authService.login(identificador, contraseña);
+    
+    // Extracción flexible y robusta del token JWT sin importar la estructura de envoltura
+    const jwtToken = 
+      response?.token || 
+      response?.data?.token || 
+      response?.user?.token || 
+      (typeof response === 'string' ? response : null);
 
     if (!jwtToken) {
       throw new Error('La respuesta del servidor no incluyó un token válido');
     }
 
+    // Extracción del usuario
+    const userData = 
+      response?.usuario || 
+      response?.user || 
+      response?.data || 
+      response;
+
+    const roleId = Number(userData.idRol || userData.rol || 2);
+
     const normalizedUser = {
       id: userData.id,
       nombre: userData.nombre || identificador,
       email: userData.email || userData.correo,
-      idRol: Number(userData.idRol || 2),
-      rolNombre: ROLE_NAMES[Number(userData.idRol || 2)] || userData.rolNombre || 'Empleado'
+      idRol: roleId,
+      rolNombre: ROLE_NAMES[roleId] || userData.rolNombre || 'Empleado'
     };
 
+    // Guardado estricto en localStorage usando la clave estándar del proyecto
     localStorage.setItem('sigepor_token', jwtToken);
+    localStorage.setItem('token', jwtToken);
     localStorage.setItem('usuario_sigepor', JSON.stringify(normalizedUser));
+    localStorage.setItem('usuarioSesion', JSON.stringify(normalizedUser));
 
     setToken(jwtToken);
     setUser(normalizedUser);

@@ -35,10 +35,17 @@ export const LoginPage = () => {
 
     try {
       setLoading(true);
-      setError('');
-      await login(identificador, contraseña);
+      const loggedUser = await login(identificador, contraseña);
 
-      const destination = location.state?.from?.pathname || '/porcinos';
+      // Redirigir al panel correspondiente según su rol o destino previo
+      let defaultDestination = '/porcinos';
+      if (Number(loggedUser?.idRol) === 3) {
+        defaultDestination = '/vacunas';
+      } else if (Number(loggedUser?.idRol) === 4) {
+        defaultDestination = '/reportes';
+      }
+
+      const destination = location.state?.from?.pathname || defaultDestination;
       navigate(destination, { replace: true });
     } catch (err) {
       console.error('Error en login:', err);

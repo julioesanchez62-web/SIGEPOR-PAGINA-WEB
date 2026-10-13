@@ -15,8 +15,26 @@ async function login(req, res) {
 
     // Si el servicio no lanzó error, la autenticación es totalmente válida
     return res.status(200).json({
+      status: 'success',
       mensaje: '¡Login exitoso!',
-      user: result.user
+      message: '¡Login exitoso!',
+      token: result.token,
+      usuario: {
+        id: result.user.id,
+        nombre: result.user.nombre,
+        email: result.user.email || result.user.correo,
+        rol: result.user.idRol,
+        idRol: result.user.idRol,
+        rolNombre: result.rol || result.user.rolNombre
+      },
+      user: {
+        ...result.user,
+        token: result.token
+      },
+      data: {
+        ...result.user,
+        token: result.token
+      }
     });
 
   } catch (error) {
