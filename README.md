@@ -1,28 +1,12 @@
-# SIGEPOR - Sistema de Gestión Porcina
+# SIGEPOR Backend - API REST
 
-<div align="center">
-
-![SIGEPOR](https://img.shields.io/badge/SIGEPOR-Sistema%20de%20Gesti%C3%B3n%20Porcina-0A7A4A?style=for-the-badge)
-
-![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black)
-![Vite](https://img.shields.io/badge/Vite-6.0-646CFF?style=for-the-badge&logo=vite&logoColor=white)
-![Node.js](https://img.shields.io/badge/Node.js-24-339933?style=for-the-badge&logo=node.js&logoColor=white)
-![Express](https://img.shields.io/badge/Express-4.22-000000?style=for-the-badge&logo=express&logoColor=white)
-![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
-![JWT](https://img.shields.io/badge/JWT-RBAC-000000?style=for-the-badge&logo=JSON%20web%20tokens&logoColor=white)
-
-</div>
-
-## Autores
-
-- Julio Sánchez Rivera
-- Daniel Santiago Polania Correa
-- Ficha SENA: 3235886
+API REST modular para el Sistema de Gestión Porcina (**SIGEPOR**), construida con **Node.js**, **Express** y **MySQL** (`mysql2/promise`).
 
 ---
 
-## Descripción del Proyecto
+## Arquitectura y Principios de Diseño
 
+<<<<<<< HEAD
 **SIGEPOR** es una plataforma integral de gestión porcícola diseñada para optimizar y controlar el ciclo biológico, zootécnico y operativo de hatos porcinos. Integra una Single Page Application (**SPA**) moderna construida en **React 18** y **Vite**, con una arquitectura backend desacoplada en capas sobre **Node.js / Express**, respaldada por **MySQL** como motor relacional transaccional.
 
 La plataforma cuenta con control de acceso basado en roles (**RBAC**), enrutamiento protegido, soporte para operación sin conexión (**PWA con IndexedDB y Service Workers**) y sincronización estricta sin falsos positivos.
@@ -113,11 +97,33 @@ A continuación se detalla cronológicamente la evolución técnica y las mejora
 ### 7. Reportes y Trazabilidad Operativa
 - Monitor en vivo de alertas sanitarias y operativas del hato.
 - Consulta de hoja de vida y trazabilidad histórica individual por animal.
+=======
+El backend implementa una arquitectura por capas orientada a módulos:
+- **Router:** Define las rutas HTTP y aplica middlewares de autenticación (`verifyToken`) y control de acceso por roles (`requireRole`).
+- **Validator:** Sanitiza y valida datos de entrada antes de llegar al controlador.
+- **Controller:** Orquesta la petición HTTP, llama al servicio y responde con códigos HTTP canónicos.
+- **Service:** Contiene la lógica de negocio pura, encriptación con `bcryptjs` y generación de tokens JWT.
+- **Repository:** Ejecuta las consultas parametrizadas sobre MySQL utilizando el pool de conexiones.
 
 ---
 
-## Arquitectura del Repositorio
+## Módulos del Sistema
 
+- **`auth`:** Login, emisión de JWT y verificación de estado activo del usuario.
+- **`porcinos`:** CRUD de animales, gestión zootécnica y asignación de veterinarios.
+- **`sanidad`:** Control de vacunas, dosis, fechas de revacunación y enfermedades clínicas.
+- **`reproduccion`:** Registro de eventos reproductivos, partos y cálculo de fecha probable.
+- **`inventario`:** Control de raciones de alimentos, corrales y proveedores.
+- **`veterinarios`:** Directorio del personal médico veterinario.
+- **`reportes`:** Alertas sanitarias y hoja de vida por animal.
+- **`users`:** Administración de usuarios y roles exclusivo para Administradores.
+>>>>>>> 06253f6e3e157a3982bab84029e3c25f2a5590a4
+
+---
+
+## Configuración y Variables de Entorno
+
+<<<<<<< HEAD
 ```text
 SIGEPOR PAGINA WEB/
 ├── database/
@@ -186,6 +192,9 @@ mysql -u root -p sigepor < database/sigepor_database_definitiva.sql
 
 ### 2. Configurar Variables de Entorno del Backend
 Crea o edita `backend/.env`:
+=======
+Configura el archivo `.env` en la raíz de `backend/`:
+>>>>>>> 06253f6e3e157a3982bab84029e3c25f2a5590a4
 ```env
 PORT=3001
 DB_HOST=localhost
@@ -196,14 +205,18 @@ DB_NAME=sigepor
 JWT_SECRET=sigepor_jwt_secure_secret_key_512bits_2026
 ```
 
-### 3. Iniciar el Backend
-```bash
-cd backend
-npm install
-npm run dev
-```
-El servidor quedará disponible en `http://localhost:3001`.
+---
 
+## Comandos Disponibles
+
+```bash
+# Instalar dependencias
+npm install
+
+# Modo desarrollo con nodemon
+npm run dev
+
+<<<<<<< HEAD
 ### 4. Iniciar el Frontend (React)
 En una nueva terminal:
 ```bash
@@ -272,13 +285,15 @@ cd backend
 npm test
 ```
 Las 15 pruebas unitarias y de integración validan estrictamente códigos de respuesta `200`, `201`, `401` y `403`. **Ningún código HTTP 500 se valida como respuesta exitosa.**
+=======
+# Ejecutar suite de pruebas unitarias y de integración
+npm test
+>>>>>>> 06253f6e3e157a3982bab84029e3c25f2a5590a4
 
-Para ejecutar el test de integración End-to-End automatizado:
-```bash
-cd backend
+# Ejecutar prueba de integración End-to-End
 npm run test:e2e
 ```
 
 ---
 
-SIGEPOR © 2026 - Sistema de Gestión Porcina.
+SIGEPOR © 2026.
