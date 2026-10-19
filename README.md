@@ -1,200 +1,174 @@
-# SIGEPOR Backend - API REST
+# SIGEPOR - Sistema de Gestión Porcina 2026
 
-API REST modular para el Sistema de Gestión Porcina (**SIGEPOR**), construida con **Node.js**, **Express** y **MySQL** (`mysql2/promise`).
-
----
-
-## Arquitectura y Principios de Diseño
-
-<<<<<<< HEAD
-**SIGEPOR** es una plataforma integral de gestión porcícola diseñada para optimizar y controlar el ciclo biológico, zootécnico y operativo de hatos porcinos. Integra una Single Page Application (**SPA**) moderna construida en **React 18** y **Vite**, con una arquitectura backend desacoplada en capas sobre **Node.js / Express**, respaldada por **MySQL** como motor relacional transaccional.
-
-La plataforma cuenta con control de acceso basado en roles (**RBAC**), enrutamiento protegido, soporte para operación sin conexión (**PWA con IndexedDB y Service Workers**) y sincronización estricta sin falsos positivos.
+Plataforma web integral para la porcicultura moderna, diseñada para optimizar y controlar el ciclo biológico, zootécnico, sanitario y operativo de hatos porcinos. Integra una arquitectura dual: una **Single Page Application (SPA)** en **React 18 + Vite** y un frontend modular con plantillas futuristas en **HTML5/JS**, respaldados por un backend desacoplado en capas sobre **Node.js / Express** y **MySQL** como motor relacional transaccional.
 
 ---
 
-## Historial de Últimas Modificaciones (Paso a Paso)
+## 🏛️ Arquitectura del Sistema
 
-A continuación se detalla cronológicamente la evolución técnica y las mejoras implementadas en la plataforma:
-
-### 1. Estandarización Visual, Tema Corporativo y Botones Sociales OAuth
-- **Index y Formularios:** Se unificó el diseño visual con la paleta corporativa oscura/verde esmeralda (`#07090e`, `#10b981`, `#1a2332`), eliminando textos rezagados o inconsistencias estéticas.
-- **Acceso Social (Google y Facebook):** Integración de botones interactivos con SVG vectoriales oficiales en las vistas de login y registro, conectándolos a `/api/auth/google` y `/api/auth/facebook` con Passport.js y captura automática de parámetros de redirección (`?token=...&usuario=...`) en `localStorage`.
-- **Listas Desplegables Dinámicas:** Reemplazo de inputs de texto plano por elementos `<select>` enlazados a la base de datos (Veterinarios en Logs de Actividad, Proveedores en Inventario, Corrales en Inventario y Porcinos en Vacunación).
-- **Gestión de Teléfono:** Inclusión y procesamiento íntegro del campo `telefono` en el módulo de usuarios y bases de datos MySQL, resolviendo errores de parámetros indefinidos.
-
-### 2. Unificación y Estandarización de Respuesta del Login (JWT)
-- **Problema Detectado:** El frontend arrojaba la alerta *"La respuesta del servidor no incluyó un token válido"* debido a una disparidad entre la envoltura JSON del backend y la expectativa de captura en React.
-- **Backend (`POST /api/auth/login`):** Se adaptaron `auth.controller.js` y `users.controller.js` para entregar una estructura limpia y estandarizada:
-  ```json
-  {
-    "status": "success",
-    "message": "¡Login exitoso!",
-    "token": "eyJhbGciOi...",
-    "usuario": { "id": 1, "nombre": "...", "email": "...", "rol": 1, "idRol": 1, "rolNombre": "Administrador" },
-    "user": { ... },
-    "data": { ... }
-  }
-  ```
-- **Frontend (`AuthContext.jsx`):** Se implementó una extracción flexible y robusta del token (`response?.token || response?.data?.token || response?.user?.token`) y su almacenamiento estricto bajo `localStorage.setItem('sigepor_token', jwtToken)` y `usuario_sigepor`.
-- **Redirección por Rol:** En `LoginPage.jsx` se configuró la redirección inteligente pos-autenticación según el perfil (`Veterinario` $\rightarrow$ `/vacunas`, `Cliente` $\rightarrow$ `/reportes`, `Administrador`/`Empleado` $\rightarrow$ `/porcinos`).
-
-### 3. Corrección del Renderizado del Módulo de Reportes
-- **Problema Detectado:** Al ingresar a la vista de "Reportes y Alertas" en React, la pantalla quedaba completamente en blanco.
-- **Diagnóstico:** El backend agrupaba las alertas en sub-objetos (`{ salud: [...], reproduccion: [...], vacunacion: [...] }`) mientras el frontend intentaba iterar un arreglo plano (`alertas.map(...)`). Adicionalmente, el router del backend sólo exponía `/alertas` y no la raíz `/reportes`.
-- **Backend (`reportes.routes.js`):** Se expuso `router.get('/', controller.getAlertas)` junto con `router.get('/alertas', controller.getAlertas)`.
-- **Frontend (`ReportesPage.jsx` y `reportes.service.js`):**
-  - Implementación de la función `normalizarAlertas(raw)` para aplanar y formatear las alertas sanitarias, reproductivas y clínicas.
-  - Inclusión de estados de carga (`loadingAlertas`), bloques `try/catch` y pantallas amigables de estado vacío en lugar de colapsar la interfaz.
-  - Aseguramiento de la exportación por defecto `export default ReportesPage;`.
-
-### 4. Auditoría de Seguridad y Pruebas End-to-End
-- **Modo Solo Lectura para Clientes:** En `PorcinosPage.jsx` y `App.jsx`, el rol Cliente (Rol 4) no tiene acceso a botones de creación, edición o borrado (`canEdit = false`, `canDelete = false`).
-- **Validación de Usuario Activo:** El backend exige `activo = 1` antes de firmar cualquier token JWT; de lo contrario responde con `HTTP 403 Forbidden`.
-- **Blindaje de Creación de Administradores:** `POST /api/users` rechaza con `HTTP 403` cualquier intento público o no autenticado de registrar usuarios con `idRol = 1`.
-- **Limpieza de Secretos:** Centralización estricta de variables en `backend/.env` y `backend/src/config/env.js`, eliminando valores por defecto o secretos quemados en el código.
-- **Aserciones en Pruebas:** Las 15 pruebas automatizadas del backend con `node --test` y Supertest exigen códigos válidos (`200`, `201`, `401`, `403`) y rechazan explícitamente códigos `500`.
-
----
-
-## Características Principales y Módulos
-
-### 1. Autenticación y Control de Acceso por Roles (RBAC)
-- Autenticación criptográfica con **JSON Web Tokens (JWT)** y contraseñas hasheadas mediante **Bcrypt (Salt 10)**.
-- Jerarquía de roles definida:
-  - **👑 Administrador (Rol 1):** Acceso total a usuarios, personal veterinario, inventarios, porcinos y reportes.
-  - **👨‍⚕️ Veterinario (Rol 3):** Gestión sanitaria, vacunas, diagnósticos, historial reproductivo y porcinos.
-  - **👷 Empleado (Rol 2):** Registro de porcinos, eventos reproductivos y raciones de alimentos.
-  - **🛒 Cliente (Rol 4):** Consulta de porcinos en modo solo lectura.
-- Restricción estricta en `POST /api/users`: Bloqueo de asignación del rol Administrador a peticiones públicas o sin privilegios de administrador.
-- Verificación del estado activo (`activo = 1`) antes de emitir tokens en el login.
-
-### 2. Gestión Integral de Porcinos
-- Registro, edición y seguimiento individual por identificación/arete.
-- Control de raza, peso, género, fecha de nacimiento y estado de salud.
-- Asignación de médico veterinario responsable por animal.
-
-### 3. Sanidad, Vacunación y Tratamientos Clínicos
-- Registro de dosis de vacunas aplicadas y cálculo de fecha de revacunación.
-- Control de enfermedades, diagnósticos veterinarios y prescripción de tratamientos.
-
-### 4. Reproducción y Partos
-- Registro de montas e inseminaciones artificiales.
-- Cálculo automático de la fecha probable de parto (+114 días de gestación).
-- Registro de partos asistidos y número de lechones nacidos vivos.
-
-### 5. Inventario y Logística
-- Control de raciones de alimentos por corral y cantidades suministradas.
-- Infraestructura de corrales, capacidad de animales y estado de limpieza.
-- Directorio de proveedores aliados.
-
-### 6. Modo Offline y PWA (IndexedDB + Service Worker)
-- Aplicación Web Progresiva instalable con soporte sin conexión.
-- Cola de mutaciones pendientes en **IndexedDB** (`offline_queue`).
-- Sincronización automática al recuperar la conexión a internet.
-- **Validación estricta de respuestas HTTP:** Únicamente los códigos `2xx` se consideran éxito; los errores `4xx` se alertan al usuario y se descartan para evitar registrar datos falsos.
-
-### 7. Reportes y Trazabilidad Operativa
-- Monitor en vivo de alertas sanitarias y operativas del hato.
-- Consulta de hoja de vida y trazabilidad histórica individual por animal.
-=======
-El backend implementa una arquitectura por capas orientada a módulos:
-- **Router:** Define las rutas HTTP y aplica middlewares de autenticación (`verifyToken`) y control de acceso por roles (`requireRole`).
+El backend implementa una arquitectura por capas orientada a módulos de dominio:
+- **Router:** Define las rutas HTTP y aplica middlewares de autenticación JWT (`verifyToken`) y control de acceso basado en roles (`requireRole`).
 - **Validator:** Sanitiza y valida datos de entrada antes de llegar al controlador.
-- **Controller:** Orquesta la petición HTTP, llama al servicio y responde con códigos HTTP canónicos.
-- **Service:** Contiene la lógica de negocio pura, encriptación con `bcryptjs` y generación de tokens JWT.
-- **Repository:** Ejecuta las consultas parametrizadas sobre MySQL utilizando el pool de conexiones.
+- **Controller:** Orquesta las peticiones HTTP, consume los servicios/repositorios y responde con códigos canónicos de estado HTTP.
+- **Service / Repository:** Contiene la lógica de negocio pura, encriptación con `bcryptjs`, generación de tokens JWT y ejecución de consultas SQL parametrizadas sobre MySQL utilizando el pool de conexiones (`mysql2/promise`).
 
----
-
-## Módulos del Sistema
-
-- **`auth`:** Login, emisión de JWT y verificación de estado activo del usuario.
-- **`porcinos`:** CRUD de animales, gestión zootécnica y asignación de veterinarios.
-- **`sanidad`:** Control de vacunas, dosis, fechas de revacunación y enfermedades clínicas.
-- **`reproduccion`:** Registro de eventos reproductivos, partos y cálculo de fecha probable.
-- **`inventario`:** Control de raciones de alimentos, corrales y proveedores.
-- **`veterinarios`:** Directorio del personal médico veterinario.
-- **`reportes`:** Alertas sanitarias y hoja de vida por animal.
-- **`users`:** Administración de usuarios y roles exclusivo para Administradores.
->>>>>>> 06253f6e3e157a3982bab84029e3c25f2a5590a4
-
----
-
-## Configuración y Variables de Entorno
-
-<<<<<<< HEAD
 ```text
 SIGEPOR PAGINA WEB/
 ├── database/
-│   └── sigepor_database_definitiva.sql  # Script SQL canónico unificado con datos semilla
+│   └── sigepor_database_definitiva.sql  # Esquema relacional normalizado con datos semilla
 ├── backend/                             # API REST en Node.js / Express
 │   ├── src/
 │   │   ├── app.js                       # Configuración de Express, CORS y sesiones
-│   │   ├── server.js                    # Inicialización del servidor HTTP
+│   │   ├── server.js                    # Inicialización del servidor HTTP (Puerto 3001)
 │   │   ├── config/
 │   │   │   ├── env.js                   # Variables de entorno estrictas (.env)
 │   │   │   ├── mysql.js                 # Pool mysql2/promise y auto-migración
-│   │   │   └── passport.js              # Configuración de OAuth Social
+│   │   │   └── passport.js              # Estrategias OAuth Social (Google y Facebook)
 │   │   ├── middlewares/
 │   │   │   ├── auth.middleware.js       # Verificación JWT y requireRole (RBAC)
 │   │   │   └── error.middleware.js      # Manejador centralizado de errores HTTP
-│   │   ├── modules/                     # Arquitectura modular por capas
-│   │   │   ├── auth/                    # Login, OAuth y validación de usuarios
-│   │   │   ├── porcinos/                # CRUD de Porcinos
-│   │   │   ├── sanidad/                 # Vacunas y Enfermedades
-│   │   │   ├── reproduccion/            # Eventos Reproductivos
-│   │   │   ├── inventario/              # Alimentos, Corrales, Proveedores
-│   │   │   ├── veterinarios/            # Personal Veterinario
-│   │   │   ├── reportes/                # Alertas y Trazabilidad
-│   │   │   └── users/                   # Administración de Usuarios
+│   │   ├── modules/                     # Módulos por dominio
+│   │   │   ├── auth/                    # Login, OAuth, recuperación de contraseña (Email/WhatsApp)
+│   │   │   ├── porcinos/                # CRUD de Porcinos y asignación de veterinarios
+│   │   │   ├── sanidad/                 # Vacunación y enfermedades clínicas
+│   │   │   ├── reproduccion/            # Eventos reproductivos, montas y partos
+│   │   │   ├── inventario/              # Alimentos, raciones, corrales y proveedores
+│   │   │   ├── veterinarios/            # Gestión de personal veterinario (Admin)
+│   │   │   ├── reportes/                # Alertas sanitarias y hoja de vida individual
+│   │   │   ├── corrales/                # Módulo CRUD de alojamiento
+│   │   │   ├── enfermedades/            # Módulo CRUD de historial clínico
+│   │   │   ├── logs_actividad/          # Trazabilidad de auditoría
+│   │   │   └── users/                   # Administración de usuarios y RBAC
 │   │   └── routes/
-│   │       └── index.js                 # Enrutador principal y health check
-│   ├── test/                            # Suite automatizada con Supertest
-│   │   ├── auth.test.js
-│   │   ├── health.test.js
-│   │   ├── routes.test.js
-│   │   └── e2e-integration.test.js      # Test de integración E2E completo
+│   │       └── index.js                 # Enrutador central y endpoints de selectores
+│   ├── test/                            # Suite automatizada (Node Test Runner + Supertest)
+│   │   ├── auth.test.js                 # Pruebas de autenticación y RBAC
+│   │   ├── health.test.js               # Verificación de salud del servidor
+│   │   ├── routes.test.js               # Pruebas de endpoints REST
+│   │   └── e2e-integration.test.js      # Test de integración End-to-End
 │   └── .env                             # Variables de configuración
-├── frontend/                            # SPA moderna en React 18 + Vite
+├── frontend/                            # SPA en React 18 + Vite
 │   ├── public/
 │   │   ├── manifest.json                # Manifiesto PWA
 │   │   └── sw.js                        # Service Worker para funcionamiento offline
 │   ├── src/
-│   │   ├── api/
-│   │   │   ├── axiosClient.js           # Cliente Axios con interceptor Bearer Token
-│   │   │   ├── auth.service.js
-│   │   │   ├── porcinos.service.js
-│   │   │   ├── reportes.service.js
-│   │   │   └── ...
-│   │   ├── context/
-│   │   │   ├── AuthContext.jsx          # Estado de sesión y control RBAC
-│   │   │   └── NetworkSyncContext.jsx   # Gestor de conectividad e IndexedDB
+│   │   ├── api/                         # Cliente Axios centralizado con interceptor JWT
+│   │   ├── context/                     # AuthContext (RBAC) y NetworkSyncContext
 │   │   ├── components/                  # Navbar, Sidebar, Modal, Alert, ProtectedRoute
-│   │   └── pages/                       # Vistas por módulo del sistema
-│   └── vite.config.js                   # Configuración de Vite y proxy
+│   │   └── pages/                       # Vistas por módulo
+│   └── assets/                          # Vistas HTML5 / JS con tema corporativo 2026
+│       ├── css/optipig-theme.css        # Tema Glassmorphism (Dark & Light Theme)
+│       ├── js/auth_guard.js             # Guardián de rutas, RBAC, FAB WhatsApp y Theme Toggle
+│       ├── js/registro_porcino.js       # CRUD reactivo y código QR / RFID
+│       ├── js/offline_sync.js           # PWA con sincronización IndexedDB
+│       ├── index.html                   # Login y modal de recuperación de contraseña
+│       ├── indexpruebados.html          # Panel principal / Dashboard
+│       ├── registroporcino.html         # Módulo de porcinos
+│       ├── vacunas.html                 # Módulo de vacunación con KPIs reactivos
+│       ├── corrales.html                # Módulo de corrales con KPIs reactivos
+│       ├── enfermedades.html            # Módulo de diagnósticos clínicos con KPIs reactivos
+│       ├── veterinarios.html            # Módulo protegido de veterinarios (Solo Admin)
+│       ├── gestion_usuarios.html        # Panel interno administrativo de usuarios
+│       ├── registro_usuarios.html       # Registro público seguro (Rol Cliente por defecto)
+│       └── inicio.html                  # Alias transparente de redirección a dashboard
 └── README.md
 ```
 
 ---
 
-## Instalación y Puesta en Marcha
+## 🚀 Historial de Últimas Modificaciones (Paso a Paso)
 
-### Requisitos Previos
-- **Node.js** v18 o superior (v24 recomendado).
-- **MySQL Server** 8.0+ o MariaDB (vía XAMPP o servicio nativo en puerto 3306).
+A continuación se detalla cronológicamente la evolución técnica y las mejoras implementadas recientemente en la plataforma:
 
-### 1. Base de Datos
-Importa en MySQL Workbench o phpMyAdmin el archivo definitivo:
+### 1. Refactorización Estructural de Base de Datos MySQL (Normalización y Buenas Prácticas)
+- **Renombrado de Llaves Primarias:** Se renombraron las claves de identificación primaria para cumplir con los estándares canónicos relacionales:
+  - `usuarios.id` $\rightarrow$ `usuarios.id_usuario`
+  - `corrales.id` $\rightarrow$ `corrales.id_corral`
+  - `porcinos.id` $\rightarrow$ `porcinos.id_porcino`
+  - `veterinarios.id` $\rightarrow$ `veterinarios.id_veterinario`
+- **Adición de Llaves Foráneas (FK) y Relaciones:**
+  - `veterinarios.id_usuario` $\rightarrow$ `usuarios(id_usuario)`
+  - `porcinos.id_corral` $\rightarrow$ `corrales(id_corral)`
+  - `alimentacion.id_porcino` $\rightarrow$ `porcinos(id_porcino)` y `alimentacion.id_usuario` $\rightarrow$ `usuarios(id_usuario)`
+  - `vacunacion.id_veterinario` $\rightarrow$ `veterinarios(id_veterinario)`
+  - `logs_actividad.id_usuario` $\rightarrow$ `usuarios(id_usuario)`
+- **Actualización Backend (Consultas SQL):** Se adaptaron todos los repositorios (`porcinos`, `users`, `veterinarios`, `sanidad`, `reproduccion`, `inventario`, `reportes`, `auth`) implementando proyecciones con alias dual (`id_porcino AS id`, `id_usuario AS id`, etc.) para asegurar compatibilidad total con el frontend existente.
+
+### 2. Remediación de Vulnerabilidad de Escalada de Privilegios
+- **Problema de Seguridad:** El formulario público en `registro_usuarios.html` permitía al usuario seleccionar su propio rol (Administrador, Veterinario, Cliente), permitiendo una escalada no autorizada de privilegios.
+- **Frontend (`registro_usuarios.html`):** Se eliminó por completo el `<select>` de selección de roles del formulario público, preservando el balance estético del diseño visual.
+- **Backend (`auth.controller.js` y `users.controller.js`):** Se eliminó la recepción del campo `rol` en el registro público. La consulta `INSERT` asigna automáticamente el rol de privilegios mínimos por defecto (`idRol = 4`, Cliente). Todo intento de inyectar un rol superior en el payload JSON es rechazado e ignorado.
+- **Panel Administrativo Exclusivo (`gestion_usuarios.html`):** Creación de un módulo administrativo interno protegido (solo accesible por Administradores) con tabla de usuarios, selector de roles RBAC y control de estado activo/inactivo.
+
+### 3. Ajuste de Permisos RBAC para el Rol "Veterinario"
+- **Lógica de Negocio:** Un veterinario debe gestionar la salud y producción animal, pero no debe tener permisos para gestionar ni administrar los perfiles de otros veterinarios o el personal del sistema (tarea reservada exclusivamente al Administrador).
+- **Menú Lateral (Renderizado Condicional):** Se actualizó `auth_guard.js` para que, cuando el usuario autenticado sea `Veterinario` (Rol 3), el enlace a `veterinarios.html` se oculte automáticamente del menú lateral (`display: none !important`, `aria-hidden="true"`), manteniendo acceso visible a Porcinos, Corrales, Enfermedades, Vacunación, Inventario y Reproducción.
+- **Guardián de Rutas (Route Guard):**
+  - Si un usuario con rol Veterinario (o Cliente/Empleado) intenta forzar la URL de `veterinarios.html`, el sistema intercepta la navegación antes de pintar el DOM (`pre-render guard`), muestra un Toast no bloqueante con el mensaje *"Acceso Denegado: Exclusivo para Administradores"* y redirige inmediatamente a `inicio.html`.
+  - Se creó `inicio.html` como alias transparente hacia el panel principal (`indexpruebados.html`).
+- **Protección Backend (`/api/veterinarios`):** Todos los endpoints CRUD de la ruta (`GET /`, `GET /:id`, `POST /`, `PUT /:id`, `DELETE /:id`) en `veterinarios.routes.js` aplican estrictamente el middleware `requireRole(['Administrador', 1])`, devolviendo `403 Forbidden` a usuarios con rol Veterinario o inferior.
+
+### 4. Recuperación de Contraseña Funcional (Email & WhatsApp)
+- **Frontend (`index.html`):** Al hacer clic en *"¿Olvidaste tu contraseña? Recuperar aquí"*, se abre un modal con selector de pestañas:
+  - **📧 Recuperar por Correo Electrónico:** Captura la dirección de correo registrada.
+  - **💬 Recuperar por Código de WhatsApp:** Captura el número telefónico / celular registrado.
+- **Backend (`POST /api/recuperar-password`):** Controlador estandarizado en `auth.controller.js` que genera un PIN de verificación numérico seguro de 6 dígitos con stubs listos para producción para:
+  - **Nodemailer (SMTP):** Envío de correo HTML con plantilla corporativa.
+  - **WhatsApp API:** Integración con Twilio WhatsApp SDK o Meta WhatsApp Cloud API (Graph API).
+
+### 5. Botón Flotante Global de Soporte por WhatsApp (FAB)
+- **Inyección Centralizada:** En `auth_guard.js` se implementó `inyectarBotonFlotanteWhatsApp()`, inyectando automáticamente el botón en **todas** las páginas HTML del sistema.
+- **Diseño y Estilo:** Posicionado en la esquina inferior derecha (`bottom: 25px; right: 25px; z-index: 9999`), con icono vectorial oficial SVG, gradiente verde WhatsApp, tooltip animado (*"💬 Soporte WhatsApp 24/7"*) y enlace dinámico `https://wa.me/TUNUMERO?text=...`.
+
+### 6. Toggle de Modo Claro / Modo Oscuro con Persistencia
+- **Navbar Switch:** Botón interactivo en `.top-navbar .nav-right-actions` (*"☀️ Modo Claro"* / *"🌙 Modo Oscuro"*).
+- **Estilos CSS (`optipig-theme.css`):** Variables y selectores bajo `.light-theme` invirtiendo fondos a tonos claros pulidos (`#f1f5f9`, tarjetas `#ffffff`, tipografía `#0f172a`), preservando la legibilidad de tablas, estados sanitarios y la identidad de marca esmeralda y cian.
+- **Persistencia y Prevención FOUC:** Guarda la preferencia en `localStorage.getItem('sigepor_theme')` y la aplica de forma inmediata en el `<head>` antes del renderizado.
+
+### 7. Reactividad en Tiempo Real de Contadores KPI (DOM Updates)
+- **Módulo de Vacunación (`vacunas.html`):** Creación de la función `actualizarContadoresVacunas(datos)`. Las operaciones de carga (`GET`), registro (`POST`) y eliminación (`DELETE`) actualizan inmediatamente las cifras de *Total Vacunas*, *Aplicadas* y *Pendientes* sin recargar la página.
+- **Replicación en Toda la Aplicación:**
+  - `corrales.html`: Función `actualizarContadoresCorrales(lista)` con recálculo dinámico de *Total Corrales*, *Capacidad Total de Animales* y *Corrales Limpios*.
+  - `enfermedades.html`: Función `actualizarContadoresEnfermedades(lista)` con recálculo de *Total Diagnósticos*, *En Tratamiento / Observación* y *Casos Recuperados*.
+  - `registroporcino.html`: Invocación reactiva de `actualizarEstadisticasCalculadas(porcinos)`.
+  - `veterinarios.html`: Invocación reactiva de `actualizarEstadisticasCalculadas(veterinarios)`.
+
+---
+
+## 👥 Matriz de Roles y Permisos (RBAC)
+
+| Módulo / Vista | 👑 Administrador (1) | 👨‍⚕️ Veterinario (3) | 👷 Empleado (2) | 🛒 Cliente (4) |
+| :--- | :---: | :---: | :---: | :---: |
+| **Inicio / Dashboard** (`indexpruebados.html`) | ✅ Acceso Total | ✅ Acceso Total | ✅ Acceso Total | ✅ Acceso Total |
+| **Porcinos** (`registroporcino.html`) | ✅ CRUD Total | ✅ CRUD Operativo | ✅ CRUD Operativo | 👁️ Solo Lectura |
+| **Corrales** (`corrales.html`) | ✅ CRUD Total | ✅ Consulta / Asig. | ✅ Consulta / Asig. | ❌ Oculto |
+| **Enfermedades** (`enfermedades.html`) | ✅ CRUD Total | ✅ Diagnóstico Clínico | ❌ Oculto | ❌ Oculto |
+| **Vacunación** (`vacunas.html`) | ✅ CRUD Total | ✅ Aplicación y Control | ❌ Oculto | ❌ Oculto |
+| **Reproducción** (`reproduccion.html`) | ✅ CRUD Total | ✅ Control Reproductivo | ✅ Registro Montas | ❌ Oculto |
+| **Inventario** (`inventario.html`) | ✅ CRUD Total | ✅ Raciones / Insumos | ✅ Raciones / Insumos | ❌ Oculto |
+| **Proveedores** (`proveedores.html`) | ✅ CRUD Total | ❌ Oculto | ✅ Consulta | ❌ Oculto |
+| **Logs de Actividad** (`logs_actividad.html`) | ✅ Auditoría Total | ❌ Oculto | ❌ Oculto | ❌ Oculto |
+| **Personal Veterinario** (`veterinarios.html`) | ✅ Exclusivo Admin | ⛔ Acceso Denegado | ⛔ Acceso Denegado | ⛔ Acceso Denegado |
+| **Gestión de Usuarios** (`gestion_usuarios.html`) | ✅ Exclusivo Admin | ⛔ Acceso Denegado | ⛔ Acceso Denegado | ⛔ Acceso Denegado |
+| **Reportes y Alertas** (`reportes.html`) | ✅ Monitoreo Total | ✅ Alertas Sanitarias | ❌ Oculto | ❌ Oculto |
+
+---
+
+## 🛠️ Instalación y Puesta en Marcha
+
+### Requisitos del Sistema
+- **Node.js:** v18.0.0 o superior (v20+ recomendado).
+- **MySQL Server:** v8.0+ o MariaDB (puerto default 3306).
+- **NPM:** v9.0.0 o superior.
+
+### 1. Configuración de Base de Datos
+Importa el script SQL definitivo en tu servidor MySQL (Workbench, phpMyAdmin o terminal):
 ```bash
 mysql -u root -p sigepor < database/sigepor_database_definitiva.sql
 ```
 
-### 2. Configurar Variables de Entorno del Backend
-Crea o edita `backend/.env`:
-=======
-Configura el archivo `.env` en la raíz de `backend/`:
->>>>>>> 06253f6e3e157a3982bab84029e3c25f2a5590a4
+### 2. Configuración del Backend (`backend/`)
+Crea o edita el archivo `backend/.env`:
 ```env
 PORT=3001
 DB_HOST=localhost
@@ -205,95 +179,65 @@ DB_NAME=sigepor
 JWT_SECRET=sigepor_jwt_secure_secret_key_512bits_2026
 ```
 
----
-
-## Comandos Disponibles
-
+Instala las dependencias y ejecuta el servidor:
 ```bash
-# Instalar dependencias
+cd backend
 npm install
-
-# Modo desarrollo con nodemon
 npm run dev
+```
+El servidor backend se ejecutará en: `http://localhost:3001`.
 
-<<<<<<< HEAD
-### 4. Iniciar el Frontend (React)
+### 3. Configuración del Frontend React (`frontend/`)
 En una nueva terminal:
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-La aplicación React se abrirá en `http://localhost:5173`.
+La SPA en React se abrirá en: `http://localhost:5173`.
+Las vistas HTML5 interactivas se sirven directamente o a través del servidor en: `http://localhost:3001/index.html`.
 
 ---
 
-## Usuarios de Prueba (Datos Semilla)
+## 🧪 Pruebas Automatizadas
 
-| Perfil / Rol | Correo Electrónico | Contraseña | Nivel de Acceso |
-| :--- | :--- | :--- | :--- |
-| **👑 Administrador** | `admin@sigepor.com` | `admin123` | Total (Módulos operativos y Gestión de Usuarios) |
-| **👨‍⚕️ Veterinario** | `vet@sigepor.com` | `vet123` | Salud, Vacunas, Porcinos, Reproducción, Inventario y Reportes |
-| **👷 Empleado** | `operario@sigepor.com` | `empleado123` | Porcinos, Reproducción e Inventario |
-| **🛒 Cliente** | `cliente@sigepor.com` | `cliente123` | Consulta de Porcinos (Solo lectura) |
-
----
-
-## Guía de Verificación Manual (Paso a Paso)
-
-Para realizar una demostración continua del flujo completo entre **React**, **Express** y **MySQL**:
-
-1. **Asegurar Servicios Activos:**
-   - Inicia **MySQL** en el panel de control de **XAMPP**.
-   - Inicia el backend en una terminal (`npm run dev` en `backend/`).
-   - Inicia el frontend en otra terminal (`npm run dev` en `frontend/`).
-2. **Acceder a la Aplicación:**
-   - Abre en el navegador `http://localhost:5173/login`.
-   - Haz clic en la pestaña **👑 Administrador** (se autocompleta `admin@sigepor.com`).
-   - Digita la contraseña `admin123` e inicia sesión.
-3. **Verificar Token JWT en Navegador:**
-   - Abre las Herramientas de Desarrollador con `F12`.
-   - En la pestaña **Application** &rarr; **Local Storage**, comprueba la clave `sigepor_token` con el JWT firmado.
-4. **Registrar un Porcino:**
-   - En el menú lateral, dirígete a **Porcinos**.
-   - Haz clic en el botón **➕ Registrar Nuevo Porcino**.
-   - Completa el formulario con una identificación única (ej. `POR-9999`), peso, estado de salud y veterinario.
-   - Presiona **Guardar en MySQL**.
-5. **Comprobar Petición de Red:**
-   - En la pestaña **Network (Red)** de DevTools (`F12`), filtra por `Fetch/XHR`.
-   - Revisa la petición `POST /api/porcinos`.
-   - En la sección **Headers**, verifica la presencia del encabezado:
-     ```http
-     Authorization: Bearer eyJhbGciOi...
-     ```
-   - El código devuelto por Express es **`201 Created`**.
-6. **Validar Persistencia en MySQL:**
-   - En phpMyAdmin o MySQL Workbench ejecuta:
-     ```sql
-     SELECT * FROM porcinos WHERE identificacion = 'POR-9999';
-     ```
-   - El registro se encuentra persistido físicamente con su ID autoincremental y fecha de registro.
-
----
-
-## Pruebas Automatizadas
-
-El backend incluye pruebas automatizadas con el **Node Test Runner** nativo (`node --test`) y **Supertest**:
+El backend cuenta con una suite completa de pruebas unitarias, de autorización y de integración End-to-End ejecutadas mediante el runner nativo de Node.js (`node --test`) y **Supertest**:
 
 ```bash
 cd backend
 npm test
 ```
-Las 15 pruebas unitarias y de integración validan estrictamente códigos de respuesta `200`, `201`, `401` y `403`. **Ningún código HTTP 500 se valida como respuesta exitosa.**
-=======
-# Ejecutar suite de pruebas unitarias y de integración
-npm test
->>>>>>> 06253f6e3e157a3982bab84029e3c25f2a5590a4
 
-# Ejecutar prueba de integración End-to-End
-npm run test:e2e
+### Cobertura de las 16 Pruebas Automatizadas:
+- [x] `GET /api/porcinos` sin token retorna `401 Unauthenticated`.
+- [x] `GET /api/porcinos` con token inválido retorna `401 Unauthorized`.
+- [x] `GET /api/users` con rol Empleado retorna `403 Forbidden` (RBAC).
+- [x] `GET /api/porcinos` con rol Administrador retorna `200 OK`.
+- [x] `GET /api/veterinarios` con rol Veterinario retorna `403 Forbidden` (Exclusivo Administrador).
+- [x] Flujo E2E Completo: Login JWT $\rightarrow$ Inserción de Porcino $\rightarrow$ Persistencia física en MySQL $\rightarrow$ Limpieza.
+- [x] `GET /health` responde `200 OK` con estado del servidor.
+- [x] Verificación de respuestas canónicas `200` en módulos de Porcinos, Veterinarios (Admin), Reproducción, Sanidad/Vacunas, Inventario y Reportes.
+- [x] **Cero códigos HTTP 500 aceptados como válidos.**
+
+Para compilar el frontend React de producción:
+```bash
+cd frontend
+npm run build
 ```
 
 ---
 
-SIGEPOR © 2026.
+## 🔑 Credenciales de Prueba
+
+| Perfil | Identificador / Correo | Contraseña | Alcance |
+| :--- | :--- | :--- | :--- |
+| **👑 Administrador** | `admin@sigepor.com` | `admin123` | Control total del sistema y gestión de personal/usuarios |
+| **👨‍⚕️ Veterinario** | `vet@sigepor.com` | `vet123` | Salud, vacunas, diagnósticos, producción y reportes |
+| **👷 Empleado** | `operario@sigepor.com` | `empleado123` | Porcinos, corrales, raciones y reproducción |
+| **🛒 Cliente** | `cliente@sigepor.com` | `cliente123` | Catálogo informativo de porcinos en modo lectura |
+
+---
+
+## 📄 Licencia y Derechos
+
+SIGEPOR © 2026 - Todos los derechos reservados. Sistema de Gestión Porcina.
