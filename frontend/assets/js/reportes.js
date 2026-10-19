@@ -59,11 +59,12 @@ function renderizarAlertas(alertas) {
     // 1. Alertas de salud (rojas): Fondo oscuro con tinte rojo + borde rojo brillante + texto blanco/claro
     if (salud && salud.length > 0) {
         salud.forEach(p => {
+            const pigId = p.id_porcino || p.id;
             alertBox.innerHTML += `
                 <div class="clinical-alert-card clinical-alert-salud">
                     <div>
                         <strong style="color: #fca5a5; display: inline-flex; align-items: center; gap: 5px;">🏥 Atención Sanitaria:</strong> 
-                        Porcino <span style="color: #ffffff; font-weight: 700;">#${p.id}</span> (${p.identificacion || p.id}) raza ${p.raza || p.breed || 'Sin especificar'} se encuentra en estado 
+                        Porcino <span style="color: #ffffff; font-weight: 700;">#${pigId}</span> (${p.identificacion || pigId}) raza ${p.raza || p.breed || 'Sin especificar'} se encuentra en estado 
                         <strong style="color: #f87171; background: rgba(239, 68, 68, 0.25); padding: 2px 8px; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.4); font-weight: 700;">'${p.estado_salud || p.health}'</strong>.
                     </div>
                 </div>
@@ -74,11 +75,12 @@ function renderizarAlertas(alertas) {
     // 2. Partos próximos (amarillas/naranjas): Fondo oscuro con tinte amarillo + borde amarillo brillante + texto blanco/claro
     if (reproduccion && reproduccion.length > 0) {
         reproduccion.forEach(r => {
+            const pigId = r.id_porcino || r.porcino_id;
             alertBox.innerHTML += `
                 <div class="clinical-alert-card clinical-alert-repro">
                     <div>
                         <strong style="color: #fde68a; display: inline-flex; align-items: center; gap: 5px;">🍼 Parto Próximo:</strong> 
-                        Porcino <span style="color: #ffffff; font-weight: 700;">#${r.porcino_id}</span> tiene fecha probable de parto estimada para el 
+                        Porcino <span style="color: #ffffff; font-weight: 700;">#${pigId}</span> tiene fecha probable de parto estimada para el 
                         <strong style="color: #fbbf24; background: rgba(245, 158, 11, 0.25); padding: 2px 8px; border-radius: 6px; border: 1px solid rgba(245, 158, 11, 0.4); font-weight: 700;">${r.fecha_probable_parto}</strong>.
                     </div>
                 </div>
@@ -89,11 +91,12 @@ function renderizarAlertas(alertas) {
     // 3. Vacunas pendientes (azules): Fondo oscuro con tinte azul/cian + borde azul claro + texto blanco/claro
     if (vacunacion && vacunacion.length > 0) {
         vacunacion.forEach(v => {
+            const pigId = v.id_porcino || v.porcino_id || v.pigId;
             alertBox.innerHTML += `
                 <div class="clinical-alert-card clinical-alert-vacuna">
                     <div>
                         <strong style="color: #a5f3fc; display: inline-flex; align-items: center; gap: 5px;">💉 Vacuna Pendiente:</strong> 
-                        Porcino <span style="color: #ffffff; font-weight: 700;">#${v.porcino_id || v.pigId}</span> tiene pendiente la aplicación de la vacuna 
+                        Porcino <span style="color: #ffffff; font-weight: 700;">#${pigId}</span> tiene pendiente la aplicación de la vacuna 
                         <strong style="color: #38bdf8; background: rgba(6, 182, 212, 0.25); padding: 2px 8px; border-radius: 6px; border: 1px solid rgba(6, 182, 212, 0.4); font-weight: 700;">'${v.nombre_vacuna || v.nombre}'</strong>.
                     </div>
                 </div>

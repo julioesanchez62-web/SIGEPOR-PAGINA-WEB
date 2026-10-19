@@ -28,29 +28,37 @@ async function createUser(req, res, next) {
   try {
     const { nombre, correo, usuario: usuarioCustom, contraseña, idRol, telefono, requerirSMS } = req.body;
 
-    // SEGURIDAD: Bloquear asignación del rol Administrador a peticiones públicas o sin privilegios
-    if (Number(idRol) === 1 || String(idRol).toLowerCase() === 'administrador') {
-      const authHeader = req.headers['authorization'] || req.headers['x-access-token'];
-      let requesterIsAdmin = false;
+    // DETERMINAR SI EL SOLICITANTE ES UN ADMINISTRADOR AUTENTICADO (JWT)
+    const authHeader = req.headers['authorization'] || req.headers['x-access-token'];
+    let requesterIsAdmin = false;
 
-      if (authHeader) {
-        try {
-          const token = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : authHeader;
-          const decoded = jwt.verify(token, JWT_SECRET);
-          if (Number(decoded.idRol) === 1 || (decoded.rolNombre && decoded.rolNombre.toLowerCase() === 'administrador')) {
-            requesterIsAdmin = true;
-          }
-        } catch (err) {
-          requesterIsAdmin = false;
+    if (authHeader) {
+      try {
+        const token = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : authHeader;
+        const decoded = jwt.verify(token, JWT_SECRET);
+        if (Number(decoded.idRol) === 1 || (decoded.rolNombre && decoded.rolNombre.toLowerCase() === 'administrador')) {
+          requesterIsAdmin = true;
         }
+      } catch (err) {
+        requesterIsAdmin = false;
       }
+    }
 
-      if (!requesterIsAdmin) {
-        return res.status(403).json({
-          status: 'fail',
-          message: 'Acceso denegado: Se requieren privilegios de Administrador autenticado para asignar el rol Administrador.'
-        });
+    // REMEDIACIÓN CRÍTICA CONTRA ESCALADA DE PRIVILEGIOS:
+    // Para cualquier registro público o sin credenciales de Administrador:
+    // - Se elimina/ignora cualquier variable de rol enviada en el payload.
+    // - Se asigna estrictamente el rol de mínimos privilegios por defecto (idRol: 4 -> 'Cliente').
+    let rolFinal = 4; // Por defecto: 4 = Cliente
+
+    if (requesterIsAdmin) {
+      // Solicitud administrativa interna: se permite asignar el rol indicado
+      rolFinal = idRol ? Number(idRol) : 4;
+    } else {
+      // Solicitud pública: neutralizar cualquier intento de inyección de rol
+      if (idRol && Number(idRol) !== 4) {
+        console.warn(`[SEGURIDAD] Intento de escalada de privilegios neutralizado. Rol solicitado: ${idRol}. Asignando obligatoriamente rol Cliente (4).`);
       }
+      rolFinal = 4;
     }
 
     // STUB PARA CONFIRMACIÓN POR SMS (Twilio SDK):
@@ -71,7 +79,7 @@ async function createUser(req, res, next) {
       correo,
       usuario: usuarioCustom,
       contraseña,
-      idRol,
+      idRol: rolFinal,
       telefono: telefono_db
     });
 

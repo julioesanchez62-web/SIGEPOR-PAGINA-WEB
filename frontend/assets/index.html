@@ -11,6 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/optipig-theme.css">
 
     <style>
         :root {
@@ -856,7 +857,7 @@
 
         <!-- Botonera Horizontal: Registrarse, Iniciar Sesión -->
         <div class="nav-right-actions">
-            <a href="registro_usuarios.html" class="btn-nav btn-register">Registrarse</a>
+           <!-- <a href="registro_usuarios.html" class="btn-nav btn-register">Registrarse</a> -->
             <button class="btn-nav btn-login-modal" onclick="toggleModal(true)">Iniciar Sesión</button>
         </div>
     </nav>
@@ -1053,7 +1054,7 @@
             </form>
 
             <div class="links">
-                <a href="restaurar.html" class="link-forgot">¿Olvidaste tu contraseña? Recuperar aquí</a>
+                <a href="javascript:void(0)" onclick="abrirModalRecuperacion()" class="link-forgot">¿Olvidaste tu contraseña? Recuperar aquí</a>
                 <a href="registro_usuarios.html" class="link-create">Crear nueva cuenta</a>
             </div>
 
@@ -1061,6 +1062,49 @@
                 <span class="close-btn" onclick="document.getElementById('errorBox').style.display='none'">X</span>
                 <p>DATOS INCORRECTOS <br> INGRESARLOS NUEVAMENTE</p>
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE RECUPERACIÓN DE CONTRASEÑA (EMAIL O WHATSAPP) -->
+    <div class="modal-overlay" id="recoveryModalOverlay" onclick="closeRecoveryModalOnOverlay(event)">
+        <div class="login-container-modal" style="max-width: 480px;">
+            <button class="close-modal-btn" onclick="toggleRecoveryModal(false)">&times;</button>
+            
+            <header>
+                <div class="logo-login-container">
+                    <div class="logo-frame-login" style="background: linear-gradient(135deg, var(--accent-cyan), var(--primary-emerald));">
+                        <img src="images/logo.jpg" alt="SIGEPOR Logo" class="icon"> 
+                    </div>
+                </div>
+                
+                <h2 style="font-size: 1.35rem; color: #ffffff;">🔐 RECUPERAR CONTRASEÑA</h2>
+                <p class="login-subtitle" style="font-size: 0.85rem; margin-top: 0.3rem;">Elige el canal donde deseas recibir tu código seguro de verificación:</p>
+
+                <!-- Selector de Canal: Correo vs WhatsApp -->
+                <div class="role-selector-tabs" style="margin: 1.2rem 0;">
+                    <button type="button" class="role-tab active" id="tabRecoveryEmail" onclick="seleccionarMetodoRecuperacion('email')">
+                        📧 Correo Electrónico
+                    </button>
+                    <button type="button" class="role-tab" id="tabRecoveryWhatsApp" onclick="seleccionarMetodoRecuperacion('whatsapp')">
+                        💬 Código de WhatsApp
+                    </button>
+                </div>
+            </header>
+
+            <form id="recoveryForm" onsubmit="enviarSolicitudRecuperacion(event)">
+                <input type="hidden" id="recoveryMethod" value="email">
+
+                <div id="recoveryInputContainer">
+                    <label id="recoveryInputLabel" for="recoveryIdentifier" style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600; color:var(--text-muted);">Correo Electrónico Registrado:</label>
+                    <input type="email" id="recoveryIdentifier" placeholder="ejemplo@correo.com" style="width:100%; padding:0.85rem 1rem; border-radius:12px; background:rgba(15,23,42,0.8); border:1px solid var(--border-glass); color:#fff; font-size:0.95rem; margin-bottom:1rem;" required>
+                </div>
+
+                <button type="submit" class="btn-primary" id="btnSubmitRecovery" style="width:100%; padding:0.9rem; border-radius:12px; border:none; background:linear-gradient(135deg, var(--primary-emerald), var(--primary-glow)); color:#fff; font-weight:700; cursor:pointer;">
+                    📨 ENVIAR CÓDIGO AL CORREO
+                </button>
+            </form>
+
+            <div id="recoveryAlertBox" class="alert-box" style="display:none; margin-top:1.2rem; padding:0.9rem; border-radius:12px; font-size:0.88rem; text-align:center;"></div>
         </div>
     </div>
 
@@ -1074,7 +1118,7 @@
     <script src="js/script.js"></script>
     <script src="js/offline_sync.js"></script>
     <script>
-        // Modal Handlers
+        // Modal Handlers Login
         function toggleModal(show) {
             const modal = document.getElementById('loginModalOverlay');
             if (show) {
@@ -1089,6 +1133,116 @@
         function closeModalOnOverlay(event) {
             if (event.target.id === 'loginModalOverlay') {
                 toggleModal(false);
+            }
+        }
+
+        // Modal Handlers Recuperación de Contraseña
+        function abrirModalRecuperacion() {
+            toggleModal(false); // Cerrar login si estuviese abierto
+            toggleRecoveryModal(true);
+        }
+
+        function toggleRecoveryModal(show) {
+            const modal = document.getElementById('recoveryModalOverlay');
+            if (!modal) return;
+            if (show) {
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                const alertBox = document.getElementById('recoveryAlertBox');
+                if (alertBox) alertBox.style.display = 'none';
+            } else {
+                modal.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        function closeRecoveryModalOnOverlay(event) {
+            if (event.target.id === 'recoveryModalOverlay') {
+                toggleRecoveryModal(false);
+            }
+        }
+
+        function seleccionarMetodoRecuperacion(metodo) {
+            const tabEmail = document.getElementById('tabRecoveryEmail');
+            const tabWhatsApp = document.getElementById('tabRecoveryWhatsApp');
+            const inputLabel = document.getElementById('recoveryInputLabel');
+            const inputField = document.getElementById('recoveryIdentifier');
+            const methodField = document.getElementById('recoveryMethod');
+            const btnSubmit = document.getElementById('btnSubmitRecovery');
+
+            methodField.value = metodo;
+
+            if (metodo === 'whatsapp') {
+                tabEmail.classList.remove('active');
+                tabWhatsApp.classList.add('active');
+                inputLabel.textContent = 'Número de WhatsApp / Celular Registrado:';
+                inputField.type = 'tel';
+                inputField.placeholder = 'Ej: +57 300 123 4567 o 3001234567';
+                btnSubmit.innerHTML = '💬 ENVIAR CÓDIGO POR WHATSAPP';
+            } else {
+                tabWhatsApp.classList.remove('active');
+                tabEmail.classList.add('active');
+                inputLabel.textContent = 'Correo Electrónico Registrado:';
+                inputField.type = 'email';
+                inputField.placeholder = 'ejemplo@correo.com';
+                btnSubmit.innerHTML = '📨 ENVIAR CÓDIGO AL CORREO';
+            }
+            inputField.focus();
+        }
+
+        async function enviarSolicitudRecuperacion(event) {
+            event.preventDefault();
+
+            const metodo = document.getElementById('recoveryMethod').value;
+            const identificador = document.getElementById('recoveryIdentifier').value.trim();
+            const alertBox = document.getElementById('recoveryAlertBox');
+            const btnSubmit = document.getElementById('btnSubmitRecovery');
+
+            if (!identificador) {
+                alertBox.textContent = '⚠️ Por favor ingresa el dato solicitado.';
+                alertBox.className = 'alert-box alert-error';
+                alertBox.style.display = 'block';
+                return;
+            }
+
+            btnSubmit.disabled = true;
+            const textoOriginal = btnSubmit.innerHTML;
+            btnSubmit.innerHTML = '⏳ Procesando envío...';
+
+            try {
+                const payload = {
+                    metodo,
+                    identificador,
+                    email: metodo === 'email' ? identificador : undefined,
+                    telefono: metodo === 'whatsapp' ? identificador : undefined
+                };
+
+                const response = await fetch('/api/recuperar-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.status === 'success') {
+                    alertBox.textContent = '✅ ' + (data.message || 'Instrucciones enviadas con éxito.');
+                    alertBox.className = 'alert-box alert-success';
+                    alertBox.style.display = 'block';
+                    document.getElementById('recoveryForm').reset();
+                } else {
+                    alertBox.textContent = '❌ ' + (data.message || 'No se pudo procesar la recuperación.');
+                    alertBox.className = 'alert-box alert-error';
+                    alertBox.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('[Recuperacion] Error de red:', error);
+                alertBox.textContent = '❌ Error de conexión al procesar la solicitud.';
+                alertBox.className = 'alert-box alert-error';
+                alertBox.style.display = 'block';
+            } finally {
+                btnSubmit.disabled = false;
+                btnSubmit.innerHTML = textoOriginal;
             }
         }
 

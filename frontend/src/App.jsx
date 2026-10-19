@@ -73,11 +73,11 @@ export function App() {
           }
         />
 
-        {/* Veterinarios: Admin, Veterinario y Empleado */}
+        {/* Veterinarios: Exclusivo Administrador */}
         <Route
           path="veterinarios"
           element={
-            <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.VETERINARIO, ROLES.EMPLEADO]}>
+            <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
               <VeterinariosPage />
             </ProtectedRoute>
           }

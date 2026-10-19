@@ -9,6 +9,43 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/optipig-theme.css">
+
+    <!-- Guardián Temprano RBAC (Pre-Render): Exclusivo para Administradores -->
+    <script>
+        (function verificarAccesoAdminTemprano() {
+            try {
+                const sesionStr = localStorage.getItem('usuario_sigepor') || 
+                                  localStorage.getItem('usuarioSesion') ||
+                                  sessionStorage.getItem('usuario_sigepor') ||
+                                  sessionStorage.getItem('usuarioSesion');
+                const token = localStorage.getItem('sigepor_token') || localStorage.getItem('token') || sessionStorage.getItem('token');
+                
+                let idRol = 4;
+                if (sesionStr) {
+                    const u = JSON.parse(sesionStr);
+                    idRol = Number(u.idRol || u.rol || 4);
+                } else if (token) {
+                    const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+                    const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+                    const p = JSON.parse(jsonPayload);
+                    idRol = Number(p.idRol || p.rol || 4);
+                }
+
+                if (idRol !== 1) {
+                    document.documentElement.style.visibility = 'hidden';
+                    sessionStorage.setItem('sigepor_flash_toast', JSON.stringify({
+                        tipo: 'warning',
+                        titulo: 'Acceso Denegado',
+                        mensaje: 'Acceso Denegado: Exclusivo para Administradores'
+                    }));
+                    window.location.replace('inicio.html');
+                }
+            } catch (e) {
+                // Fallback gestionado por auth_guard.js
+            }
+        })();
+    </script>
+
     <style>
         .badge-status {
             display: inline-block;
@@ -152,7 +189,7 @@
                 <li><a href="logs_actividad.html">📋 Logs de Actividad</a></li>
                 <li><a href="veterinarios.html" class="active">👨‍⚕️ Veterinarios</a></li>
                 <li><a href="reportes.html">📊 Reportes & Alertas</a></li>
-                <li><a href="registro_usuarios.html">👤 Usuarios</a></li>
+                <li><a href="gestion_usuarios.html">👥 Gestión de Usuarios</a></li>
             </ul>
         </nav>
 
@@ -272,8 +309,17 @@
         <p>&copy; 2026 SIGEPOR - Sistema de Gestión Porcina. Todos los derechos reservados.</p>
     </footer>
 
+    <script src="js/auth_guard.js"></script>
     <script src="js/offline_sync.js"></script>
     <script>
+        // 🔒 Control de Acceso RBAC Estricto: Exclusivo para Administrador (idRol: 1)
+        if (typeof checkAuthAndPermissions === 'function') {
+            const autorizado = checkAuthAndPermissions(1);
+            if (!autorizado) {
+                console.warn('⛔ Interrupción de ejecución: Usuario no autorizado para el módulo de personal veterinario.');
+            }
+        }
+
         const API_URL = 'http://localhost:3001/api/veterinarios';
         const LOCAL_KEY_VETS = 'sigeporVeterinarios';
 
@@ -344,9 +390,10 @@
                 const badge = esActivo 
                     ? '<span class="badge-status badge-active">🟢 Activo</span>' 
                     : '<span class="badge-status badge-inactive">🔴 Inactivo</span>';
+                const vetId = vet.id_veterinario || vet.id;
 
                 tr.innerHTML = `
-                    <td><strong>#${vet.id}</strong></td>
+                    <td><strong>#${vetId}</strong></td>
                     <td>${vet.nombre}</td>
                     <td>${vet.email}</td>
                     <td>${vet.usuario}</td>
@@ -354,8 +401,8 @@
                     <td>${badge}</td>
                     <td>
                         <div class="table-actions">
-                            <button type="button" class="btn-table-action btn-table-edit" onclick="seleccionarParaEditar(${vet.id})">✏️ Cargar</button>
-                            <button type="button" class="btn-table-action btn-table-delete" onclick="eliminarVeterinarioDirecto(${vet.id})">🗑️ Borrar</button>
+                            <button type="button" class="btn-table-action btn-table-edit" onclick="seleccionarParaEditar(${vetId})">✏️ Cargar</button>
+                            <button type="button" class="btn-table-action btn-table-delete" onclick="eliminarVeterinarioDirecto(${vetId})">🗑️ Borrar</button>
                         </div>
                     </td>
                 `;
@@ -459,17 +506,18 @@
             }
 
             const cached = JSON.parse(localStorage.getItem(LOCAL_KEY_VETS) || '[]');
-            const vet = cached.find(v => Number(v.id) === Number(id));
+            const vet = cached.find(v => Number(v.id_veterinario || v.id) === Number(id));
             if (vet) {
                 cargardatosFormularioVet(vet);
-                alert(`✅ Veterinario #${vet.id} (${vet.nombre}) cargado desde caché local.`);
+                const vetId = vet.id_veterinario || vet.id;
+                alert(`✅ Veterinario #${vetId} (${vet.nombre}) cargado desde caché local.`);
             } else {
                 alert('⚠️ Veterinario no encontrado.');
             }
         }
 
         function cargardatosFormularioVet(vet) {
-            inputId.value = vet.id;
+            inputId.value = vet.id_veterinario || vet.id;
             inputNombre.value = vet.nombre || '';
             inputEmail.value = vet.email || '';
             inputUsuario.value = vet.usuario || '';
@@ -477,7 +525,8 @@
             inputFechaRegistro.value = vet.fecha_registro || '';
             selectActivo.value = vet.activo;
 
-            document.getElementById('formTitle').textContent = `Consultando Veterinario #${vet.id}`;
+            const vetId = vet.id_veterinario || vet.id;
+            document.getElementById('formTitle').textContent = `Consultando Veterinario #${vetId}`;
             document.getElementById('formIcon').textContent = '🔍';
         }
 
@@ -613,6 +662,5 @@
             cargarVeterinarios();
         });
     </script>
-    <script src="js/auth_guard.js"></script>
 </body>
 </html>

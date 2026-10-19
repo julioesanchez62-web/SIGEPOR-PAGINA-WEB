@@ -161,8 +161,9 @@ async function cargarCorralesSelect() {
 
         lista.forEach(c => {
             const option = document.createElement('option');
-            option.value = c.id;
-            const nombreCorral = c.nombre || `Corral #${c.id}`;
+            const cId = c.id_corral || c.id;
+            option.value = cId;
+            const nombreCorral = c.nombre || `Corral #${cId}`;
             option.dataset.nombre = nombreCorral;
             option.textContent = `🏠 ${nombreCorral} (Cap: ${c.capacidad || 0})`;
             select.appendChild(option);
@@ -173,6 +174,35 @@ async function cargarCorralesSelect() {
     }
 }
 window.cargarCorralesSelect = cargarCorralesSelect;
+
+// CARGAR SELECT DESPLEGABLE DE PORCINOS
+async function cargarPorcinosSelect() {
+    const select = document.getElementById('id_porcino');
+    if (!select) return;
+
+    const token = obtenerTokenSesionInventario();
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    try {
+        const res = await fetch('http://localhost:3001/api/porcinos', { headers });
+        if (res.ok) {
+            const result = await res.json();
+            const porcinos = Array.isArray(result) ? result : (result.data || []);
+            select.innerHTML = '<option value="">Todos / Granja General</option>';
+            porcinos.forEach(p => {
+                const opt = document.createElement('option');
+                const pId = p.id_porcino || p.id;
+                opt.value = pId;
+                opt.textContent = `🐷 #${pId} (${p.identificacion || pId}) - ${p.raza || ''}`;
+                select.appendChild(opt);
+            });
+        }
+    } catch (e) {
+        console.warn('No se pudo cargar la lista de porcinos en inventario:', e);
+    }
+}
+window.cargarPorcinosSelect = cargarPorcinosSelect;
 
 if (alimentoForm) {
     alimentoForm.addEventListener('submit', async (e) => {
@@ -190,10 +220,18 @@ if (alimentoForm) {
 
         const selectCorral = document.getElementById('corral_id');
         let nombreCorral = '';
+        let idCorralVal = null;
         if (selectCorral && selectCorral.selectedIndex >= 0) {
             const optCorral = selectCorral.options[selectCorral.selectedIndex];
             nombreCorral = optCorral.dataset.nombre || optCorral.textContent.replace('🏠 ', '').split(' (Cap:')[0].trim();
+            idCorralVal = selectCorral.value ? parseInt(selectCorral.value, 10) : null;
         }
+
+        const u = JSON.parse(localStorage.getItem('usuarioSesion') || localStorage.getItem('usuario_sigepor') || '{}');
+        const idUsuario = u.id_usuario || u.id || null;
+
+        const selectPorcino = document.getElementById('id_porcino');
+        const idPorcino = selectPorcino && selectPorcino.value ? parseInt(selectPorcino.value, 10) : null;
 
         const datos = {
             id: Date.now(),
@@ -203,7 +241,10 @@ if (alimentoForm) {
             proveedor: nombreProveedor,
             proveedor_id: selectProveedor ? parseInt(selectProveedor.value, 10) : null,
             corral: nombreCorral,
-            corral_id: selectCorral ? parseInt(selectCorral.value, 10) : null
+            corral_id: idCorralVal,
+            id_corral: idCorralVal,
+            id_porcino: idPorcino,
+            id_usuario: idUsuario
         };
 
         try {
@@ -277,5 +318,6 @@ async function eliminarAlimento(id) {
 document.addEventListener('DOMContentLoaded', () => {
     cargarProveedoresSelect();
     cargarCorralesSelect();
+    cargarPorcinosSelect();
     cargarInventario();
 });

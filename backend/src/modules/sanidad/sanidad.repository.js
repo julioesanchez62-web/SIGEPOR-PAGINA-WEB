@@ -6,7 +6,9 @@ async function getAllVacunas() {
     SELECT 
       v.id,
       v.porcino_id,
+      v.id_veterinario,
       p.identificacion AS porcino_codigo,
+      vet.nombre AS veterinario_nombre,
       v.nombre_vacuna,
       DATE_FORMAT(v.fecha_aplicacion, '%Y-%m-%d') AS fecha_aplicacion,
       v.estado,
@@ -14,19 +16,23 @@ async function getAllVacunas() {
       v.proxima_vacuna_dias,
       v.notas
     FROM vacunacion v
-    LEFT JOIN porcinos p ON v.porcino_id = p.id OR v.porcino_id = p.identificacion
+    LEFT JOIN porcinos p ON v.porcino_id = p.id_porcino OR v.porcino_id = p.identificacion
+    LEFT JOIN veterinarios vet ON v.id_veterinario = vet.id_veterinario
     ORDER BY v.fecha_aplicacion DESC
   `);
   return rows;
 }
 
 async function createVacuna(datos) {
-  const { porcino_id, nombre_vacuna, fecha_aplicacion, estado, dosis, proxima_vacuna_dias, notas } = datos;
+  const { porcino_id, id_veterinario, veterinario_id, nombre_vacuna, fecha_aplicacion, estado, dosis, proxima_vacuna_dias, notas } = datos;
+  const vetId = id_veterinario || veterinario_id;
+
   const [res] = await pool.execute(`
-    INSERT INTO vacunacion (porcino_id, nombre_vacuna, fecha_aplicacion, estado, dosis, proxima_vacuna_dias, notas)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO vacunacion (porcino_id, id_veterinario, nombre_vacuna, fecha_aplicacion, estado, dosis, proxima_vacuna_dias, notas)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `, [
     porcino_id,
+    vetId ? Number(vetId) : null,
     nombre_vacuna,
     fecha_aplicacion,
     estado || 'Aplicada',
@@ -54,7 +60,7 @@ async function getAllEnfermedades() {
       e.tratamiento,
       e.estado
     FROM enfermedades e
-    LEFT JOIN porcinos p ON e.porcino_id = p.id OR e.porcino_id = p.identificacion
+    LEFT JOIN porcinos p ON e.porcino_id = p.id_porcino OR e.porcino_id = p.identificacion
     ORDER BY e.fecha_diagnostico DESC
   `);
   return rows;

@@ -5,7 +5,7 @@ import { Modal } from '../components/Modal';
 import { Alert } from '../components/Alert';
 
 export const InventarioPage = () => {
-  const { hasRole } = useAuth();
+  const { hasRole, user } = useAuth();
   const [activeTab, setActiveTab] = useState('alimentos');
   const [alimentos, setAlimentos] = useState([]);
   const [corrales, setCorrales] = useState([]);
@@ -69,7 +69,10 @@ export const InventarioPage = () => {
   const handleCreateAlimento = async (e) => {
     e.preventDefault();
     try {
-      await inventarioService.createAlimento(alimentoForm);
+      await inventarioService.createAlimento({
+        ...alimentoForm,
+        id_usuario: user?.id_usuario || user?.id || null
+      });
       setAlert({ type: 'success', message: 'Suministro de alimento registrado con éxito' });
       setIsAlimentoModal(false);
       loadData();
@@ -265,19 +268,22 @@ export const InventarioPage = () => {
                     </td>
                   </tr>
                 ) : (
-                  corrales.map((cr) => (
-                    <tr key={cr.id}>
-                      <td style={{ fontWeight: 600 }}>{cr.nombre}</td>
-                      <td>{cr.capacidad} cerdos</td>
-                      <td>{cr.tipo_alimentacion}</td>
-                      <td>
-                        <span className={`status-pill ${cr.estado_limpieza?.toLowerCase() === 'limpio' ? 'limpio' : 'regular'}`}>
-                          {cr.estado_limpieza || 'Limpio'}
-                        </span>
-                      </td>
-                      <td>{cr.ubicacion || 'Principal'}</td>
-                    </tr>
-                  ))
+                  corrales.map((cr) => {
+                    const cId = cr.id_corral || cr.id;
+                    return (
+                      <tr key={cId}>
+                        <td style={{ fontWeight: 600 }}>{cr.nombre}</td>
+                        <td>{cr.capacidad} cerdos</td>
+                        <td>{cr.tipo_alimentacion}</td>
+                        <td>
+                          <span className={`status-pill ${cr.estado_limpieza?.toLowerCase() === 'limpio' ? 'limpio' : 'regular'}`}>
+                            {cr.estado_limpieza || 'Limpio'}
+                          </span>
+                        </td>
+                        <td>{cr.ubicacion || 'Principal'}</td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>

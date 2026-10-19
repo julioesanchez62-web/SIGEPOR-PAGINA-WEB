@@ -3,7 +3,7 @@ const { pool } = require('../../config/mysql');
 // --- ALIMENTACION ---
 async function getAlimentos() {
   const [rows] = await pool.execute(`
-    SELECT id, tipo_alimento, cantidad, DATE_FORMAT(fecha_suministro, '%Y-%m-%d') AS fecha_suministro, proveedor, corral
+    SELECT id, id_porcino, id_usuario, tipo_alimento, cantidad, DATE_FORMAT(fecha_suministro, '%Y-%m-%d') AS fecha_suministro, proveedor, corral
     FROM alimentacion
     ORDER BY fecha_suministro DESC
   `);
@@ -11,11 +11,19 @@ async function getAlimentos() {
 }
 
 async function createAlimento(datos) {
-  const { tipo_alimento, cantidad, fecha_suministro, proveedor, corral } = datos;
+  const { tipo_alimento, cantidad, fecha_suministro, proveedor, corral, id_porcino, id_usuario } = datos;
   const [res] = await pool.execute(`
-    INSERT INTO alimentacion (tipo_alimento, cantidad, fecha_suministro, proveedor, corral)
-    VALUES (?, ?, ?, ?, ?)
-  `, [tipo_alimento, cantidad, fecha_suministro, proveedor || '', corral || '']);
+    INSERT INTO alimentacion (tipo_alimento, cantidad, fecha_suministro, proveedor, corral, id_porcino, id_usuario)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `, [
+    tipo_alimento, 
+    cantidad, 
+    fecha_suministro, 
+    proveedor || '', 
+    corral || '', 
+    id_porcino ? Number(id_porcino) : null, 
+    id_usuario ? Number(id_usuario) : null
+  ]);
   return { id: res.insertId, ...datos };
 }
 
@@ -26,7 +34,7 @@ async function deleteAlimento(id) {
 
 // --- CORRALES ---
 async function getCorrales() {
-  const [rows] = await pool.execute('SELECT * FROM corrales ORDER BY id ASC');
+  const [rows] = await pool.execute('SELECT id_corral, id_corral AS id, nombre, capacidad, tipo_alimentacion, estado_limpieza, ubicacion FROM corrales ORDER BY id_corral ASC');
   return rows;
 }
 
@@ -36,7 +44,7 @@ async function createCorral(datos) {
     INSERT INTO corrales (nombre, capacidad, tipo_alimentacion, estado_limpieza, ubicacion)
     VALUES (?, ?, ?, ?, ?)
   `, [nombre, capacidad || 10, tipo_alimentacion || 'Balanceado', estado_limpieza || 'Limpio', ubicacion || 'Granja Principal']);
-  return { id: res.insertId, ...datos };
+  return { id_corral: res.insertId, id: res.insertId, ...datos };
 }
 
 // --- PROVEEDORES ---

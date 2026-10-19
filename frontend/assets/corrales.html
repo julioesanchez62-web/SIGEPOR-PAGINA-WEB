@@ -58,7 +58,7 @@
                 <li><a href="logs_actividad.html">📋 Logs de Actividad</a></li>
                 <li><a href="veterinarios.html">👨‍⚕️ Veterinarios</a></li>
                 <li><a href="reportes.html">📊 Reportes & Alertas</a></li>
-                <li><a href="registro_usuarios.html">👤 Usuarios</a></li>
+                <li><a href="gestion_usuarios.html">👥 Gestión de Usuarios</a></li>
             </ul>
         </nav>
 
@@ -73,6 +73,22 @@
             </div>
 
             <div id="alertBox" class="alert-box"></div>
+
+            <!-- Estadísticas Rápidas de Corrales -->
+            <div class="stats-section" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                <div class="stat-card" style="background: var(--bg-card); border: 1px solid var(--border-glass); padding: 1.2rem; border-radius: 16px; text-align: center;">
+                    <h4 style="font-size: 0.82rem; color: var(--text-muted); text-transform: uppercase;">Total Corrales</h4>
+                    <div id="statTotalCorrales" style="font-size: 1.8rem; font-weight: 800; color: var(--primary-emerald); margin-top: 0.3rem;">0</div>
+                </div>
+                <div class="stat-card" style="background: var(--bg-card); border: 1px solid var(--border-glass); padding: 1.2rem; border-radius: 16px; text-align: center;">
+                    <h4 style="font-size: 0.82rem; color: var(--text-muted); text-transform: uppercase;">Capacidad Total (Cerdos)</h4>
+                    <div id="statCapacidadTotal" style="font-size: 1.8rem; font-weight: 800; color: var(--accent-cyan); margin-top: 0.3rem;">0</div>
+                </div>
+                <div class="stat-card" style="background: var(--bg-card); border: 1px solid var(--border-glass); padding: 1.2rem; border-radius: 16px; text-align: center;">
+                    <h4 style="font-size: 0.82rem; color: var(--text-muted); text-transform: uppercase;">Corrales Limpios</h4>
+                    <div id="statCorralesLimpios" style="font-size: 1.8rem; font-weight: 800; color: #34d399; margin-top: 0.3rem;">0</div>
+                </div>
+            </div>
 
             <!-- Formulario CREATE -->
             <div class="card-wrapper">
@@ -176,8 +192,11 @@
 
                 if (!Array.isArray(lista) || lista.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:2rem; color:var(--text-muted);">No hay corrales registrados en la base de datos.</td></tr>';
+                    actualizarContadoresCorrales([]);
                     return;
                 }
+
+                actualizarContadoresCorrales(lista);
 
                 lista.forEach(item => {
                     const tr = document.createElement('tr');
@@ -185,7 +204,7 @@
                                        (item.estado_limpieza?.toLowerCase() === 'regular' ? 'pill-regular' : 'pill-sucio');
 
                     tr.innerHTML = `
-                        <td><strong>#${item.id}</strong></td>
+                        <td><strong>#${item.id_corral || item.id}</strong></td>
                         <td style="font-weight:700; color:var(--primary-emerald);">${item.nombre}</td>
                         <td>${item.capacidad} cerdos</td>
                         <td>${item.tipo_alimentacion || 'N/A'}</td>
@@ -234,6 +253,22 @@
                 mostrarAlerta('❌ Error de red al comunicarse con el backend.', true);
             }
         });
+
+        // Actualizar contadores KPI en tiempo real (DOM Reactivo)
+        function actualizarContadoresCorrales(datos) {
+            const lista = Array.isArray(datos) ? datos : [];
+            const total = lista.length;
+            const capacidadTotal = lista.reduce((acc, c) => acc + (parseInt(c.capacidad, 10) || 0), 0);
+            const limpios = lista.filter(c => (c.estado_limpieza || '').toLowerCase() === 'limpio').length;
+
+            const elTotal = document.getElementById('statTotalCorrales');
+            const elCapacidad = document.getElementById('statCapacidadTotal');
+            const elLimpios = document.getElementById('statCorralesLimpios');
+
+            if (elTotal) elTotal.textContent = total;
+            if (elCapacidad) elCapacidad.textContent = capacidadTotal;
+            if (elLimpios) elLimpios.textContent = limpios;
+        }
 
         // Cargar registros al abrir la página
         document.addEventListener('DOMContentLoaded', cargarCorrales);

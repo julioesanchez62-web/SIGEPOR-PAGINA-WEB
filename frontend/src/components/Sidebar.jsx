@@ -34,7 +34,7 @@ export const Sidebar = () => {
       to: '/veterinarios',
       label: 'Veterinarios',
       icon: '👨‍⚕️',
-      roles: [ROLES.ADMIN, ROLES.VETERINARIO, ROLES.EMPLEADO]
+      roles: [ROLES.ADMIN]
     },
     {
       to: '/reportes',

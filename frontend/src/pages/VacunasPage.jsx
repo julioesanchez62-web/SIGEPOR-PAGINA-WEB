@@ -6,7 +6,7 @@ import { Modal } from '../components/Modal';
 import { Alert } from '../components/Alert';
 
 export const VacunasPage = () => {
-  const { hasRole } = useAuth();
+  const { hasRole, user } = useAuth();
   const [activeTab, setActiveTab] = useState('vacunas');
   const [vacunas, setVacunas] = useState([]);
   const [enfermedades, setEnfermedades] = useState([]);
@@ -51,8 +51,9 @@ export const VacunasPage = () => {
       const pList = Array.isArray(porcData) ? porcData : porcData.data || [];
       setPorcinos(pList);
       if (pList.length > 0) {
-        setVacunaForm((prev) => ({ ...prev, porcino_id: pList[0].id }));
-        setEnfermedadForm((prev) => ({ ...prev, porcino_id: pList[0].id }));
+        const firstPigId = pList[0].id_porcino || pList[0].id;
+        setVacunaForm((prev) => ({ ...prev, porcino_id: firstPigId }));
+        setEnfermedadForm((prev) => ({ ...prev, porcino_id: firstPigId }));
       }
     } catch (err) {
       setAlert({ type: 'danger', message: err.message || 'Error cargando datos de sanidad' });
@@ -68,7 +69,10 @@ export const VacunasPage = () => {
   const handleCreateVacuna = async (e) => {
     e.preventDefault();
     try {
-      await sanidadService.createVacuna(vacunaForm);
+      await sanidadService.createVacuna({
+        ...vacunaForm,
+        id_veterinario: user?.id_veterinario || user?.id_usuario || user?.id || null
+      });
       setAlert({ type: 'success', message: 'Vacuna registrada y programada exitosamente' });
       setIsVacunaModalOpen(false);
       loadData();
@@ -291,11 +295,14 @@ export const VacunasPage = () => {
               value={vacunaForm.porcino_id}
               onChange={(e) => setVacunaForm({ ...vacunaForm, porcino_id: e.target.value })}
             >
-              {porcinos.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.identificacion} ({p.raza})
-                </option>
-              ))}
+              {porcinos.map((p) => {
+                const pId = p.id_porcino || p.id;
+                return (
+                  <option key={pId} value={pId}>
+                    {p.identificacion} ({p.raza})
+                  </option>
+                );
+              })}
             </select>
           </div>
 
@@ -379,11 +386,14 @@ export const VacunasPage = () => {
               value={enfermedadForm.porcino_id}
               onChange={(e) => setEnfermedadForm({ ...enfermedadForm, porcino_id: e.target.value })}
             >
-              {porcinos.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.identificacion} ({p.raza})
-                </option>
-              ))}
+              {porcinos.map((p) => {
+                const pId = p.id_porcino || p.id;
+                return (
+                  <option key={pId} value={pId}>
+                    {p.identificacion} ({p.raza})
+                  </option>
+                );
+              })}
             </select>
           </div>
 

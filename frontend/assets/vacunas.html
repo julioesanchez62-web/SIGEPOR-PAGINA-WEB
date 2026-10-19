@@ -126,7 +126,7 @@
                 <li><a href="logs_actividad.html">📋 Logs de Actividad</a></li>
                 <li><a href="veterinarios.html">👨‍⚕️ Veterinarios</a></li>
                 <li><a href="reportes.html">📊 Reportes & Alertas</a></li>
-                <li><a href="registro_usuarios.html">👤 Usuarios</a></li>
+                <li><a href="gestion_usuarios.html">👥 Gestión de Usuarios</a></li>
             </ul>
         </nav>
 
@@ -252,6 +252,7 @@
     </footer>
 
     <!-- Scripts de Lógica Intactos -->
+    <script src="js/auth_guard.js"></script>
     <script src="js/offline_sync.js"></script>
     <script>
     const API_URL = 'http://localhost:3001/api';
@@ -287,8 +288,9 @@
 
             lista.forEach(p => {
                 const opt = document.createElement('option');
-                opt.value = p.id;
-                const idTag = p.identificacion || p.arete || `Porcino #${p.id}`;
+                const pId = p.id_porcino || p.id;
+                opt.value = pId;
+                const idTag = p.identificacion || p.arete || `Porcino #${pId}`;
                 const raza = p.raza ? ` (${p.raza})` : '';
                 opt.textContent = `🐷 ${idTag}${raza}`;
                 select.appendChild(opt);
@@ -340,10 +342,16 @@
             return;
         }
 
+        const vetActivo = JSON.parse(localStorage.getItem('veterinarioActivo') || '{}');
+        const usrActivo = JSON.parse(localStorage.getItem('usuarioSesion') || localStorage.getItem('usuario_sigepor') || '{}');
+        const idVet = vetActivo.id_veterinario || vetActivo.id || usrActivo.id_veterinario || usrActivo.id_usuario || null;
+
         const vacuna = {
             id: Date.now(),
             pigId,
             porcino_id: parseInt(pigId, 10),
+            id_porcino: parseInt(pigId, 10),
+            id_veterinario: idVet,
             nombre,
             nombre_vacuna: nombre,
             fecha,
@@ -372,8 +380,8 @@
 
             mostrarMensaje('✓ Vacunación registrada exitosamente', 'success');
             document.getElementById('vaccineForm').reset();
-            await cargarVacunas();
-            await actualizarEstadisticas();
+            const vacunasActualizadas = await cargarVacunas();
+            actualizarContadoresVacunas(vacunasActualizadas);
         } catch (error) {
             console.error('Error al guardar vacuna:', error);
             const cached = JSON.parse(localStorage.getItem('sigeporVaccines') || '[]');
@@ -381,7 +389,8 @@
             localStorage.setItem('sigeporVaccines', JSON.stringify(cached));
             mostrarMensaje('✓ Vacunación guardada en modo local (sin conexión)', 'success');
             document.getElementById('vaccineForm').reset();
-            await cargarVacunas();
+            mostrarTablaVacunas(cached);
+            actualizarContadoresVacunas(cached);
         }
     });
 
@@ -398,9 +407,13 @@
             const data = await response.json();
             const vacunas = Array.isArray(data) ? data : (data.data || []);
             mostrarTablaVacunas(vacunas);
+            actualizarContadoresVacunas(vacunas);
+            return vacunas;
         } catch (error) {
             const cached = JSON.parse(localStorage.getItem('sigeporVaccines') || '[]');
             mostrarTablaVacunas(cached);
+            actualizarContadoresVacunas(cached);
+            return cached;
         }
     }
 
@@ -423,7 +436,7 @@
                                (v.estado === 'Pendiente' ? 'pill-regular' : 'pill-sucio');
 
             tr.innerHTML = `
-                <td><strong>#${v.pigId || v.porcino_id}</strong></td>
+                <td><strong>#${v.id_porcino || v.pigId || v.porcino_id}</strong></td>
                 <td style="font-weight:700; color:var(--primary-emerald);">${v.nombre || v.nombre_vacuna}</td>
                 <td>${v.fecha || v.fecha_aplicacion}</td>
                 <td><span class="pill ${estadoClass}">${v.estado}</span></td>
@@ -440,12 +453,12 @@
         });
     }
 
-    // ACTUALIZAR ESTADÍSTICAS
-    async function actualizarEstadisticas() {
-        const cached = JSON.parse(localStorage.getItem('sigeporVaccines') || '[]');
-        const total = cached.length;
-        const aplicadas = cached.filter(v => v.estado === 'Aplicada').length;
-        const pendientes = cached.filter(v => v.estado === 'Pendiente').length;
+    // ACTUALIZAR CONTADORES DE VACUNAS EN TIEMPO REAL (REACTIVIDAD DOM)
+    function actualizarContadoresVacunas(datos) {
+        const lista = Array.isArray(datos) ? datos : [];
+        const total = lista.length;
+        const aplicadas = lista.filter(v => (v.estado || '').toLowerCase() === 'aplicada').length;
+        const pendientes = lista.filter(v => (v.estado || '').toLowerCase() === 'pendiente').length;
 
         const statTotal = document.getElementById('statTotal');
         const statAplicadas = document.getElementById('statAplicadas');
@@ -454,6 +467,13 @@
         if (statTotal) statTotal.textContent = total;
         if (statAplicadas) statAplicadas.textContent = aplicadas;
         if (statPendientes) statPendientes.textContent = pendientes;
+    }
+    window.actualizarContadoresVacunas = actualizarContadoresVacunas;
+
+    // ACTUALIZAR ESTADÍSTICAS (Compatibilidad)
+    async function actualizarEstadisticas() {
+        const cached = JSON.parse(localStorage.getItem('sigeporVaccines') || '[]');
+        actualizarContadoresVacunas(cached);
     }
 
     // ELIMINAR VACUNA
@@ -475,14 +495,15 @@
             localStorage.setItem('sigeporVaccines', JSON.stringify(filtrados));
 
             mostrarMensaje('✓ Registro eliminado', 'success');
-            await cargarVacunas();
-            await actualizarEstadisticas();
+            const vacunasActualizadas = await cargarVacunas();
+            actualizarContadoresVacunas(vacunasActualizadas);
         } catch (error) {
             const cached = JSON.parse(localStorage.getItem('sigeporVaccines') || '[]');
             const filtrados = cached.filter(v => v.id !== id);
             localStorage.setItem('sigeporVaccines', JSON.stringify(filtrados));
             mostrarMensaje('✓ Registro eliminado en modo local', 'success');
-            await cargarVacunas();
+            mostrarTablaVacunas(filtrados);
+            actualizarContadoresVacunas(filtrados);
         }
     }
 
@@ -508,6 +529,5 @@
         }
     }
     </script>
-    <script src="js/auth_guard.js"></script>
 </body>
 </html>

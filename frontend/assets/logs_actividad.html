@@ -58,7 +58,7 @@
                 <li><a href="logs_actividad.html" class="active">📋 Logs de Actividad</a></li>
                 <li><a href="veterinarios.html">👨‍⚕️ Veterinarios</a></li>
                 <li><a href="reportes.html">📊 Reportes & Alertas</a></li>
-                <li><a href="registro_usuarios.html">👤 Usuarios</a></li>
+                <li><a href="gestion_usuarios.html">👥 Gestión de Usuarios</a></li>
             </ul>
         </nav>
 
@@ -194,9 +194,10 @@
 
                 lista.forEach(v => {
                     const option = document.createElement('option');
-                    option.value = v.id;
+                    const vId = v.id_veterinario || v.id;
+                    option.value = vId;
                     const emailTexto = v.email ? ` (${v.email})` : '';
-                    option.textContent = `👨‍⚕️ ${v.nombre || v.usuario || 'Veterinario #' + v.id}${emailTexto}`;
+                    option.textContent = `👨‍⚕️ ${v.nombre || v.usuario || 'Veterinario #' + vId}${emailTexto}`;
                     select.appendChild(option);
                 });
             } catch (err) {
@@ -253,8 +254,12 @@
                 return;
             }
 
+            const usr = JSON.parse(localStorage.getItem('usuarioSesion') || localStorage.getItem('usuario_sigepor') || '{}');
+            const idUsuario = usr.id_usuario || usr.id || null;
+
             const payload = {
                 veterinario_id: vetId,
+                id_usuario: idUsuario,
                 accion: document.getElementById('accion').value.trim(),
                 descripcion: document.getElementById('descripcion').value.trim()
             };

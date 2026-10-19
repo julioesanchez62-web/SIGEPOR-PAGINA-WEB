@@ -58,7 +58,7 @@
                 <li><a href="logs_actividad.html">📋 Logs de Actividad</a></li>
                 <li><a href="veterinarios.html">👨‍⚕️ Veterinarios</a></li>
                 <li><a href="reportes.html">📊 Reportes & Alertas</a></li>
-                <li><a href="registro_usuarios.html">👤 Usuarios</a></li>
+                <li><a href="gestion_usuarios.html">👥 Gestión de Usuarios</a></li>
             </ul>
         </nav>
 
@@ -73,6 +73,22 @@
             </div>
 
             <div id="alertBox" class="alert-box"></div>
+
+            <!-- Estadísticas Rápidas de Enfermedades -->
+            <div class="stats-section" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                <div class="stat-card" style="background: var(--bg-card); border: 1px solid var(--border-glass); padding: 1.2rem; border-radius: 16px; text-align: center;">
+                    <h4 style="font-size: 0.82rem; color: var(--text-muted); text-transform: uppercase;">Total Diagnósticos</h4>
+                    <div id="statTotalEnfermedades" style="font-size: 1.8rem; font-weight: 800; color: var(--primary-emerald); margin-top: 0.3rem;">0</div>
+                </div>
+                <div class="stat-card" style="background: var(--bg-card); border: 1px solid var(--border-glass); padding: 1.2rem; border-radius: 16px; text-align: center;">
+                    <h4 style="font-size: 0.82rem; color: var(--text-muted); text-transform: uppercase;">En Tratamiento / Observación</h4>
+                    <div id="statEnTratamiento" style="font-size: 1.8rem; font-weight: 800; color: #f87171; margin-top: 0.3rem;">0</div>
+                </div>
+                <div class="stat-card" style="background: var(--bg-card); border: 1px solid var(--border-glass); padding: 1.2rem; border-radius: 16px; text-align: center;">
+                    <h4 style="font-size: 0.82rem; color: var(--text-muted); text-transform: uppercase;">Casos Recuperados</h4>
+                    <div id="statRecuperados" style="font-size: 1.8rem; font-weight: 800; color: #34d399; margin-top: 0.3rem;">0</div>
+                </div>
+            </div>
 
             <!-- Formulario CREATE -->
             <div class="card-wrapper">
@@ -182,8 +198,11 @@
 
                 if (!Array.isArray(lista) || lista.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:2rem; color:var(--text-muted);">No hay reportes de enfermedades registrados en MySQL.</td></tr>';
+                    actualizarContadoresEnfermedades([]);
                     return;
                 }
+
+                actualizarContadoresEnfermedades(lista);
 
                 lista.forEach(item => {
                     const tr = document.createElement('tr');
@@ -268,6 +287,25 @@
                 console.error('Error al cargar lista de porcinos:', err);
                 select.innerHTML = '<option value="">Error cargando porcinos</option>';
             }
+        }
+
+        // Actualizar contadores KPI de enfermedades en tiempo real (DOM Reactivo)
+        function actualizarContadoresEnfermedades(datos) {
+            const lista = Array.isArray(datos) ? datos : [];
+            const total = lista.length;
+            const enTratamiento = lista.filter(e => {
+                const est = (e.estado || '').toLowerCase();
+                return est.includes('tratamiento') || est.includes('observacion') || est.includes('crónico') || est.includes('cronico');
+            }).length;
+            const recuperados = lista.filter(e => (e.estado || '').toLowerCase().includes('recuperado')).length;
+
+            const elTotal = document.getElementById('statTotalEnfermedades');
+            const elTratamiento = document.getElementById('statEnTratamiento');
+            const elRecuperados = document.getElementById('statRecuperados');
+
+            if (elTotal) elTotal.textContent = total;
+            if (elTratamiento) elTratamiento.textContent = enTratamiento;
+            if (elRecuperados) elRecuperados.textContent = recuperados;
         }
 
         document.addEventListener('DOMContentLoaded', () => {

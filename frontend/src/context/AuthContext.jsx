@@ -65,7 +65,9 @@ export const AuthProvider = ({ children }) => {
     const roleId = Number(userData.idRol || userData.rol || 2);
 
     const normalizedUser = {
-      id: userData.id,
+      id: userData.id_usuario || userData.id,
+      id_usuario: userData.id_usuario || userData.id,
+      id_veterinario: userData.id_veterinario || userData.veterinario_id || null,
       nombre: userData.nombre || identificador,
       email: userData.email || userData.correo,
       idRol: roleId,

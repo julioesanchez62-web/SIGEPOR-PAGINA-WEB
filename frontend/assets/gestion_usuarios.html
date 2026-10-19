@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIGEPOR | Gestión de Usuarios y Roles (RBAC)</title>
+    <!-- Fuentes Futuristas y Estilos Unificados -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/optipig-theme.css">
+    <style>
+        .badge-status {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 99px;
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+        .badge-role {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 99px;
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+        .badge-admin {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+        }
+        .badge-vet {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+        }
+        .badge-employee {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.4);
+        }
+        .badge-client {
+            background: rgba(168, 85, 247, 0.15);
+            color: #c084fc;
+            border: 1px solid rgba(168, 85, 247, 0.4);
+        }
+        .badge-active {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.35);
+        }
+        .badge-inactive {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.35);
+        }
+        .table-actions {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+        }
+        .btn-table-action {
+            border: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.2s;
+        }
+        .btn-table-edit {
+            background: rgba(6, 182, 212, 0.2);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(6, 182, 212, 0.4);
+        }
+        .btn-table-edit:hover {
+            background: rgba(6, 182, 212, 0.35);
+            transform: translateY(-1px);
+        }
+        .btn-table-delete {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+        }
+        .btn-table-delete:hover {
+            background: rgba(239, 68, 68, 0.35);
+            transform: translateY(-1px);
+        }
+        .form-actions {
+            grid-column: 1 / -1;
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+            margin-top: 0.8rem;
+        }
+        .form-actions button {
+            flex: 1;
+            min-width: 140px;
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            border: 1px solid var(--border-glass);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            transition: all 0.25s ease;
+        }
+        .form-actions button:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateY(-2px);
+        }
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1.2rem;
+            margin-top: 2rem;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            backdrop-filter: blur(14px);
+            padding: 1.4rem;
+            border-radius: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+        .stat-icon {
+            font-size: 1.8rem;
+        }
+        .stat-card h4 {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: 800;
+            font-family: 'Outfit', sans-serif;
+            color: var(--primary-emerald);
+        }
+        .admin-protection-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.35);
+            color: #fca5a5;
+            padding: 6px 14px;
+            border-radius: 99px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        .search-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .search-container input {
+            flex: 1;
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-glass);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 0.9rem;
+        }
+        .search-container input:focus {
+            outline: none;
+            border-color: var(--primary-emerald);
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.25);
+        }
+    </style>
+</head>
+<body>
+    <!-- Barra Superior Unificada -->
+    <header class="top-navbar">
+        <div class="nav-left-group">
+            <a href="indexpruebados.html" class="logo-container-top">
+                <div class="logo-frame-top">
+                    <img src="images/logo.jpg" alt="SIGEPOR Logo">
+                </div>
+                <span class="brand-title">SIGEPOR <span style="font-size:0.75rem; color:var(--primary-emerald);">2026</span></span>
+            </a>
+            <div class="status-badge" id="syncStatus">
+                <div class="pulse-dot"></div>
+                <span>Panel Administrativo • MySQL</span>
+            </div>
+        </div>
+        <div class="nav-right-actions">
+            <span id="session-user-badge" class="user-profile-badge" style="color:var(--text-muted); font-size:0.9rem; margin-right:15px;"></span>
+            <a href="javascript:void(0)" onclick="cerrarSesion()" class="btn-nav btn-logout">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                Cerrar Sesión
+            </a>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- Barra Lateral de Navegación -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <img src="images/logo.jpg" alt="SIGEPOR">
+                </div>
+                <h3>Panel Granja</h3>
+            </div>
+            <ul>
+                <li><a href="indexpruebados.html">🏠 Inicio</a></li>
+                <li><a href="registroporcino.html">🐖 Porcinos</a></li>
+                <li><a href="corrales.html">🏠 Corrales</a></li>
+                <li><a href="enfermedades.html">🦠 Enfermedades</a></li>
+                <li><a href="vacunas.html">💉 Vacunación</a></li>
+                <li><a href="reproduccion.html">🧬 Reproducción</a></li>
+                <li><a href="inventario.html">🌾 Inventario</a></li>
+                <li><a href="proveedores.html">🚚 Proveedores</a></li>
+                <li><a href="logs_actividad.html">📋 Logs de Actividad</a></li>
+                <li><a href="veterinarios.html">👨‍⚕️ Veterinarios</a></li>
+                <li><a href="reportes.html">📊 Reportes & Alertas</a></li>
+                <li><a href="gestion_usuarios.html" class="active">👥 Gestión de Usuarios</a></li>
+            </ul>
+        </nav>
+
+        <main class="content">
+            <div class="page-header">
+                <div class="header-icon">👥</div>
+                <div class="header-content">
+                    <div class="admin-protection-badge">
+                        <span>🛡️ ACCESO EXCLUSIVO: ROL ADMINISTRADOR (RBAC)</span>
+                    </div>
+                    <h2>GESTIÓN DE USUARIOS Y ROLES (RBAC)</h2>
+                    <p>Administra las cuentas de usuario, asignación de permisos, restablecimiento de accesos y estados en la base de datos MySQL</p>
+                </div>
+            </div>
+
+            <!-- Sección de formulario de usuario (Admin) -->
+            <div class="card-wrapper">
+                <div class="form-section-title">
+                    <span class="section-icon" id="formIcon">➕</span>
+                    <h3 id="formTitle">Registrar Nuevo Usuario / Cambiar Rol</h3>
+                </div>
+
+                <form id="userForm" class="grid-form" onsubmit="guardarUsuario(event)">
+                    <div class="field">
+                        <label for="userId">ID Usuario (Opcional al crear, obligatorio al buscar/editar):</label>
+                        <input type="number" id="userId" placeholder="Autogenerado al crear o ingrese ID">
+                    </div>
+
+                    <div class="field">
+                        <label for="userNombre">Nombres y Apellidos *:</label>
+                        <input type="text" id="userNombre" placeholder="Ej: Ing. Laura Gómez" required autocomplete="name">
+                    </div>
+
+                    <div class="field">
+                        <label for="userEmail">Correo Electrónico *:</label>
+                        <input type="email" id="userEmail" placeholder="laura@sigepor.com" required autocomplete="email">
+                    </div>
+
+                    <div class="field">
+                        <label for="userTelefono">Teléfono / Celular:</label>
+                        <input type="tel" id="userTelefono" placeholder="Ej: +57 310 987 6543" autocomplete="tel">
+                    </div>
+
+                    <div class="field">
+                        <label for="userUsuario">Nombre de Usuario / Identificador *:</label>
+                        <input type="text" id="userUsuario" placeholder="Ej: lgomez" required autocomplete="username">
+                    </div>
+
+                    <div class="field">
+                        <label for="userContrasena">Contraseña (Mínimo 6 caracteres):</label>
+                        <input type="password" id="userContrasena" placeholder="•••••••• (dejar en blanco para no modificar al editar)">
+                    </div>
+
+                    <div class="field">
+                        <label for="userRol">Rol de Usuario y Nivel de Acceso (RBAC) *:</label>
+                        <select id="userRol" required>
+                            <option value="1">👑 Administrador (Rol 1 - Acceso Total)</option>
+                            <option value="2">👤 Empleado / Operador (Rol 2 - Operativo)</option>
+                            <option value="3">👨‍⚕️ Veterinario (Rol 3 - Sanidad y Tratamientos)</option>
+                            <option value="4" selected>👥 Cliente (Rol 4 - Lectura Básica)</option>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label for="userActivo">Estado de la Cuenta *:</label>
+                        <select id="userActivo" required>
+                            <option value="1" selected>🟢 Activo (Permite Login)</option>
+                            <option value="0">🔴 Inactivo / Suspendido</option>
+                        </select>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" id="btnSubmitUser" class="btn-save btn-primary" style="background: linear-gradient(135deg, var(--primary-emerald), var(--primary-glow)); color: #000; font-weight: 800;">
+                            💾 GUARDAR / ACTUALIZAR USUARIO
+                        </button>
+                        <button type="button" class="btn-reset" onclick="limpiarFormulario()">↻ LIMPIAR FORMULARIO</button>
+                        <button type="button" class="btn-consult" onclick="consultarUsuarioPorId()" style="background: rgba(6, 182, 212, 0.2); color: var(--accent-cyan); border-color: rgba(6, 182, 212, 0.4);">🔍 BUSCAR POR ID</button>
+                        <button type="button" class="btn-delete" onclick="borrarUsuarioActual()" style="background: rgba(239, 68, 68, 0.2); color: #f87171; border-color: rgba(239, 68, 68, 0.4);">🗑️ ELIMINAR</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Sección de tabla de usuarios -->
+            <div class="table-wrapper">
+                <div class="table-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <div class="header-icon-table">📋</div>
+                        <h3>Usuarios del Sistema Registrados en MySQL</h3>
+                    </div>
+                    <button type="button" class="btn-table-action" onclick="cargarUsuarios()" style="background: rgba(255, 255, 255, 0.08); color: #fff;">
+                        🔄 Actualizar Tabla
+                    </button>
+                </div>
+
+                <div class="search-container">
+                    <input type="text" id="inputBusqueda" placeholder="🔍 Filtrar usuarios por nombre, correo, usuario o rol..." oninput="filtrarUsuarios()">
+                </div>
+                
+                <div class="table-container">
+                    <table id="userTable">
+                        <thead>
+                            <tr>
+                                <th>🆔 ID</th>
+                                <th>👤 Nombre Completo</th>
+                                <th>📧 Correo</th>
+                                <th>🔑 Usuario</th>
+                                <th>📱 Teléfono</th>
+                                <th>🛡️ Rol (RBAC)</th>
+                                <th>⚡ Estado</th>
+                                <th>📅 Registro</th>
+                                <th>⚙️ Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Las filas se inyectan dinámicamente con JS -->
+                        </tbody>
+                    </table>
+                    <div class="table-empty" id="tableEmpty" style="display: none; padding: 25px; text-align: center; color: var(--text-muted);">
+                        <p>📭 No se encontraron usuarios registrados.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estadísticas rápidas -->
+            <div class="stats-section">
+                <div class="stat-card">
+                    <div class="stat-icon">👥</div>
+                    <h4>Total Usuarios</h4>
+                    <p class="stat-number" id="statTotalUsers">0</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">👑</div>
+                    <h4>Administradores</h4>
+                    <p class="stat-number" id="statAdmins" style="color: #f87171;">0</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">👨‍⚕️</div>
+                    <h4>Veterinarios</h4>
+                    <p class="stat-number" id="statVets" style="color: #34d399;">0</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">👤</div>
+                    <h4>Operarios</h4>
+                    <p class="stat-number" id="statEmployees" style="color: #60a5fa;">0</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">👥</div>
+                    <h4>Clientes</h4>
+                    <p class="stat-number" id="statClients" style="color: #c084fc;">0</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Pie de página -->
+    <footer class="footer">
+        <p>&copy; 2026 SIGEPOR - Sistema de Gestión Porcina. Módulo Administrativo RBAC.</p>
+    </footer>
+
+    <script src="js/auth_guard.js"></script>
+    <script src="js/offline_sync.js"></script>
+
+    <script>
+        const API_URL = 'http://localhost:3001/api/users';
+        const LOCAL_KEY_USERS = 'sigeporUsuarios';
+        let listaUsuariosGlobal = [];
+
+        // Elementos del DOM
+        const userForm = document.getElementById('userForm');
+        const inputId = document.getElementById('userId');
+        const inputNombre = document.getElementById('userNombre');
+        const inputEmail = document.getElementById('userEmail');
+        const inputTelefono = document.getElementById('userTelefono');
+        const inputUsuario = document.getElementById('userUsuario');
+        const inputContrasena = document.getElementById('userContrasena');
+        const selectRol = document.getElementById('userRol');
+        const selectActivo = document.getElementById('userActivo');
+        const tableBody = document.querySelector('#userTable tbody');
+        const tableEmpty = document.getElementById('tableEmpty');
+
+        // Sanitización contra ataques XSS
+        function sanitizarEntrada(texto) {
+            if (typeof texto !== 'string') return '';
+            return texto
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#x27;')
+                .trim();
+        }
+
+        // Obtener headers con JWT de Administrador
+        function getAuthHeaders() {
+            const token = localStorage.getItem('sigepor_token') || localStorage.getItem('token');
+            const headers = { 'Content-Type': 'application/json' };
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            return headers;
+        }
+
+        // 1. Cargar Usuarios desde Backend (GET /api/users)
+        async function cargarUsuarios() {
+            try {
+                const response = await fetch(API_URL, {
+                    headers: getAuthHeaders()
+                });
+
+                if (response.status === 401 || response.status === 403) {
+                    alert('⛔ Sesión expirada o permisos insuficientes. Redirigiendo al login...');
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                if (response.ok) {
+                    const data = await response.json();
+                    listaUsuariosGlobal = Array.isArray(data) ? data : (data.data || []);
+                    localStorage.setItem(LOCAL_KEY_USERS, JSON.stringify(listaUsuariosGlobal));
+                    renderizarTabla(listaUsuariosGlobal);
+                    actualizarEstadisticas(listaUsuariosGlobal);
+                } else {
+                    throw new Error('Error al consultar usuarios');
+                }
+            } catch (error) {
+                console.warn('Cargando usuarios desde almacenamiento local (Offline):', error);
+                const cached = JSON.parse(localStorage.getItem(LOCAL_KEY_USERS) || '[]');
+                listaUsuariosGlobal = cached;
+                renderizarTabla(cached);
+                actualizarEstadisticas(cached);
+            }
+        }
+
+        // 2. Renderizar tabla de usuarios con badges de roles y estados
+        function renderizarTabla(usuarios) {
+            tableBody.innerHTML = '';
+            if (!usuarios || usuarios.length === 0) {
+                tableEmpty.style.display = 'block';
+                return;
+            }
+            tableEmpty.style.display = 'none';
+
+            usuarios.forEach(u => {
+                const idVal = u.id_usuario || u.id;
+                const idRol = Number(u.idRol || 4);
+                const activo = u.activo === 1 || u.activo === true || u.activo === '1';
+
+                let badgeRolHtml = '';
+                if (idRol === 1) {
+                    badgeRolHtml = '<span class="badge-role badge-admin">👑 Administrador</span>';
+                } else if (idRol === 2) {
+                    badgeRolHtml = '<span class="badge-role badge-employee">👤 Empleado</span>';
+                } else if (idRol === 3) {
+                    badgeRolHtml = '<span class="badge-role badge-vet">👨‍⚕️ Veterinario</span>';
+                } else {
+                    badgeRolHtml = '<span class="badge-role badge-client">👥 Cliente</span>';
+                }
+
+                const badgeEstadoHtml = activo
+                    ? '<span class="badge-status badge-active">🟢 Activo</span>'
+                    : '<span class="badge-status badge-inactive">🔴 Inactivo</span>';
+
+                const fechaFormateada = u.fecha_registro ? new Date(u.fecha_registro).toLocaleDateString() : 'N/A';
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>#${idVal}</strong></td>
+                    <td>${sanitizarEntrada(u.nombre || 'Sin nombre')}</td>
+                    <td>${sanitizarEntrada(u.correo || u.email || 'Sin correo')}</td>
+                    <td><code>${sanitizarEntrada(u.usuario || 'N/A')}</code></td>
+                    <td>${sanitizarEntrada(u.telefono || 'Sin teléfono')}</td>
+                    <td>${badgeRolHtml}</td>
+                    <td>${badgeEstadoHtml}</td>
+                    <td>${fechaFormateada}</td>
+                    <td>
+                        <div class="table-actions">
+                            <button class="btn-table-action btn-table-edit" onclick="editarUsuario(${idVal})" title="Editar usuario">✏️ Editar</button>
+                            <button class="btn-table-action btn-table-delete" onclick="eliminarUsuario(${idVal}, '${sanitizarEntrada(u.nombre || '')}')" title="Eliminar usuario">🗑️ Borrar</button>
+                        </div>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        // 3. Filtrar usuarios en vivo mediante el buscador
+        function filtrarUsuarios() {
+            const query = document.getElementById('inputBusqueda').value.toLowerCase().trim();
+            if (!query) {
+                renderizarTabla(listaUsuariosGlobal);
+                return;
+            }
+            const filtrados = listaUsuariosGlobal.filter(u => {
+                const nombre = (u.nombre || '').toLowerCase();
+                const correo = (u.correo || u.email || '').toLowerCase();
+                const usuario = (u.usuario || '').toLowerCase();
+                const rolNombre = (u.rol_nombre || '').toLowerCase();
+                return nombre.includes(query) || correo.includes(query) || usuario.includes(query) || rolNombre.includes(query);
+            });
+            renderizarTabla(filtrados);
+        }
+
+        // 4. Actualizar contadores estadísticos
+        function actualizarEstadisticas(usuarios) {
+            const total = usuarios.length;
+            const admins = usuarios.filter(u => Number(u.idRol) === 1).length;
+            const vets = usuarios.filter(u => Number(u.idRol) === 3).length;
+            const employees = usuarios.filter(u => Number(u.idRol) === 2).length;
+            const clients = usuarios.filter(u => Number(u.idRol) === 4 || !u.idRol).length;
+
+            document.getElementById('statTotalUsers').textContent = total;
+            document.getElementById('statAdmins').textContent = admins;
+            document.getElementById('statVets').textContent = vets;
+            document.getElementById('statEmployees').textContent = employees;
+            document.getElementById('statClients').textContent = clients;
+        }
+
+        // 5. Guardar o Actualizar Usuario (POST o PUT a /api/users)
+        async function guardarUsuario(e) {
+            e.preventDefault();
+
+            const id = inputId.value.trim();
+            const nombre = sanitizarEntrada(inputNombre.value);
+            const correo = sanitizarEntrada(inputEmail.value);
+            const usuario = sanitizarEntrada(inputUsuario.value);
+            const telefono = inputTelefono.value.trim() || null;
+            const contrasena = inputContrasena.value;
+            const idRol = parseInt(selectRol.value, 10);
+            const activo = parseInt(selectActivo.value, 10);
+
+            if (!nombre || !correo || !usuario) {
+                alert('Por favor, completa los campos requeridos (*).');
+                return;
+            }
+
+            // Si es nuevo usuario, la contraseña es obligatoria
+            if (!id && (!contrasena || contrasena.length < 6)) {
+                alert('Para nuevos usuarios, la contraseña debe tener al menos 6 caracteres.');
+                return;
+            }
+
+            const payload = {
+                nombre,
+                correo,
+                usuario,
+                telefono,
+                idRol,
+                activo
+            };
+
+            if (contrasena && contrasena.trim() !== '') {
+                payload.contraseña = contrasena;
+            }
+
+            const esEdicion = Boolean(id);
+            const url = esEdicion ? `${API_URL}/${id}` : API_URL;
+            const metodo = esEdicion ? 'PUT' : 'POST';
+
+            try {
+                const response = await fetch(url, {
+                    method: metodo,
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify(payload)
+                });
+
+                const resultado = await response.json();
+
+                if (response.ok) {
+                    alert(`✓ Usuario ${esEdicion ? 'actualizado' : 'creado'} exitosamente.`);
+                    limpiarFormulario();
+                    cargarUsuarios();
+                } else {
+                    alert('Error: ' + (resultado.message || 'No se pudo completar la operación.'));
+                }
+            } catch (error) {
+                console.error('Error guardando usuario:', error);
+                alert('Error de conexión con el servidor. Revisa que el backend esté en ejecución.');
+            }
+        }
+
+        // 6. Poblar formulario para edición
+        function editarUsuario(id) {
+            const user = listaUsuariosGlobal.find(u => Number(u.id_usuario || u.id) === Number(id));
+            if (!user) {
+                alert('Usuario no encontrado.');
+                return;
+            }
+
+            inputId.value = user.id_usuario || user.id;
+            inputNombre.value = user.nombre || '';
+            inputEmail.value = user.correo || user.email || '';
+            inputTelefono.value = user.telefono || '';
+            inputUsuario.value = user.usuario || '';
+            inputContrasena.value = ''; // En blanco para mantener contraseña existente si no se ingresa una nueva
+            selectRol.value = user.idRol || 4;
+            selectActivo.value = (user.activo === 1 || user.activo === true || user.activo === '1') ? '1' : '0';
+
+            document.getElementById('formTitle').textContent = `Editar Usuario #${user.id_usuario || user.id} (${user.nombre})`;
+            document.getElementById('formIcon').textContent = '✏️';
+            document.getElementById('btnSubmitUser').textContent = '💾 ACTUALIZAR USUARIO';
+
+            // Scroll suave hacia el formulario
+            document.querySelector('.card-wrapper').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // 7. Consultar usuario por ID directo
+        async function consultarUsuarioPorId() {
+            const id = inputId.value.trim();
+            if (!id) {
+                alert('Por favor, ingresa el ID del usuario en el campo correspondiente.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/${id}`, {
+                    headers: getAuthHeaders()
+                });
+
+                if (response.ok) {
+                    const resJson = await response.json();
+                    const user = resJson.data || resJson;
+                    editarUsuario(user.id_usuario || user.id);
+                    alert(`✓ Usuario #${id} cargado exitosamente.`);
+                } else {
+                    const err = await response.json();
+                    alert('⚠️ ' + (err.message || 'Usuario no encontrado en la base de datos.'));
+                }
+            } catch (error) {
+                console.error('Error al consultar por ID:', error);
+                editarUsuario(id);
+            }
+        }
+
+        // 8. Eliminar usuario por ID
+        async function eliminarUsuario(id, nombre) {
+            const confirmacion = confirm(`¿Estás completamente seguro de eliminar al usuario #${id} (${nombre})?\nEsta acción es irreversible.`);
+            if (!confirmacion) return;
+
+            try {
+                const response = await fetch(`${API_URL}/${id}`, {
+                    method: 'DELETE',
+                    headers: getAuthHeaders()
+                });
+
+                const resultado = await response.json();
+
+                if (response.ok) {
+                    alert('🗑️ Usuario eliminado correctamente.');
+                    if (inputId.value === String(id)) {
+                        limpiarFormulario();
+                    }
+                    cargarUsuarios();
+                } else {
+                    alert('Error al eliminar: ' + (resultado.message || 'No se pudo eliminar el usuario.'));
+                }
+            } catch (error) {
+                console.error('Error al eliminar:', error);
+                alert('Error de conexión al intentar eliminar el usuario.');
+            }
+        }
+
+        // Eliminar desde el botón del formulario
+        function borrarUsuarioActual() {
+            const id = inputId.value.trim();
+            if (!id) {
+                alert('Ingresa o selecciona el ID del usuario que deseas eliminar.');
+                return;
+            }
+            eliminarUsuario(id, inputNombre.value || `ID ${id}`);
+        }
+
+        // 9. Limpiar formulario
+        function limpiarFormulario() {
+            userForm.reset();
+            inputId.value = '';
+            document.getElementById('formTitle').textContent = 'Registrar Nuevo Usuario / Cambiar Rol';
+            document.getElementById('formIcon').textContent = '➕';
+            document.getElementById('btnSubmitUser').textContent = '💾 GUARDAR / ACTUALIZAR USUARIO';
+            selectRol.value = '4';
+            selectActivo.value = '1';
+        }
+
+        // Inicialización al cargar el DOM con validación RBAC
+        document.addEventListener('DOMContentLoaded', () => {
+            // Verificar que el usuario tenga sesión activa y rol 1 (Administrador)
+            if (typeof checkAuthAndPermissions === 'function') {
+                const authorized = checkAuthAndPermissions([1]);
+                if (!authorized) return;
+            } else {
+                const usuario = typeof obtenerUsuarioSesion === 'function' ? obtenerUsuarioSesion() : null;
+                const rol = usuario ? Number(usuario.idRol || usuario.rol) : 0;
+                if (rol !== 1) {
+                    window.location.replace('indexpruebados.html');
+                    return;
+                }
+            }
+
+            cargarUsuarios();
+        });
+    </script>
+</body>
+</html>

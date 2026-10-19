@@ -24,7 +24,7 @@ async function findByEmailOrUsername(identificador) {
     if (!identificador) return null;
 
     const [rows] = await pool.execute(
-      `SELECT id, nombre, email AS correo, usuario, contraseña, idRol, telefono, fecha_registro, activo
+      `SELECT id_usuario, id_usuario AS id, nombre, email AS correo, usuario, contraseña, idRol, telefono, fecha_registro, activo
        FROM usuarios
        WHERE LOWER(TRIM(email)) = LOWER(TRIM(?))
          OR LOWER(TRIM(usuario)) = LOWER(TRIM(?))
@@ -46,7 +46,12 @@ async function findByEmailOrUsername(identificador) {
 async function getUserById(id) {
   try {
     const [rows] = await pool.execute(
-      'SELECT id, nombre, email AS correo, usuario, idRol, telefono, fecha_registro, activo FROM usuarios WHERE id = ? LIMIT 1',
+      `SELECT u.id_usuario, u.id_usuario AS id, u.nombre, u.email AS correo, u.usuario, 
+              u.idRol, COALESCE(r.nombre_rol, 'Cliente') AS rol_nombre, 
+              u.telefono, u.fecha_registro, u.activo 
+       FROM usuarios u
+       LEFT JOIN roles r ON u.idRol = r.idRol
+       WHERE u.id_usuario = ? LIMIT 1`,
       [id]
     );
     return rows[0] || null;
@@ -67,9 +72,10 @@ async function createUser(datos) {
     const usuarioFinal = usuario || (correo ? correo.split('@')[0] : 'user_' + Date.now()); 
 
     // 1. Ejecutar la inserción en MySQL con consulta preparada parametrizada (Seguridad anti-SQL Injection)
+    // Se asegura la asignación por defecto del rol 4 (Cliente / Mínimos privilegios)
     const [result] = await pool.execute(
       'INSERT INTO usuarios (nombre, email, usuario, contraseña, idRol, telefono, fecha_registro, activo) VALUES (?, ?, ?, ?, ?, ?, NOW(), 1)',
-      [nombre, correo, usuarioFinal, contraseña, idRol || 2, telefono || null]
+      [nombre, correo, usuarioFinal, contraseña, idRol || 4, telefono || null]
     );
 
     // 2. Control de seguridad
@@ -86,12 +92,17 @@ async function createUser(datos) {
 }
 
 /**
- * Obtener todos los usuarios del sistema
+ * Obtener todos los usuarios del sistema (con nombre de rol para panel administrativo)
  */
 async function getAllUsers() {
   try {
     const [rows] = await pool.execute(
-      'SELECT id, nombre, email AS correo, usuario, idRol, fecha_registro, activo FROM usuarios'
+      `SELECT u.id_usuario, u.id_usuario AS id, u.nombre, u.email AS correo, u.usuario, 
+              u.idRol, COALESCE(r.nombre_rol, 'Cliente') AS rol_nombre, 
+              u.telefono, u.fecha_registro, u.activo 
+       FROM usuarios u
+       LEFT JOIN roles r ON u.idRol = r.idRol
+       ORDER BY u.id_usuario DESC`
     );
     return rows;
   } catch (error) {
@@ -112,12 +123,12 @@ async function updateUser(id, datos) {
 
     if (contraseña) {
       await pool.execute(
-        'UPDATE usuarios SET nombre = ?, email = ?, contraseña = ?, idRol = ?, telefono = ? WHERE id = ?',
+        'UPDATE usuarios SET nombre = ?, email = ?, contraseña = ?, idRol = ?, telefono = ? WHERE id_usuario = ?',
         [nombre, correo, contraseña, idRol, telefono_db, id]
       );
     } else {
       await pool.execute(
-        'UPDATE usuarios SET nombre = ?, email = ?, idRol = ?, telefono = ? WHERE id = ?',
+        'UPDATE usuarios SET nombre = ?, email = ?, idRol = ?, telefono = ? WHERE id_usuario = ?',
         [nombre, correo, idRol, telefono_db, id]
       );
     }
@@ -142,7 +153,7 @@ async function patchUser(id, camposCambiados) {
     const valores = Object.values(camposCambiados);
     valores.push(id); // Añadimos el id para el WHERE
 
-    const sql = `UPDATE usuarios SET ${asignaciones} WHERE id = ?`;
+    const sql = `UPDATE usuarios SET ${asignaciones} WHERE id_usuario = ?`;
     await pool.execute(sql, valores);
 
     return await getUserById(id);
@@ -158,7 +169,7 @@ async function patchUser(id, camposCambiados) {
  */
 async function deleteUser(id) {
   try {
-    await pool.execute('DELETE FROM usuarios WHERE id = ?', [id]);
+    await pool.execute('DELETE FROM usuarios WHERE id_usuario = ?', [id]);
     return true;
   } catch (error) {
     console.error('Error en deleteUser:', error.message);

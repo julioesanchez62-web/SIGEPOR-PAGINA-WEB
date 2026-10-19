@@ -40,7 +40,7 @@ export const VeterinariosPage = () => {
 
   const handleOpenModal = (vet = null) => {
     if (vet) {
-      setEditingId(vet.id);
+      setEditingId(vet.id_veterinario || vet.id);
       setFormData({
         nombre: vet.nombre || '',
         email: vet.email || '',
@@ -64,11 +64,15 @@ export const VeterinariosPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const payload = {
+        ...formData,
+        id_veterinario: editingId || undefined
+      };
       if (editingId) {
-        await veterinariosService.update(editingId, formData);
+        await veterinariosService.update(editingId, payload);
         setAlert({ type: 'success', message: 'Datos del veterinario actualizados correctamente' });
       } else {
-        await veterinariosService.create(formData);
+        await veterinariosService.create(payload);
         setAlert({ type: 'success', message: 'Médico veterinario registrado en MySQL con éxito' });
       }
       setIsModalOpen(false);
@@ -138,33 +142,36 @@ export const VeterinariosPage = () => {
                     </td>
                   </tr>
                 ) : (
-                  veterinarios.map((v) => (
-                    <tr key={v.id}>
-                      <td style={{ fontWeight: 600 }}>{v.nombre}</td>
-                      <td>{v.email}</td>
-                      <td>{v.usuario}</td>
-                      <td>{v.fecha_registro ? String(v.fecha_registro).slice(0, 10) : '-'}</td>
-                      <td>
-                        <span className={`status-pill ${Number(v.activo) === 1 ? 'activo' : 'inactivo'}`}>
-                          {Number(v.activo) === 1 ? 'Activo' : 'Inactivo'}
-                        </span>
-                      </td>
-                      {isAdmin && (
-                        <td style={{ textAlign: 'right' }}>
-                          <button
-                            className="btn btn-secondary btn-sm"
-                            style={{ marginRight: '0.5rem' }}
-                            onClick={() => handleOpenModal(v)}
-                          >
-                            ✏️ Editar
-                          </button>
-                          <button className="btn btn-danger btn-sm" onClick={() => handleDelete(v.id, v.nombre)}>
-                            🗑️
-                          </button>
+                  veterinarios.map((v) => {
+                    const vId = v.id_veterinario || v.id;
+                    return (
+                      <tr key={vId}>
+                        <td style={{ fontWeight: 600 }}>{v.nombre}</td>
+                        <td>{v.email}</td>
+                        <td>{v.usuario}</td>
+                        <td>{v.fecha_registro ? String(v.fecha_registro).slice(0, 10) : '-'}</td>
+                        <td>
+                          <span className={`status-pill ${Number(v.activo) === 1 ? 'activo' : 'inactivo'}`}>
+                            {Number(v.activo) === 1 ? 'Activo' : 'Inactivo'}
+                          </span>
                         </td>
-                      )}
-                    </tr>
-                  ))
+                        {isAdmin && (
+                          <td style={{ textAlign: 'right' }}>
+                            <button
+                              className="btn btn-secondary btn-sm"
+                              style={{ marginRight: '0.5rem' }}
+                              onClick={() => handleOpenModal(v)}
+                            >
+                              ✏️ Editar
+                            </button>
+                            <button className="btn btn-danger btn-sm" onClick={() => handleDelete(vId, v.nombre)}>
+                              🗑️
+                            </button>
+                          </td>
+                        )}
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>

@@ -9,13 +9,14 @@ router.get('/', async (req, res, next) => {
       SELECT 
         l.id, 
         l.veterinario_id, 
+        l.id_usuario,
         COALESCE(v.nombre, u.nombre, 'Administrador / Personal') AS veterinario_nombre,
         l.accion, 
         l.descripcion, 
         DATE_FORMAT(l.fecha_hora, '%Y-%m-%d %H:%i:%s') AS fecha_hora 
       FROM logs_actividad l
-      LEFT JOIN veterinarios v ON l.veterinario_id = v.id
-      LEFT JOIN usuarios u ON l.veterinario_id = u.id
+      LEFT JOIN veterinarios v ON l.veterinario_id = v.id_veterinario
+      LEFT JOIN usuarios u ON (l.id_usuario = u.id_usuario OR l.veterinario_id = u.id_usuario)
       ORDER BY l.id DESC
     `);
     return res.status(200).json({
@@ -30,7 +31,8 @@ router.get('/', async (req, res, next) => {
 // POST: Registrar un nuevo log de actividad
 router.post('/', async (req, res, next) => {
   try {
-    const { veterinario_id, accion, descripcion } = req.body;
+    const { veterinario_id, id_veterinario, id_usuario, accion, descripcion } = req.body;
+    const vetId = id_veterinario || veterinario_id;
 
     if (!accion) {
       return res.status(400).json({
@@ -40,10 +42,11 @@ router.post('/', async (req, res, next) => {
     }
 
     const [result] = await pool.execute(`
-      INSERT INTO logs_actividad (veterinario_id, accion, descripcion, fecha_hora)
-      VALUES (?, ?, ?, NOW())
+      INSERT INTO logs_actividad (veterinario_id, id_usuario, accion, descripcion, fecha_hora)
+      VALUES (?, ?, ?, ?, NOW())
     `, [
-      veterinario_id ? parseInt(veterinario_id, 10) : null,
+      vetId ? parseInt(vetId, 10) : null,
+      id_usuario ? parseInt(id_usuario, 10) : null,
       accion,
       descripcion || ''
     ]);

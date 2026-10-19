@@ -38,7 +38,7 @@ export const UsuariosPage = () => {
 
   const handleOpenModal = (u = null) => {
     if (u) {
-      setEditingId(u.id);
+      setEditingId(u.id_usuario || u.id);
       setFormData({
         nombre: u.nombre || '',
         email: u.email || u.correo || '',
@@ -85,7 +85,8 @@ export const UsuariosPage = () => {
   };
 
   const handleDelete = async (id, nombre) => {
-    if (id === currentUser?.id) {
+    const currentUid = currentUser?.id_usuario || currentUser?.id;
+    if (id === currentUid) {
       alert('No puedes eliminar tu propio usuario mientras mantienes la sesión activa.');
       return;
     }
@@ -147,39 +148,43 @@ export const UsuariosPage = () => {
                     </td>
                   </tr>
                 ) : (
-                  users.map((u) => (
-                    <tr key={u.id}>
-                      <td style={{ fontWeight: 600 }}>{u.nombre}</td>
-                      <td>{u.email || u.correo}</td>
-                      <td>
-                        <span className={`role-tag ${Number(u.idRol) === 1 ? 'admin' : Number(u.idRol) === 3 ? 'vet' : Number(u.idRol) === 4 ? 'cli' : 'emp'}`}>
-                          {ROLE_NAMES[u.idRol] || 'Empleado'}
-                        </span>
-                      </td>
-                      <td>{u.fecha_registro ? String(u.fecha_registro).slice(0, 10) : '-'}</td>
-                      <td>
-                        <span className={`status-pill ${Number(u.activo) !== 0 ? 'activo' : 'inactivo'}`}>
-                          {Number(u.activo) !== 0 ? 'Activo' : 'Inactivo'}
-                        </span>
-                      </td>
-                      <td style={{ textAlign: 'right' }}>
-                        <button
-                          className="btn btn-secondary btn-sm"
-                          style={{ marginRight: '0.5rem' }}
-                          onClick={() => handleOpenModal(u)}
-                        >
-                          ✏️ Editar
-                        </button>
-                        <button
-                          className="btn btn-danger btn-sm"
-                          onClick={() => handleDelete(u.id, u.nombre)}
-                          disabled={u.id === currentUser?.id}
-                        >
-                          🗑️
-                        </button>
-                      </td>
-                    </tr>
-                  ))
+                  users.map((u) => {
+                    const uId = u.id_usuario || u.id;
+                    const currentUid = currentUser?.id_usuario || currentUser?.id;
+                    return (
+                      <tr key={uId}>
+                        <td style={{ fontWeight: 600 }}>{u.nombre}</td>
+                        <td>{u.email || u.correo}</td>
+                        <td>
+                          <span className={`role-tag ${Number(u.idRol) === 1 ? 'admin' : Number(u.idRol) === 3 ? 'vet' : Number(u.idRol) === 4 ? 'cli' : 'emp'}`}>
+                            {ROLE_NAMES[u.idRol] || 'Empleado'}
+                          </span>
+                        </td>
+                        <td>{u.fecha_registro ? String(u.fecha_registro).slice(0, 10) : '-'}</td>
+                        <td>
+                          <span className={`status-pill ${Number(u.activo) !== 0 ? 'activo' : 'inactivo'}`}>
+                            {Number(u.activo) !== 0 ? 'Activo' : 'Inactivo'}
+                          </span>
+                        </td>
+                        <td style={{ textAlign: 'right' }}>
+                          <button
+                            className="btn btn-secondary btn-sm"
+                            style={{ marginRight: '0.5rem' }}
+                            onClick={() => handleOpenModal(u)}
+                          >
+                            ✏️ Editar
+                          </button>
+                          <button
+                            className="btn btn-danger btn-sm"
+                            onClick={() => handleDelete(uId, u.nombre)}
+                            disabled={uId === currentUid}
+                          >
+                            🗑️
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>

@@ -35,8 +35,9 @@ async function cargarPorcinosHembra() {
     selectPorcino.innerHTML = '<option value="">Seleccione Cerda / Porcino</option>';
     lista.forEach(p => {
         const opt = document.createElement('option');
-        opt.value = p.id;
-        opt.textContent = `🐷 #${p.id} (${p.identificacion || p.id}) - ${p.raza || p.breed || ''} (${p.genero || 'Hembra'})`;
+        const pId = p.id_porcino || p.id;
+        opt.value = pId;
+        opt.textContent = `🐷 #${pId} (${p.identificacion || pId}) - ${p.raza || p.breed || ''} (${p.genero || 'Hembra'})`;
         selectPorcino.appendChild(opt);
     });
 }
@@ -88,8 +89,9 @@ function renderizarTablaRepro(lista) {
         if (item.tipo_evento === 'Parto') badge = `<span style="padding:3px 8px; border-radius:10px; font-weight:bold; background:#c6f6d5; color:#22543d;">🍼 Parto (${item.lechones_nacidos} lechones)</span>`;
         if (item.tipo_evento === 'Destete') badge = `<span style="padding:3px 8px; border-radius:10px; font-weight:bold; background:#e9d8fd; color:#44337a;">🐖 Destete</span>`;
 
+        const pigId = item.id_porcino || item.porcino_id;
         tr.innerHTML = `
-            <td><strong>#${item.porcino_id} (${item.porcino_codigo || item.porcino_id})</strong></td>
+            <td><strong>#${pigId} (${item.porcino_codigo || pigId})</strong></td>
             <td>${badge}</td>
             <td>${item.fecha_evento}</td>
             <td>${item.fecha_probable_parto ? `📅 ${item.fecha_probable_parto}` : '-'}</td>

@@ -10,6 +10,9 @@ const { JWT_SECRET } = require('../../middlewares/auth.middleware');
 // POST /api/auth/login
 router.post('/login', authValidator.validateLogin, authController.login);
 
+// POST /api/auth/recuperar-password
+router.post('/recuperar-password', authController.recuperarPassword);
+
 /* ==========================================================================
    RUTAS DE AUTENTICACIÓN SOCIAL (Google & Facebook OAuth)
    ========================================================================== */

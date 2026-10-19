@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { porcinosService } from '../api/porcinos.service';
+import { inventarioService } from '../api/inventario.service';
 import { useAuth, ROLES } from '../context/AuthContext';
 import { Modal } from '../components/Modal';
 import { Alert } from '../components/Alert';
@@ -8,6 +9,7 @@ export const PorcinosPage = () => {
   const { hasRole, user } = useAuth();
   const [porcinos, setPorcinos] = useState([]);
   const [veterinarios, setVeterinarios] = useState([]);
+  const [corrales, setCorrales] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [alert, setAlert] = useState(null);
@@ -22,6 +24,7 @@ export const PorcinosPage = () => {
     estado_salud: 'Saludable',
     fecha_nacimiento: '',
     genero: 'Macho',
+    id_corral: '',
     veterinario_id: ''
   });
 
@@ -31,12 +34,14 @@ export const PorcinosPage = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [porcinosData, vetsData] = await Promise.all([
+      const [porcinosData, vetsData, corralesData] = await Promise.all([
         porcinosService.getAll().catch(() => []),
-        porcinosService.getVeterinariosList().catch(() => [])
+        porcinosService.getVeterinariosList().catch(() => []),
+        inventarioService.getCorrales().catch(() => [])
       ]);
       setPorcinos(Array.isArray(porcinosData) ? porcinosData : porcinosData.data || []);
       setVeterinarios(Array.isArray(vetsData) ? vetsData : vetsData.data || []);
+      setCorrales(Array.isArray(corralesData) ? corralesData : corralesData.data || []);
     } catch (err) {
       setAlert({ type: 'danger', message: err.message || 'Error al cargar los porcinos' });
     } finally {
@@ -50,7 +55,7 @@ export const PorcinosPage = () => {
 
   const handleOpenModal = (porcino = null) => {
     if (porcino) {
-      setEditingId(porcino.id);
+      setEditingId(porcino.id_porcino || porcino.id);
       setFormData({
         identificacion: porcino.identificacion || '',
         raza: porcino.raza || 'Landrace',
@@ -58,7 +63,8 @@ export const PorcinosPage = () => {
         estado_salud: porcino.estado_salud || 'Saludable',
         fecha_nacimiento: porcino.fecha_nacimiento ? porcino.fecha_nacimiento.slice(0, 10) : '',
         genero: porcino.genero || 'Macho',
-        veterinario_id: porcino.veterinario_id || ''
+        id_corral: porcino.id_corral || '',
+        veterinario_id: porcino.veterinario_id || porcino.id_veterinario || ''
       });
     } else {
       setEditingId(null);
@@ -69,7 +75,8 @@ export const PorcinosPage = () => {
         estado_salud: 'Saludable',
         fecha_nacimiento: new Date().toISOString().slice(0, 10),
         genero: 'Macho',
-        veterinario_id: veterinarios[0]?.id || ''
+        id_corral: corrales[0]?.id_corral || corrales[0]?.id || '',
+        veterinario_id: veterinarios[0]?.id_veterinario || veterinarios[0]?.id || ''
       });
     }
     setIsModalOpen(true);
@@ -78,11 +85,16 @@ export const PorcinosPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const payload = {
+        ...formData,
+        id_corral: formData.id_corral ? parseInt(formData.id_corral, 10) : null,
+        veterinario_id: formData.veterinario_id ? parseInt(formData.veterinario_id, 10) : null
+      };
       if (editingId) {
-        await porcinosService.update(editingId, formData);
+        await porcinosService.update(editingId, payload);
         setAlert({ type: 'success', message: 'Porcino actualizado exitosamente' });
       } else {
-        await porcinosService.create(formData);
+        await porcinosService.create(payload);
         setAlert({ type: 'success', message: 'Porcino registrado exitosamente en el sistema' });
       }
       setIsModalOpen(false);
@@ -215,45 +227,51 @@ export const PorcinosPage = () => {
                   <th>Género</th>
                   <th>Nacimiento</th>
                   <th>Salud</th>
+                  <th>Corral Asignado</th>
                   <th>Veterinario Asignado</th>
                   {canEdit && <th style={{ textAlign: 'right' }}>Acciones</th>}
                 </tr>
               </thead>
               <tbody>
-                {filteredPorcinos.map((p) => (
-                  <tr key={p.id}>
-                    <td style={{ fontWeight: 600, color: 'var(--primary-dark)' }}>{p.identificacion}</td>
-                    <td>{p.raza}</td>
-                    <td>{p.peso} kg</td>
-                    <td>{p.genero}</td>
-                    <td>{p.fecha_nacimiento ? String(p.fecha_nacimiento).slice(0, 10) : '-'}</td>
-                    <td>
-                      <span className={`status-pill ${p.estado_salud?.toLowerCase().includes('salud') ? 'saludable' : 'enfermo'}`}>
-                        {p.estado_salud}
-                      </span>
-                    </td>
-                    <td>{p.veterinario_nombre || 'Sin asignar'}</td>
-                    {canEdit && (
-                      <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
-                        <button
-                          className="btn btn-secondary btn-sm"
-                          style={{ marginRight: '0.5rem' }}
-                          onClick={() => handleOpenModal(p)}
-                        >
-                          ✏️ Editar
-                        </button>
-                        {canDelete && (
-                          <button
-                            className="btn btn-danger btn-sm"
-                            onClick={() => handleDelete(p.id, p.identificacion)}
-                          >
-                            🗑️
-                          </button>
-                        )}
+                {filteredPorcinos.map((p) => {
+                  const pId = p.id_porcino || p.id;
+                  const corralText = p.corral_nombre || (p.id_corral ? `Corral #${p.id_corral}` : 'Sin asignar');
+                  return (
+                    <tr key={pId}>
+                      <td style={{ fontWeight: 600, color: 'var(--primary-dark)' }}>{p.identificacion}</td>
+                      <td>{p.raza}</td>
+                      <td>{p.peso} kg</td>
+                      <td>{p.genero}</td>
+                      <td>{p.fecha_nacimiento ? String(p.fecha_nacimiento).slice(0, 10) : '-'}</td>
+                      <td>
+                        <span className={`status-pill ${p.estado_salud?.toLowerCase().includes('salud') ? 'saludable' : 'enfermo'}`}>
+                          {p.estado_salud}
+                        </span>
                       </td>
-                    )}
-                  </tr>
-                ))}
+                      <td>🏠 {corralText}</td>
+                      <td>{p.veterinario_nombre ? `👨‍⚕️ ${p.veterinario_nombre}` : 'Sin asignar'}</td>
+                      {canEdit && (
+                        <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                          <button
+                            className="btn btn-secondary btn-sm"
+                            style={{ marginRight: '0.5rem' }}
+                            onClick={() => handleOpenModal(p)}
+                          >
+                            ✏️ Editar
+                          </button>
+                          {canDelete && (
+                            <button
+                              className="btn btn-danger btn-sm"
+                              onClick={() => handleDelete(pId, p.identificacion)}
+                            >
+                              🗑️
+                            </button>
+                          )}
+                        </td>
+                      )}
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           )}
@@ -349,6 +367,22 @@ export const PorcinosPage = () => {
           </div>
 
           <div className="form-group">
+            <label className="form-label">Corral Asignado</label>
+            <select
+              className="form-control"
+              value={formData.id_corral}
+              onChange={(e) => setFormData({ ...formData, id_corral: e.target.value })}
+            >
+              <option value="">-- Sin Corral Asignado --</option>
+              {corrales.map((c) => (
+                <option key={c.id_corral || c.id} value={c.id_corral || c.id}>
+                  🏠 {c.nombre} (Cap: {c.capacidad})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="form-group">
             <label className="form-label">Veterinario Responsable</label>
             <select
               className="form-control"
@@ -357,8 +391,8 @@ export const PorcinosPage = () => {
             >
               <option value="">-- Sin Asignar --</option>
               {veterinarios.map((v) => (
-                <option key={v.id} value={v.id}>
-                  {v.nombre}
+                <option key={v.id_veterinario || v.id} value={v.id_veterinario || v.id}>
+                  👨‍⚕️ {v.nombre}
                 </option>
               ))}
             </select>

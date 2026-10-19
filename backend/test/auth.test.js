@@ -60,3 +60,19 @@ test('GET /api/porcinos con token de Administrador (idRol: 1) pasa autenticació
   assert.notEqual(response.status, 500, 'Un código HTTP 500 no debe validarse como respuesta exitosa');
   assert.equal(response.status, 200);
 });
+
+test('GET /api/veterinarios con token de rol Veterinario (idRol: 3) debe retornar 403 Forbidden por RBAC', async () => {
+  const tokenVeterinario = jwt.sign(
+    { id: 888, nombre: 'Dr. Perez', email: 'perez@test.com', idRol: 3 },
+    JWT_SECRET,
+    { expiresIn: '1h' }
+  );
+
+  const response = await request(app)
+    .get('/api/veterinarios')
+    .set('Authorization', `Bearer ${tokenVeterinario}`);
+
+  assert.equal(response.status, 403);
+  assert.equal(response.body.status, 'fail');
+  assert.ok(response.body.message.includes('Acceso restringido'));
+});

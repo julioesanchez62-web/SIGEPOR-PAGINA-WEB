@@ -256,7 +256,7 @@
                 <li><a href="logs_actividad.html">📋 Logs de Actividad</a></li>
                 <li><a href="veterinarios.html">👨‍⚕️ Veterinarios</a></li>
                 <li><a href="reportes.html">📊 Reportes & Alertas</a></li>
-                <li><a href="registro_usuarios.html" class="active">👤 Usuarios</a></li>
+                <li><a href="gestion_usuarios.html">👥 Gestión de Usuarios</a></li>
             </ul>
         </nav>
 
@@ -284,13 +284,7 @@
                     </div>
 
                     <form class="grid-form" id="formulario-usuarios">
-                        <!-- Campo de búsqueda por ID (visible ÚNICAMENTE para Administradores autenticados) -->
-                        <div class="field admin-only-controls" style="grid-column: span 2; background: rgba(6, 182, 212, 0.08); padding: 14px; border-radius: 12px; border: 1px dashed rgba(6, 182, 212, 0.35); margin-bottom: 10px;">
-                            <label style="color: var(--accent-cyan); font-weight: bold;">🔍 Consultar / Gestionar Usuario por ID (Administración):</label>
-                            <input type="number" id="input-id" placeholder="Ingrese el número ID de usuario (Ej: 1)">
-                        </div>
-
-                        <div class="field">
+                        <div class="field" style="grid-column: span 2;">
                             <label for="input-nombre">Nombres y Apellidos *:</label>
                             <input type="text" id="input-nombre" name="nombre" placeholder="Ej: Juan Pérez" required autocomplete="name">
                         </div>
@@ -315,15 +309,6 @@
                             <input type="password" id="input-contrasena" name="contraseña" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
                         </div>
 
-                        <div class="field">
-                            <label for="input-rol">Rol de Usuario / Permisos (RBAC):</label>
-                            <select id="input-rol" name="idRol">
-                                <option value="2" selected>👤 Empleado / Operador (Rol 2)</option>
-                                <option value="3">👨‍⚕️ Veterinario (Rol 3)</option>
-                                <option value="4">👥 Cliente (Rol 4)</option>
-                            </select>
-                        </div>
-
                         <!-- Checkbox: Requerir confirmación por SMS -->
                         <div class="field" style="grid-column: span 2;">
                             <label class="checkbox-container">
@@ -336,11 +321,6 @@
                             <div style="display: flex; flex-wrap: wrap; gap: 10px;">
                                 <button type="button" id="btn-guardar" class="btn-save btn-primary" style="padding: 12px 24px; flex: 2; min-width: 220px;">✨ CREAR CUENTA NUEVA</button>
                                 <button type="reset" class="btn-reset" style="padding: 12px 20px; flex: 1;">↻ LIMPIAR</button>
-                                
-                                <!-- Botones de Gestión CRUD (visibles ÚNICAMENTE en Modo Administrador) -->
-                                <button type="button" id="btn-consultar" class="btn-consult admin-only-controls" style="padding: 12px 20px; background: #3182ce; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;" onclick="consultarUsuario()">🔍 CONSULTAR</button>
-                                <button type="button" id="btn-actualizar" class="btn-update admin-only-controls" style="padding: 12px 20px; background: #dd6b20; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;" onclick="actualizarUsuario()">✏️ ACTUALIZAR</button>
-                                <button type="button" id="btn-eliminar" class="btn-delete admin-only-controls" style="padding: 12px 20px; background: #e53e3e; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;" onclick="borrarUsuario()">🗑️ ELIMINAR</button>
                             </div>
 
                             <!-- Divisor Visual Social -->
@@ -449,61 +429,16 @@
             }
         }
 
-        // 1. Inicialización Dinámica según el Estado de la Sesión (Modo Admin vs Auto-Registro Público)
-        function inicializarModoVista() {
-            const esAdmin = esAdministradorActual();
-
-            // A. Conmutación de visibilidad para controles exclusivos de Administrador (.admin-only-controls)
-            document.querySelectorAll('.admin-only-controls').forEach(el => {
-                if (el.tagName === 'BUTTON' || el.tagName === 'INPUT') {
-                    el.style.display = esAdmin ? 'inline-block' : 'none';
-                } else {
-                    el.style.display = esAdmin ? 'block' : 'none';
-                }
-            });
-
-            // B. Gestión de opciones en el desplegable de roles (<select id="input-rol">)
-            const selectRol = document.getElementById('input-rol');
-            if (selectRol) {
-                let optAdmin = selectRol.querySelector('option[value="1"]');
-                if (esAdmin) {
-                    if (!optAdmin) {
-                        optAdmin = document.createElement('option');
-                        optAdmin.value = '1';
-                        optAdmin.textContent = '👑 Administrador (Rol 1)';
-                        selectRol.appendChild(optAdmin);
-                    }
-                } else {
-                    if (optAdmin) optAdmin.remove();
-                }
-            }
-
-            // C. Personalización de textos de cabecera según el modo
-            const viewTitle = document.getElementById('view-title');
-            const viewSubtitle = document.getElementById('view-subtitle');
-            const formSectionHeading = document.getElementById('form-section-heading');
-
-            if (esAdmin) {
-                if (viewTitle) viewTitle.textContent = 'PANEL DE GESTIÓN DE USUARIOS (CRUD)';
-                if (viewSubtitle) viewSubtitle.textContent = 'Control de cuentas de usuario, asignación de roles y actualización de credenciales';
-                if (formSectionHeading) formSectionHeading.textContent = 'Gestión de Cuentas y Registro de Personal';
-            } else {
-                if (viewTitle) viewTitle.textContent = 'REGISTRO Y RECUPERACIÓN DE CUENTA';
-                if (viewSubtitle) viewSubtitle.textContent = 'Crea tu cuenta de acceso a SIGEPOR o solicita instrucciones de recuperación';
-                if (formSectionHeading) formSectionHeading.textContent = 'Información de Registro de Usuario';
-            }
-        }
-
-        // 2. Envío de Registro o Creación de Usuario (POST /api/users)
+        // 1. Envío de Formulario de Auto-Registro Público (POST /api/users)
+        // 🔒 SEGURIDAD: Esta vista pública no envía ni gestiona roles (previene Escalada de Privilegios).
+        // El backend asigna estrictamente por defecto el rol de menores privilegios (idRol: 4 - Cliente).
         const btnGuardar = document.getElementById('btn-guardar');
-        const inputId = document.getElementById('input-id');
         const inputNombre = document.getElementById('input-nombre');
         const inputCorreo = document.getElementById('input-correo');
         const inputUsuario = document.getElementById('input-usuario');
         const inputTelefono = document.getElementById('telefono');
         const checkRequerirSMS = document.getElementById('requerirSMS');
         const inputContrasena = document.getElementById('input-contrasena');
-        const inputRol = document.getElementById('input-rol');
 
         if (btnGuardar) {
             btnGuardar.addEventListener('click', async () => {
@@ -513,40 +448,28 @@
                 const telefonoVal = inputTelefono ? sanitizarEntrada(inputTelefono.value) : '';
                 const requerirSMSVal = checkRequerirSMS ? checkRequerirSMS.checked : false;
                 const contrasenaVal = inputContrasena.value;
-                let rolVal = parseInt(inputRol.value, 10) || 2;
 
-                const esAdmin = esAdministradorActual();
-
-                // Validación de seguridad: auto-registro público no permite rol Administrador
-                if (!esAdmin && (rolVal === 1 || String(inputRol.value).toLowerCase().includes('admin'))) {
-                    console.warn('⚠️ Intento no permitido de auto-registro como Administrador. Asignando rol Empleado por defecto.');
-                    alert('Nota de seguridad: No está permitido auto-registrarse como Administrador desde la web pública. Se asignará el rol Empleado / Operador.');
-                    rolVal = 2;
-                }
-
-                if (!nombreVal || !correoVal || !usuarioVal || !telefonoVal || (!contrasenaVal && !esAdmin)) {
-                    alert('Por favor, completa todos los campos obligatorios (*), incluyendo el Número de Celular.');
+                if (!nombreVal || !correoVal || !usuarioVal || !telefonoVal || !contrasenaVal) {
+                    alert('Por favor, completa todos los campos obligatorios (*), incluyendo el Número de Celular y Contraseña.');
                     return;
                 }
 
-                if (contrasenaVal && contrasenaVal.length < 6) {
+                if (contrasenaVal.length < 6) {
                     alert('La contraseña debe tener una longitud mínima de 6 caracteres.');
                     return;
                 }
 
+                // Payload limpio sin variables de rol (seguridad RBAC)
                 const datosUsuario = {
                     nombre: nombreVal,
                     correo: correoVal,
                     usuario: usuarioVal,
                     telefono: telefonoVal || null,
                     requerirSMS: requerirSMSVal,
-                    contraseña: contrasenaVal,
-                    idRol: rolVal
+                    contraseña: contrasenaVal
                 };
 
                 const headers = { 'Content-Type': 'application/json' };
-                const token = localStorage.getItem('sigepor_token') || localStorage.getItem('token');
-                if (token) headers['Authorization'] = `Bearer ${token}`;
 
                 try {
                     const response = typeof fetchConFallbackOffline === 'function'
@@ -564,198 +487,32 @@
                     const resultado = await response.json();
 
                     if (response.ok || response.offline) {
-                        alert('¡Operación exitosa! ' + (resultado.message || 'Usuario guardado correctamente.'));
+                        alert('¡Cuenta creada exitosamente! Bienvenido a SIGEPOR.');
                         document.getElementById('formulario-usuarios').reset();
-                        if (!esAdmin) {
-                            window.location.href = 'index.html';
-                        }
+                        window.location.href = 'index.html';
                     } else {
-                        alert('Atención: ' + (resultado.message || 'No se pudo guardar el usuario.'));
+                        alert('Atención: ' + (resultado.message || 'No se pudo registrar la cuenta.'));
                     }
                 } catch (error) {
-                    console.error('Error al guardar el usuario:', error);
+                    console.error('Error al registrar usuario:', error);
                     const cached = JSON.parse(localStorage.getItem(LOCAL_KEY_USERS) || '[]');
                     cached.push({ ...datosUsuario, id: Date.now() });
                     localStorage.setItem(LOCAL_KEY_USERS, JSON.stringify(cached));
-                    alert('✓ Usuario guardado en modo local (Offline).');
-                    if (!esAdmin) window.location.href = 'index.html';
+                    alert('✓ Registro guardado en modo local (Offline).');
+                    window.location.href = 'index.html';
                 }
             });
         }
 
-        // Manejador funcional para botones de autenticación social
+        // 2. Manejador funcional para botones de autenticación social
         function iniciarOAuth(provider) {
             const providerKey = String(provider).toLowerCase();
-            // Redirección directa al endpoint de autenticación OAuth del backend
             const authUrl = `http://localhost:3001/auth/${providerKey}`;
             console.log(`[OAuth] Redirigiendo a autenticación con ${provider}: ${authUrl}`);
             window.location.href = authUrl;
         }
 
-        // 3. CONSULTAR USUARIO (Exclusivo Administrador)
-        async function consultarUsuario() {
-            if (!esAdministradorActual()) {
-                alert('Acceso Denegado: La consulta de usuarios por ID está reservada exclusivamente para el Administrador.');
-                return;
-            }
-
-            const id = inputId.value.trim();
-            if (!id) {
-                alert('Por favor, ingresa el número ID del usuario a consultar.');
-                return;
-            }
-
-            const token = localStorage.getItem('sigepor_token') || localStorage.getItem('token');
-            const headers = { 'Content-Type': 'application/json' };
-            if (token) headers['Authorization'] = `Bearer ${token}`;
-
-            try {
-                const response = await fetch(`${API_URL}/${id}`, { headers });
-                if (response.ok) {
-                    const resultado = await response.json();
-                    const userObj = resultado.data || resultado;
-                    inputNombre.value = userObj.nombre || '';
-                    inputCorreo.value = userObj.correo || userObj.email || '';
-                    inputUsuario.value = userObj.usuario || '';
-                    if (inputTelefono) inputTelefono.value = userObj.telefono || '';
-                    if (userObj.idRol) inputRol.value = String(userObj.idRol);
-                    inputContrasena.value = '';
-                    alert('✓ Datos del usuario cargados exitosamente desde la base de datos.');
-                    return;
-                } else {
-                    const errRes = await response.json();
-                    alert('⚠️ ' + (errRes.message || 'Usuario no encontrado en la base de datos.'));
-                }
-            } catch (error) {
-                console.warn('Buscando en caché local:', error);
-            }
-
-            const cached = JSON.parse(localStorage.getItem(LOCAL_KEY_USERS) || '[]');
-            const userObj = cached.find(u => Number(u.id) === Number(id));
-            if (userObj) {
-                inputNombre.value = userObj.nombre || '';
-                inputCorreo.value = userObj.correo || userObj.email || '';
-                inputUsuario.value = userObj.usuario || '';
-                if (inputTelefono) inputTelefono.value = userObj.telefono || '';
-                if (userObj.idRol) inputRol.value = String(userObj.idRol);
-                inputContrasena.value = '';
-                alert('✓ Datos de usuario cargados desde almacenamiento local.');
-            } else {
-                alert('⚠️ Usuario no encontrado.');
-            }
-        }
-
-        // 4. ACTUALIZAR USUARIO (Exclusivo Administrador)
-        async function actualizarUsuario() {
-            if (!esAdministradorActual()) {
-                alert('Acceso Denegado: La actualización directa por ID está reservada exclusivamente para el Administrador.');
-                return;
-            }
-
-            const id = inputId.value.trim();
-            if (!id) {
-                alert('Se requiere ingresar el número ID del usuario que deseas actualizar.');
-                return;
-            }
-
-            const datosActualizados = {
-                id: parseInt(id, 10),
-                nombre: sanitizarEntrada(inputNombre.value),
-                correo: sanitizarEntrada(inputCorreo.value),
-                usuario: sanitizarEntrada(inputUsuario.value),
-                telefono: (inputTelefono ? sanitizarEntrada(inputTelefono.value) : '') || null,
-                idRol: parseInt(inputRol.value, 10)
-            };
-
-            if (inputContrasena.value.trim()) {
-                datosActualizados.contraseña = inputContrasena.value;
-            }
-
-            const token = localStorage.getItem('sigepor_token') || localStorage.getItem('token');
-            const headers = { 'Content-Type': 'application/json' };
-            if (token) headers['Authorization'] = `Bearer ${token}`;
-
-            try {
-                const response = typeof fetchConFallbackOffline === 'function'
-                    ? await fetchConFallbackOffline(`${API_URL}/${id}`, {
-                        method: 'PUT',
-                        headers: headers,
-                        body: JSON.stringify(datosActualizados)
-                    })
-                    : await fetch(`${API_URL}/${id}`, {
-                        method: 'PUT',
-                        headers: headers,
-                        body: JSON.stringify(datosActualizados)
-                    });
-
-                const resultado = await response.json();
-
-                const cached = JSON.parse(localStorage.getItem(LOCAL_KEY_USERS) || '[]');
-                const idx = cached.findIndex(u => Number(u.id) === Number(id));
-                if (idx >= 0) {
-                    cached[idx] = { ...cached[idx], ...datosActualizados };
-                    localStorage.setItem(LOCAL_KEY_USERS, JSON.stringify(cached));
-                }
-
-                if (response.ok || response.offline) {
-                    alert('¡Datos de usuario actualizados con éxito!');
-                } else {
-                    alert('Error al actualizar: ' + (resultado.message || 'No se pudo actualizar el usuario.'));
-                }
-            } catch (error) {
-                console.error(error);
-                alert('Error de red al intentar actualizar los datos del usuario.');
-            }
-        }
-
-        // 5. BORRAR USUARIO (Exclusivo Administrador)
-        async function borrarUsuario() {
-            if (!esAdministradorActual()) {
-                alert('Acceso Denegado: La eliminación de usuarios está reservada exclusivamente para el Administrador.');
-                return;
-            }
-
-            const id = inputId.value.trim();
-            if (!id) {
-                alert('Debe ingresar el ID del usuario que desea eliminar.');
-                return;
-            }
-
-            const confirmar = confirm(`¿Está seguro de eliminar definitivamente al usuario con ID ${id}?`);
-            if (!confirmar) return;
-
-            const token = localStorage.getItem('sigepor_token') || localStorage.getItem('token');
-            const headers = { 'Content-Type': 'application/json' };
-            if (token) headers['Authorization'] = `Bearer ${token}`;
-
-            try {
-                const response = typeof fetchConFallbackOffline === 'function'
-                    ? await fetchConFallbackOffline(`${API_URL}/${id}`, { method: 'DELETE', headers: headers })
-                    : await fetch(`${API_URL}/${id}`, { method: 'DELETE', headers: headers });
-
-                const resultado = await response.json();
-
-                const cached = JSON.parse(localStorage.getItem(LOCAL_KEY_USERS) || '[]');
-                const filtrados = cached.filter(u => Number(u.id) !== Number(id));
-                localStorage.setItem(LOCAL_KEY_USERS, JSON.stringify(filtrados));
-
-                if (response.ok || response.offline) {
-                    alert('🗑️ ' + (resultado.message || 'Usuario eliminado.'));
-                    document.getElementById('formulario-usuarios').reset();
-                } else {
-                    alert('Error al borrar: ' + (resultado.message || 'No se pudo eliminar el usuario.'));
-                }
-            } catch (error) {
-                console.error(error);
-                const cached = JSON.parse(localStorage.getItem(LOCAL_KEY_USERS) || '[]');
-                const filtrados = cached.filter(u => Number(u.id) !== Number(id));
-                localStorage.setItem(LOCAL_KEY_USERS, JSON.stringify(filtrados));
-                alert('🗑️ Usuario eliminado en modo local.');
-                document.getElementById('formulario-usuarios').reset();
-            }
-        }
-
-        // 6. Solicitud de recuperación por correo
+        // 3. Solicitud de recuperación por correo
         async function procesarRecuperacionCorreo(e) {
             e.preventDefault();
             const correoInput = document.getElementById('input-correo-recuperacion');
@@ -778,10 +535,8 @@
             document.getElementById('formulario-recuperacion').reset();
         }
 
-        // Inicializar modo de vista al cargar la página y verificar retorno de OAuth
+        // Manejar retorno de autenticación social OAuth al cargar la página
         document.addEventListener('DOMContentLoaded', () => {
-            inicializarModoVista();
-
             // Detectar si el usuario regresó de autenticación social con token o error
             const urlParams = new URLSearchParams(window.location.search);
             const tokenOAuth = urlParams.get('token');

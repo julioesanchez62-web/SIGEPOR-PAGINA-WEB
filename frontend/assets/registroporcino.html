@@ -141,7 +141,7 @@
                 <h3>Panel Granja</h3>
             </div>
             <ul>
-                <li><a href="indexpruebados.html">🏠 Inicio</a></li>
+                <li><a href="index.html">🏠 Inicio</a></li>
                 <li><a href="registroporcino.html" class="active">🐖 Porcinos</a></li>
                 <li><a href="corrales.html">🏠 Corrales</a></li>
                 <li><a href="enfermedades.html">🦠 Enfermedades</a></li>
@@ -152,7 +152,7 @@
                 <li><a href="logs_actividad.html">📋 Logs de Actividad</a></li>
                 <li><a href="veterinarios.html">👨‍⚕️ Veterinarios</a></li>
                 <li><a href="reportes.html">📊 Reportes & Alertas</a></li>
-                <li><a href="registro_usuarios.html">👤 Usuarios</a></li>
+                <li><a href="gestion_usuarios.html">👥 Gestión de Usuarios</a></li>
             </ul>
         </nav>
 
@@ -215,6 +215,12 @@
                         </select>
                     </div>
                     <div class="field">
+                        <label for="id_corral">Corral Asignado:</label>
+                        <select id="id_corral" name="id_corral">
+                            <option value="">Seleccione corral (Opcional)</option>
+                        </select>
+                    </div>
+                    <div class="field">
                         <label for="veterinario_id">Veterinario Asignado:</label>
                         <select id="veterinario_id">
                             <option value="">Seleccione veterinario</option>
@@ -248,6 +254,7 @@
                                 <th>❤️ Salud</th>
                                 <th>📅 Nacimiento</th>
                                 <th>⚧ Género</th>
+                                <th>🏠 Corral</th>
                                 <th>👨‍⚕️ Veterinario</th>
                                 <th>⚙️ Acciones</th>
                             </tr>
@@ -294,8 +301,8 @@
     </footer>
 
     <!-- Scripts de Lógica Intactos -->
-    <script src="js/offline_sync.js"></script>
     <script src="js/auth_guard.js"></script>
+    <script src="js/offline_sync.js"></script>
     <script src="js/registro_porcino.js"></script>
 </body>
 </html>

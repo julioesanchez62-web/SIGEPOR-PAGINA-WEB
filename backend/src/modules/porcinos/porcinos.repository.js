@@ -15,7 +15,8 @@ async function getAllPorcinos() {
   try {
     const [rows] = await pool.execute(`
       SELECT 
-        p.id, 
+        p.id_porcino,
+        p.id_porcino AS id, 
         p.identificacion, 
         p.raza, 
         p.peso, 
@@ -23,11 +24,14 @@ async function getAllPorcinos() {
         DATE_FORMAT(p.fecha_nacimiento, '%Y-%m-%d') AS fecha_nacimiento, 
         p.genero, 
         p.veterinario_id, 
+        p.id_corral,
         DATE_FORMAT(p.fecha_registro, '%Y-%m-%d %H:%i:%s') AS fecha_registro,
-        v.nombre AS veterinario_nombre
+        v.nombre AS veterinario_nombre,
+        c.nombre AS corral_nombre
       FROM porcinos p
-      LEFT JOIN veterinarios v ON p.veterinario_id = v.id
-      ORDER BY p.id DESC
+      LEFT JOIN veterinarios v ON p.veterinario_id = v.id_veterinario
+      LEFT JOIN corrales c ON p.id_corral = c.id_corral
+      ORDER BY p.id_porcino DESC
     `);
     return rows;
   } catch (error) {
@@ -43,7 +47,8 @@ async function getPorcinoByIdOrIdentificacion(identificador) {
   try {
     const [rows] = await pool.execute(`
       SELECT 
-        p.id, 
+        p.id_porcino,
+        p.id_porcino AS id, 
         p.identificacion, 
         p.raza, 
         p.peso, 
@@ -51,11 +56,14 @@ async function getPorcinoByIdOrIdentificacion(identificador) {
         DATE_FORMAT(p.fecha_nacimiento, '%Y-%m-%d') AS fecha_nacimiento, 
         p.genero, 
         p.veterinario_id, 
+        p.id_corral,
         DATE_FORMAT(p.fecha_registro, '%Y-%m-%d %H:%i:%s') AS fecha_registro,
-        v.nombre AS veterinario_nombre
+        v.nombre AS veterinario_nombre,
+        c.nombre AS corral_nombre
       FROM porcinos p
-      LEFT JOIN veterinarios v ON p.veterinario_id = v.id
-      WHERE p.id = ? OR p.identificacion = ?
+      LEFT JOIN veterinarios v ON p.veterinario_id = v.id_veterinario
+      LEFT JOIN corrales c ON p.id_corral = c.id_corral
+      WHERE p.id_porcino = ? OR p.identificacion = ?
       LIMIT 1
     `, [identificador, identificador]);
     return rows[0] || null;
@@ -70,15 +78,18 @@ async function getPorcinoByIdOrIdentificacion(identificador) {
  */
 async function createPorcino(datos) {
   try {
-    const { veterinario_id, identificacion, raza, peso, estado_salud, fecha_nacimiento, genero } = datos;
+    const { veterinario_id, id_veterinario, id_corral, corral_id, identificacion, raza, peso, estado_salud, fecha_nacimiento, genero } = datos;
+    const vetId = id_veterinario || veterinario_id;
+    const corrId = id_corral || corral_id;
     const fecha_registro = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
     const [resultado] = await pool.execute(`
       INSERT INTO porcinos 
-      (veterinario_id, identificacion, raza, peso, estado_salud, fecha_nacimiento, genero, fecha_registro) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      (veterinario_id, id_corral, identificacion, raza, peso, estado_salud, fecha_nacimiento, genero, fecha_registro) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
-      veterinario_id ? Number(veterinario_id) : null,
+      vetId ? Number(vetId) : null,
+      corrId ? Number(corrId) : null,
       identificacion,
       raza,
       parseFloat(peso),
@@ -100,21 +111,25 @@ async function createPorcino(datos) {
  */
 async function updatePorcino(id, datos) {
   try {
-    const { veterinario_id, identificacion, raza, peso, estado_salud, fecha_nacimiento, genero } = datos;
+    const { veterinario_id, id_veterinario, id_corral, corral_id, identificacion, raza, peso, estado_salud, fecha_nacimiento, genero } = datos;
+    const vetId = id_veterinario || veterinario_id;
+    const corrId = id_corral || corral_id;
 
     await pool.execute(`
       UPDATE porcinos 
       SET 
         veterinario_id = ?, 
+        id_corral = ?,
         identificacion = ?, 
         raza = ?, 
         peso = ?, 
         estado_salud = ?, 
         fecha_nacimiento = ?, 
         genero = ?
-      WHERE id = ? OR identificacion = ?
+      WHERE id_porcino = ? OR identificacion = ?
     `, [
-      veterinario_id ? Number(veterinario_id) : null,
+      vetId ? Number(vetId) : null,
+      corrId ? Number(corrId) : null,
       identificacion,
       raza,
       parseFloat(peso),
@@ -138,7 +153,7 @@ async function updatePorcino(id, datos) {
 async function deletePorcino(id) {
   try {
     const [result] = await pool.execute(
-      'DELETE FROM porcinos WHERE id = ? OR identificacion = ?',
+      'DELETE FROM porcinos WHERE id_porcino = ? OR identificacion = ?',
       [id, id]
     );
     return result.affectedRows > 0;
@@ -154,7 +169,7 @@ async function deletePorcino(id) {
 async function getVeterinarios() {
   try {
     const [rows] = await pool.execute(
-      'SELECT id, nombre, activo FROM veterinarios ORDER BY nombre ASC'
+      'SELECT id_veterinario, id_veterinario AS id, nombre, activo FROM veterinarios ORDER BY nombre ASC'
     );
     return rows;
   } catch (error) {

@@ -13,6 +13,7 @@ const selectPigHealth = document.getElementById('pigHealth');
 const inputPigBirth = document.getElementById('pigBirth');
 const selectPigGender = document.getElementById('pigGender');
 const selectVeterinario = document.getElementById('veterinario_id');
+const selectCorral = document.getElementById('id_corral');
 
 const pigTableBody = document.querySelector('#pigTable tbody');
 const tableEmpty = document.getElementById('tableEmpty');
@@ -58,11 +59,45 @@ function poblarSelectVeterinarios(lista) {
     selectVeterinario.innerHTML = '<option value="">Seleccione veterinario</option>';
     lista.forEach(vet => {
         const option = document.createElement('option');
-        option.value = vet.id;
+        option.value = vet.id_veterinario || vet.id;
         const inactivo = Number(vet.activo) === 0;
         option.textContent = `👨‍⚕️ ${vet.nombre}${inactivo ? ' (Inactivo)' : ''}`;
         if (inactivo) option.disabled = true;
         selectVeterinario.appendChild(option);
+    });
+}
+
+// 1.b Cargar corrales en el <select>
+async function cargarCorralesEnSelect() {
+    if (!selectCorral) return;
+
+    try {
+        const respuesta = await fetch('http://localhost:3001/api/corrales', { headers: obtenerAuthHeaders() });
+        if (respuesta.ok) {
+            const resultado = await respuesta.json();
+            const corrales = resultado.data || resultado;
+            if (Array.isArray(corrales)) {
+                localStorage.setItem('sigepor_cache_corrales', JSON.stringify(corrales));
+                poblarSelectCorrales(corrales);
+                return;
+            }
+        }
+    } catch (error) {
+        console.warn('Cargando corrales desde memoria local:', error.message);
+    }
+
+    const cached = JSON.parse(localStorage.getItem('sigepor_cache_corrales') || '[]');
+    poblarSelectCorrales(cached);
+}
+
+function poblarSelectCorrales(lista) {
+    if (!selectCorral) return;
+    selectCorral.innerHTML = '<option value="">Seleccione corral (Opcional)</option>';
+    lista.forEach(corral => {
+        const option = document.createElement('option');
+        option.value = corral.id_corral || corral.id;
+        option.textContent = `🏠 ${corral.nombre} (Cap: ${corral.capacidad || 0})`;
+        selectCorral.appendChild(option);
     });
 }
 
@@ -116,15 +151,18 @@ function renderizarTablaPorcinos(porcinos) {
             healthBadge = `<span style="padding: 3px 8px; border-radius: 10px; font-weight:600; font-size:0.85rem; background: #f8d7da; color: #721c24;">🏥 Enfermo</span>`;
         }
 
-        const pigIdCode = p.identificacion || p.id;
+        const pigDbId = p.id_porcino || p.id;
+        const pigIdCode = p.identificacion || pigDbId;
+        const corralNombre = p.corral_nombre || (p.id_corral ? `Corral #${p.id_corral}` : 'Sin corral');
 
         tr.innerHTML = `
-            <td><strong>#${p.id || pigIdCode} (${pigIdCode})</strong></td>
+            <td><strong>#${pigDbId || pigIdCode} (${pigIdCode})</strong></td>
             <td>🐷 ${p.raza || p.breed || ''}</td>
             <td>${p.peso || p.weight || 0} kg</td>
             <td>${healthBadge}</td>
             <td>${p.fecha_nacimiento || p.birth || '-'}</td>
             <td>${p.genero || p.gender || '-'}</td>
+            <td>🏠 ${corralNombre}</td>
             <td>${p.veterinario_nombre ? `👨‍⚕️ ${p.veterinario_nombre}` : '<em style="color:#888;">Sin asignar</em>'}</td>
             <td>
                 <div class="table-actions" style="display:flex; gap:4px; justify-content:center;">
@@ -167,6 +205,7 @@ if (pigForm) {
             estado_salud: selectPigHealth.value,
             fecha_nacimiento: inputPigBirth.value,
             genero: selectPigGender.value,
+            id_corral: selectCorral && selectCorral.value ? parseInt(selectCorral.value, 10) : null,
             veterinario_id: selectVeterinario.value ? parseInt(selectVeterinario.value, 10) : null
         };
 
@@ -248,15 +287,16 @@ async function consultarPorcino() {
 }
 
 function cargardatosEnFormulario(p) {
-    inputPigId.value = p.identificacion || p.id;
+    inputPigId.value = p.identificacion || p.id_porcino || p.id;
     selectPigBreed.value = p.raza || p.breed || '';
     inputPigWeight.value = p.peso || p.weight || '';
     selectPigHealth.value = p.estado_salud || p.health || '';
     inputPigBirth.value = p.fecha_nacimiento || p.birth || '';
     selectPigGender.value = p.genero || p.gender || '';
-    selectVeterinario.value = p.veterinario_id || '';
+    if (selectCorral) selectCorral.value = p.id_corral || '';
+    if (selectVeterinario) selectVeterinario.value = p.veterinario_id || p.id_veterinario || '';
 
-    document.getElementById('formTitle').textContent = `Editar Porcino (${p.identificacion || p.id})`;
+    document.getElementById('formTitle').textContent = `Editar Porcino (${p.identificacion || p.id_porcino || p.id})`;
     document.getElementById('formIcon').textContent = '✏️';
 }
 
@@ -275,6 +315,7 @@ async function actualizarPorcino() {
         estado_salud: selectPigHealth.value,
         fecha_nacimiento: inputPigBirth.value,
         genero: selectPigGender.value,
+        id_corral: selectCorral && selectCorral.value ? parseInt(selectCorral.value, 10) : null,
         veterinario_id: selectVeterinario.value ? parseInt(selectVeterinario.value, 10) : null
     };
 
@@ -418,5 +459,6 @@ function mostrarCodigoQR(id, raza, peso, estado) {
 
 document.addEventListener('DOMContentLoaded', () => {
     cargarVeterinariosEnSelect();
+    cargarCorralesEnSelect();
     cargarPorcinos();
 });

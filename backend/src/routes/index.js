@@ -13,12 +13,14 @@ const reportesRoutes = require('../modules/reportes/reportes.routes');
 
 // Controlador modular de usuarios para perfil
 const usersController = require('../modules/users/users.controller');
+const authController = require('../modules/auth/auth.controller');
 
 /* ==========================================================================
    1. RUTAS DE COMPROBACIÓN (HEALTH)
    ========================================================================== */
 router.get(['/health', '/api/health'], (req, res) => res.json({ status: 'ok', message: 'SIGEPOR backend is running' }));
 router.get('/perfil', usersController.getProfile);
+router.post(['/api/recuperar-password', '/recuperar-password'], authController.recuperarPassword);
 
 /* ==========================================================================
    2. MONTAJE DE MÓDULOS DEL SISTEMA (Soporta prefijos con /api y sin /api)
@@ -30,7 +32,7 @@ const { pool } = require('../config/mysql');
 router.get(['/api/porcinos_lista', '/porcinos_lista'], async (req, res, next) => {
   try {
     const [rows] = await pool.query(
-      'SELECT id, identificacion, raza, estado_salud FROM porcinos ORDER BY identificacion ASC'
+      'SELECT id_porcino, id_porcino AS id, identificacion, raza, estado_salud FROM porcinos ORDER BY identificacion ASC'
     );
     res.json(rows);
   } catch (error) {
@@ -46,7 +48,7 @@ router.get(['/api/veterinarios_lista', '/veterinarios_lista'], verifyToken, asyn
   try {
     // 1. Consultar tabla veterinarios
     const [vets] = await pool.query(
-      'SELECT id, nombre, email, usuario FROM veterinarios WHERE activo = 1 ORDER BY nombre ASC'
+      'SELECT id_veterinario, id_veterinario AS id, id_usuario, nombre, email, usuario FROM veterinarios WHERE activo = 1 ORDER BY nombre ASC'
     );
 
     if (vets && vets.length > 0) {
@@ -55,7 +57,7 @@ router.get(['/api/veterinarios_lista', '/veterinarios_lista'], verifyToken, asyn
 
     // 2. Si no hay registros en la tabla veterinarios, consultar usuarios con rol Veterinario (idRol = 3)
     const [userVets] = await pool.query(
-      'SELECT id, nombre, email, usuario FROM usuarios WHERE idRol = 3 AND activo = 1 ORDER BY nombre ASC'
+      'SELECT id_usuario, id_usuario AS id, id_usuario AS id_veterinario, nombre, email, usuario FROM usuarios WHERE idRol = 3 AND activo = 1 ORDER BY nombre ASC'
     );
 
     return res.json(userVets || []);
