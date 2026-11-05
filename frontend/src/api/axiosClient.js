@@ -7,7 +7,7 @@ import axios from 'axios';
  * - Interceptor de respuesta: captura y formatea errores HTTP (401, 403, 404, 500)
  */
 
-const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const baseURL = import.meta.env.VITE_API_URL || 'sigepor-pagina-web-production.up.railway.app';
 
 const axiosClient = axios.create({
   baseURL,
