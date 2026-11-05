@@ -8,6 +8,14 @@ async function findUserByEmail(identificador) {
   return rows[0] || null;
 }
 
+async function updatePassword(id_usuario, hashedContraseña) {
+  await pool.execute(
+    'UPDATE usuarios SET contraseña = ? WHERE id_usuario = ?',
+    [hashedContraseña, id_usuario]
+  );
+}
+
 module.exports = {
-  findUserByEmail
+  findUserByEmail,
+  updatePassword
 };
