@@ -2,16 +2,17 @@ import axios from 'axios';
 
 /**
  * Cliente HTTP centralizado con Axios para SIGEPOR
- * - Configura baseURL dinámica con protocolo asegurado (evita rutas relativas erróneas)
+ * - Configura baseURL dinámica con protocolo 'https://' garantizado (previene rutas relativas en Vercel)
+ * - withCredentials: true para permitir intercambio de cookies SameSite y sesiones entre Vercel y Railway
  * - Interceptor de solicitud: adjunta Authorization: Bearer <token>
  * - Interceptor de respuesta: captura y formatea errores HTTP (401, 403, 404, 500)
  */
 
-// 1. Obtener la variable de entorno o usar el dominio de producción por defecto
-const envURL = import.meta.env.VITE_API_URL || 'https://sigepor-pagina-web-production.up.railway.app';
+// 1. Obtener la variable de entorno de Vite o usar el dominio de producción en Railway
+const rawBaseURL = import.meta.env.VITE_API_URL || 'https://sigepor-pagina-web-production.up.railway.app';
 
 // 2. Normalizar la URL: asegurar que inicie con https:// o http:// (si falta, el navegador la trata como ruta relativa local)
-let formattedURL = envURL.trim();
+let formattedURL = String(rawBaseURL).trim();
 if (!formattedURL.startsWith('http://') && !formattedURL.startsWith('https://')) {
   formattedURL = `https://${formattedURL}`;
 }
@@ -21,6 +22,7 @@ const baseURL = formattedURL.endsWith('/') ? formattedURL.slice(0, -1) : formatt
 
 const axiosClient = axios.create({
   baseURL,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json'
   },
@@ -59,12 +61,14 @@ axiosClient.interceptors.response.use(
     let mensaje = 'Error de conexión con el servidor. Verifique su red.';
 
     if (error.response && error.response.data) {
-      mensaje = error.response.data.message || error.response.data.error || mensaje;
+      mensaje = error.response.data.message || error.response.data.error || error.response.data.mensaje || mensaje;
+    } else if (error.message && error.message.includes('Network Error')) {
+      mensaje = 'No se pudo establecer conexión con el servidor en Railway. Verifique si el servicio está activo.';
     }
 
     if (status === 401) {
-      // Sesión expirada o no autenticado
-      console.warn('🔒 Error 401: Token inválido o no suministrado.');
+      // Sesión expirada o credenciales inválidas
+      console.warn('🔒 Error 401: No autenticado o credenciales incorrectas.');
       if (!window.location.pathname.includes('/login')) {
         localStorage.removeItem('sigepor_token');
         localStorage.removeItem('usuario_sigepor');

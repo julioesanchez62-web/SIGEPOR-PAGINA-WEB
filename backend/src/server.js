@@ -8,7 +8,7 @@ const { connectMySQL } = require('./config/mysql');
 
 /**
  * Iniciar servidor con validación de MySQL (Fail Fast)
- * Se vincula a 0.0.0.0 para compatibilidad con Railway, Render y Docker
+ * Escucha obligatoriamente en 0.0.0.0 para que el proxy público de Railway enrute el tráfico.
  */
 async function startServer() {
   try {
@@ -16,7 +16,7 @@ async function startServer() {
     await connectMySQL();
 
     app.listen(port, '0.0.0.0', () => {
-      console.log(`🚀 SIGEPOR backend running on port ${port} (0.0.0.0)`);
+      console.log(`🚀 SIGEPOR backend running on port ${port} (host: 0.0.0.0)`);
     });
   } catch (error) {
     console.error('❌ Failed to start server:', error.message);

@@ -9,37 +9,53 @@ const { sessionSecret, corsOrigin } = require('./config/env');
 const app = express();
 
 /**
- * ORDEN CORRECTO DE MIDDLEWARES EN EXPRESS
- * 
- * 1️⃣ Middlewares globales (CORS, body parser, session, etc.)
- * 2️⃣ Rutas
- * 3️⃣ Capturador de 404 (rutas no encontradas)
- * 4️⃣ Middleware de errores (SIEMPRE al final)
+ * 1. REVERSE PROXY CONFIGURATION
+ * Requerido en Railway, Heroku, Render o Docker para detectar HTTPS
+ * y permitir que las cookies 'Secure' y 'SameSite=None' no sean bloqueadas por el navegador.
  */
+app.set('trust proxy', 1);
 
-// 1. Configuración de CORS permitiendo orígenes de Vercel y localhost
-const allowedOrigins = corsOrigin === '*'
-  ? '*'
+/**
+ * 2. CONFIGURACIÓN ROBUSTA DE CORS (Cross-Origin Resource Sharing)
+ * Permite que el frontend en Vercel (y localmente) consuma la API sin bloqueos de navegador.
+ */
+const allowedExplicit = corsOrigin === '*'
+  ? []
   : corsOrigin.split(',').map((o) => o.trim());
 
-app.use(cors({
+const corsOptions = {
   origin: (origin, callback) => {
-    // Permitir solicitudes sin origen (como herramientas de prueba o apps móviles)
-    if (!origin || allowedOrigins === '*') return callback(null, true);
-    if (allowedOrigins.indexOf(origin) !== -1 || origin.endsWith('.vercel.app')) {
+    // Permitir llamadas sin origen (Postman, curl, server-to-server)
+    if (!origin) return callback(null, true);
+
+    // Permitir Vercel (*.vercel.app), Railway (*.railway.app), localhost y orígenes explícitos
+    const isVercel = /\.vercel\.app$/.test(origin);
+    const isRailway = /\.railway\.app$/.test(origin);
+    const isLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+    const isExplicit = allowedExplicit.indexOf(origin) !== -1 || corsOrigin === '*';
+
+    if (isVercel || isRailway || isLocalhost || isExplicit) {
       return callback(null, true);
     }
-    return callback(null, true); // Fallback permisivo para producción
+
+    // Fallback permisivo para producción
+    return callback(null, true);
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-access-token']
-}));
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-access-token', 'Accept', 'X-Requested-With'],
+  optionsSuccessStatus: 204
+};
 
+// Aplicar CORS globalmente y responder a todos los preflight OPTIONS
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
+
+// 3. Body Parsers
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Configuración de sesión requerida para Passport OAuth flow
+// 4. Configuración de Sesión (express-session para Passport OAuth flow)
 app.use(session({
   secret: sessionSecret,
   resave: false,
@@ -53,17 +69,17 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-// 2. Rutas principales
+// 5. Rutas principales de la aplicación
 app.use('/', indexRoutes);
 
-// 3. Capturador de 404
+// 6. Capturador de 404 (Rutas no encontradas)
 app.use((req, res, next) => {
   const error = new Error('Ruta no encontrada');
   error.statusCode = 404;
   next(error);
 });
 
-// 4. Middleware de errores (SIEMPRE ÚLTIMO)
+// 7. Middleware de errores centralizado (SIEMPRE AL FINAL)
 app.use(errorMiddleware);
 
 module.exports = app;
