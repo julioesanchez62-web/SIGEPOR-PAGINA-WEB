@@ -1,39 +1,52 @@
 const cors = require('cors');
 const express = require('express');
+const session = require('express-session');
+const passport = require('./config/passport');
 const indexRoutes = require('./routes');
 const errorMiddleware = require('./middlewares/error.middleware');
+const { sessionSecret, corsOrigin } = require('./config/env');
 
 const app = express();
 
 /**
  * ORDEN CORRECTO DE MIDDLEWARES EN EXPRESS
  * 
- * 1️⃣ Middlewares globales (body parser, etc.)
+ * 1️⃣ Middlewares globales (CORS, body parser, session, etc.)
  * 2️⃣ Rutas
  * 3️⃣ Capturador de 404 (rutas no encontradas)
  * 4️⃣ Middleware de errores (SIEMPRE al final)
- * 
- * ⚠️ El middleware de errores DEBE estar último porque Express
- * busca middlewares de arriba a abajo y si está antes de las rutas,
- * nunca las rutas lo verán.
  */
 
-const session = require('express-session');
-const passport = require('./config/passport');
+// 1. Configuración de CORS permitiendo orígenes de Vercel y localhost
+const allowedOrigins = corsOrigin === '*'
+  ? '*'
+  : corsOrigin.split(',').map((o) => o.trim());
 
-// 1. Middlewares globales
-app.use(cors()); // <--- 🔥 ¡ESTA LÍNEA ES LA QUE ACTIVA EL PERMISO PARA EL NAVEGADOR!
+app.use(cors({
+  origin: (origin, callback) => {
+    // Permitir solicitudes sin origen (como herramientas de prueba o apps móviles)
+    if (!origin || allowedOrigins === '*') return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1 || origin.endsWith('.vercel.app')) {
+      return callback(null, true);
+    }
+    return callback(null, true); // Fallback permisivo para producción
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-access-token']
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Configuración de sesión requerida para Passport OAuth flow
 app.use(session({
-  secret: process.env.SESSION_SECRET || jwtSecret || process.env.JWT_SECRET,
+  secret: sessionSecret,
   resave: false,
   saveUninitialized: false,
   cookie: { 
-    secure: true, // Cambiado a true porque usas HTTPS en internet
-    sameSite: 'none' // Requerido para permitir cookies entre Vercel y Railway
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
   }
 }));
 

@@ -1,5 +1,7 @@
 const path = require('path');
-require('dotenv').config(); 
+// Intentar cargar .env desde backend/ o desde la raíz del proyecto
+require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
+require('dotenv').config();
 
 // Variables estrictamente obligatorias leídas desde el archivo .env
 const requiredEnv = ['DB_HOST', 'DB_PORT', 'DB_USER', 'DB_NAME', 'JWT_SECRET'];
@@ -16,6 +18,8 @@ module.exports = {
   port: Number(process.env.PORT || 3001),
   nodeEnv: process.env.NODE_ENV || 'development',
   jwtSecret: process.env.JWT_SECRET,
+  sessionSecret: process.env.SESSION_SECRET || process.env.JWT_SECRET || 'sigepor_session_secret_2026',
+  corsOrigin: process.env.CORS_ORIGIN || '*',
   db: {
     host: process.env.DB_HOST,
     port: Number(process.env.DB_PORT),

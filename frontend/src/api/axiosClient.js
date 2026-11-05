@@ -2,19 +2,29 @@ import axios from 'axios';
 
 /**
  * Cliente HTTP centralizado con Axios para SIGEPOR
- * - Configura baseURL dinámica o proxy de desarrollo
+ * - Configura baseURL dinámica con protocolo asegurado (evita rutas relativas erróneas)
  * - Interceptor de solicitud: adjunta Authorization: Bearer <token>
  * - Interceptor de respuesta: captura y formatea errores HTTP (401, 403, 404, 500)
  */
 
-const baseURL = import.meta.env.VITE_API_URL || 'sigepor-pagina-web-production.up.railway.app';
+// 1. Obtener la variable de entorno o usar el dominio de producción por defecto
+const envURL = import.meta.env.VITE_API_URL || 'https://sigepor-pagina-web-production.up.railway.app';
+
+// 2. Normalizar la URL: asegurar que inicie con https:// o http:// (si falta, el navegador la trata como ruta relativa local)
+let formattedURL = envURL.trim();
+if (!formattedURL.startsWith('http://') && !formattedURL.startsWith('https://')) {
+  formattedURL = `https://${formattedURL}`;
+}
+
+// 3. Remover barra diagonal final si existe para evitar dobles barras en las peticiones
+const baseURL = formattedURL.endsWith('/') ? formattedURL.slice(0, -1) : formattedURL;
 
 const axiosClient = axios.create({
   baseURL,
   headers: {
     'Content-Type': 'application/json'
   },
-  timeout: 10000
+  timeout: 15000
 });
 
 // Callback global opcional para notificaciones de error en la UI
@@ -55,7 +65,6 @@ axiosClient.interceptors.response.use(
     if (status === 401) {
       // Sesión expirada o no autenticado
       console.warn('🔒 Error 401: Token inválido o no suministrado.');
-      // Opcionalmente limpiar si no es la ruta de login
       if (!window.location.pathname.includes('/login')) {
         localStorage.removeItem('sigepor_token');
         localStorage.removeItem('usuario_sigepor');
