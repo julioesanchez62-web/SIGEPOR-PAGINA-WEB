@@ -27,12 +27,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Configuración de sesión requerida para Passport OAuth flow
-const { jwtSecret } = require('./config/env');
 app.use(session({
   secret: process.env.SESSION_SECRET || jwtSecret || process.env.JWT_SECRET,
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: false } // secure: true si se usa HTTPS en producción
+  cookie: { 
+    secure: true, // Cambiado a true porque usas HTTPS en internet
+    sameSite: 'none' // Requerido para permitir cookies entre Vercel y Railway
+  }
 }));
 
 app.use(passport.initialize());
