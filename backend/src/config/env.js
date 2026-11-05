@@ -1,6 +1,5 @@
 const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
-require('dotenv').config(); // Fallback si está en el root
+require('dotenv').config(); 
 
 // Variables estrictamente obligatorias leídas desde el archivo .env
 const requiredEnv = ['DB_HOST', 'DB_PORT', 'DB_USER', 'DB_NAME', 'JWT_SECRET'];
