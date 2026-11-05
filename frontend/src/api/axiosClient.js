@@ -22,7 +22,7 @@ const baseURL = formattedURL.endsWith('/') ? formattedURL.slice(0, -1) : formatt
 
 const axiosClient = axios.create({
   baseURL,
-  withCredentials: true,
+  withCredentials: false,
   headers: {
     'Content-Type': 'application/json'
   },

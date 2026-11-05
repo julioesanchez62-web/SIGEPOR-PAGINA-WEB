@@ -45,7 +45,8 @@ async function getAllPorcinos() {
  */
 async function getPorcinoByIdOrIdentificacion(identificador) {
   try {
-    const [rows] = await pool.execute(`
+    const isNum = Number.isInteger(Number(identificador)) && String(identificador).trim() !== '' && !isNaN(identificador);
+    const query = `
       SELECT 
         p.id_porcino,
         p.id_porcino AS id, 
@@ -63,9 +64,11 @@ async function getPorcinoByIdOrIdentificacion(identificador) {
       FROM porcinos p
       LEFT JOIN veterinarios v ON p.veterinario_id = v.id_veterinario
       LEFT JOIN corrales c ON p.id_corral = c.id_corral
-      WHERE p.id_porcino = ? OR p.identificacion = ?
+      WHERE ${isNum ? 'p.id_porcino = ? OR p.identificacion = ?' : 'p.identificacion = ?'}
       LIMIT 1
-    `, [identificador, identificador]);
+    `;
+    const params = isNum ? [Number(identificador), String(identificador)] : [String(identificador)];
+    const [rows] = await pool.execute(query, params);
     return rows[0] || null;
   } catch (error) {
     console.error('❌ Error en getPorcinoByIdOrIdentificacion:', error.message);
@@ -152,10 +155,10 @@ async function updatePorcino(id, datos) {
  */
 async function deletePorcino(id) {
   try {
-    const [result] = await pool.execute(
-      'DELETE FROM porcinos WHERE id_porcino = ? OR identificacion = ?',
-      [id, id]
-    );
+    const isNum = Number.isInteger(Number(id)) && String(id).trim() !== '' && !isNaN(id);
+    const [result] = isNum
+      ? await pool.execute('DELETE FROM porcinos WHERE id_porcino = ? OR identificacion = ?', [Number(id), String(id)])
+      : await pool.execute('DELETE FROM porcinos WHERE identificacion = ?', [String(id)]);
     return result.affectedRows > 0;
   } catch (error) {
     console.error('❌ Error en deletePorcino:', error.message);

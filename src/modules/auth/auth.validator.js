@@ -1,9 +1,9 @@
 function validateLogin(req, res, next) {
-  const { correo, email, contraseña } = req.body;
-  const targetEmail = correo || email;
+  const { correo, email, identificador, usuario, contraseña } = req.body;
+  const targetEmail = correo || email || identificador || usuario;
 
   if (!targetEmail || typeof targetEmail !== 'string' || targetEmail.trim() === '') {
-    const error = new Error('El correo es obligatorio');
+    const error = new Error('El correo o usuario identificador es obligatorio');
     error.statusCode = 400;
     return next(error);
   }

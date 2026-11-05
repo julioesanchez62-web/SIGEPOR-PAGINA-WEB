@@ -13,7 +13,7 @@ async function getAllEventos() {
       e.lechones_nacidos,
       e.observaciones
     FROM eventos_reproductivos e
-    LEFT JOIN porcinos p ON e.porcino_id = p.id OR e.porcino_id = p.identificacion
+    LEFT JOIN porcinos p ON e.porcino_id = p.id_porcino OR e.porcino_id = p.identificacion
     ORDER BY e.fecha_evento DESC
   `);
   return rows;
@@ -31,7 +31,7 @@ async function getEventoById(id) {
       e.lechones_nacidos,
       e.observaciones
     FROM eventos_reproductivos e
-    LEFT JOIN porcinos p ON e.porcino_id = p.id OR e.porcino_id = p.identificacion
+    LEFT JOIN porcinos p ON e.porcino_id = p.id_porcino OR e.porcino_id = p.identificacion
     WHERE e.id = ?
     LIMIT 1
   `, [id]);
