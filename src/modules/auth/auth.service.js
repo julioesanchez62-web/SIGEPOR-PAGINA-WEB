@@ -21,12 +21,20 @@ async function login(email, contraseña) {
 
   const contrasenaBD = usuario.contraseña || usuario.contrasena || usuario.password;
 
-  // Verificación estricta con Bcrypt: Rechazar contraseñas no cifradas o en texto plano
+  // Verificación con Bcrypt y Auto-Migración de contraseñas en texto plano
   let passwordMatch = false;
   if (contrasenaBD && (contrasenaBD.startsWith('$2a$') || contrasenaBD.startsWith('$2b$'))) {
     passwordMatch = await bcrypt.compare(contraseña, contrasenaBD);
+  } else if (contrasenaBD && contrasenaBD === contraseña) {
+    // Si la contraseña en la BD estaba en texto plano, permitir acceso y cifrarla inmediatamente
+    passwordMatch = true;
+    try {
+      const hashed = await bcrypt.hash(contraseña, 10);
+      await authRepository.updatePassword(usuario.id_usuario || usuario.id, hashed);
+    } catch (e) {
+      console.warn('⚠️ No se pudo auto-encriptar contraseña heredada:', e.message);
+    }
   } else {
-    // No permitir acceso con contraseñas en texto plano
     passwordMatch = false;
   }
 

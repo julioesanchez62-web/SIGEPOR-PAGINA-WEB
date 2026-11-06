@@ -6,9 +6,9 @@ const { pool } = require('../../config/mysql');
 router.get('/', async (req, res, next) => {
   try {
     const [rows] = await pool.execute(`
-      SELECT id, nombre, capacidad, tipo_alimentacion, estado_limpieza, ubicacion 
+      SELECT id_corral, id_corral AS id, nombre, capacidad, tipo_alimentacion, estado_limpieza, ubicacion 
       FROM corrales 
-      ORDER BY id DESC
+      ORDER BY id_corral DESC
     `);
     return res.status(200).json({
       status: 'success',
@@ -42,7 +42,7 @@ router.post('/', async (req, res, next) => {
       ubicacion || 'Nave Principal'
     ]);
 
-    const [nuevo] = await pool.execute('SELECT * FROM corrales WHERE id = ?', [result.insertId]);
+    const [nuevo] = await pool.execute('SELECT id_corral, id_corral AS id, nombre, capacidad, tipo_alimentacion, estado_limpieza, ubicacion FROM corrales WHERE id_corral = ?', [result.insertId]);
 
     return res.status(201).json({
       status: 'success',

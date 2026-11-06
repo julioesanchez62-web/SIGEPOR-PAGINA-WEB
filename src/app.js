@@ -1,53 +1,85 @@
 const cors = require('cors');
 const express = require('express');
+const session = require('express-session');
+const passport = require('./config/passport');
 const indexRoutes = require('./routes');
 const errorMiddleware = require('./middlewares/error.middleware');
+const { sessionSecret, corsOrigin } = require('./config/env');
 
 const app = express();
 
 /**
- * ORDEN CORRECTO DE MIDDLEWARES EN EXPRESS
- * 
- * 1️⃣ Middlewares globales (body parser, etc.)
- * 2️⃣ Rutas
- * 3️⃣ Capturador de 404 (rutas no encontradas)
- * 4️⃣ Middleware de errores (SIEMPRE al final)
- * 
- * ⚠️ El middleware de errores DEBE estar último porque Express
- * busca middlewares de arriba a abajo y si está antes de las rutas,
- * nunca las rutas lo verán.
+ * 1. REVERSE PROXY CONFIGURATION
+ * Requerido en Railway, Heroku, Render o Docker para detectar HTTPS
+ * y permitir que las cookies 'Secure' y 'SameSite=None' no sean bloqueadas por el navegador.
  */
+app.set('trust proxy', 1);
 
-const session = require('express-session');
-const passport = require('./config/passport');
+/**
+ * 2. CONFIGURACIÓN ROBUSTA DE CORS (Cross-Origin Resource Sharing)
+ * Permite que el frontend en Vercel (y localmente) consuma la API sin bloqueos de navegador.
+ */
+const allowedExplicit = corsOrigin === '*'
+  ? []
+  : corsOrigin.split(',').map((o) => o.trim());
 
-// 1. Middlewares globales
-app.use(cors()); // <--- 🔥 ¡ESTA LÍNEA ES LA QUE ACTIVA EL PERMISO PARA EL NAVEGADOR!
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Permitir llamadas sin origen (Postman, curl, server-to-server)
+    if (!origin) return callback(null, true);
+
+    // Permitir Vercel (*.vercel.app), Railway (*.railway.app), localhost y orígenes explícitos
+    const isVercel = /\.vercel\.app$/.test(origin);
+    const isRailway = /\.railway\.app$/.test(origin);
+    const isLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+    const isExplicit = allowedExplicit.indexOf(origin) !== -1 || corsOrigin === '*';
+
+    if (isVercel || isRailway || isLocalhost || isExplicit) {
+      return callback(null, true);
+    }
+
+    // Fallback permisivo para producción
+    return callback(null, true);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-access-token', 'Accept', 'X-Requested-With'],
+  optionsSuccessStatus: 204
+};
+
+// Aplicar CORS globalmente y responder a todos los preflight OPTIONS
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
+
+// 3. Body Parsers
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Configuración de sesión requerida para Passport OAuth flow
+// 4. Configuración de Sesión (express-session para Passport OAuth flow)
 app.use(session({
-  secret: process.env.SESSION_SECRET || process.env.JWT_SECRET || 'sigepor_session_secret_2026',
+  secret: sessionSecret,
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: false } // secure: true si se usa HTTPS en producción
+  cookie: { 
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+  }
 }));
 
 app.use(passport.initialize());
 app.use(passport.session());
 
-// 2. Rutas principales
+// 5. Rutas principales de la aplicación
 app.use('/', indexRoutes);
 
-// 3. Capturador de 404
+// 6. Capturador de 404 (Rutas no encontradas)
 app.use((req, res, next) => {
   const error = new Error('Ruta no encontrada');
   error.statusCode = 404;
   next(error);
 });
 
-// 4. Middleware de errores (SIEMPRE ÚLTIMO)
+// 7. Middleware de errores centralizado (SIEMPRE AL FINAL)
 app.use(errorMiddleware);
 
 module.exports = app;

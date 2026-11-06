@@ -15,10 +15,11 @@ const { verifyToken, requireRole } = require('../../middlewares/auth.middleware'
 
 router.use(verifyToken);
 
-router.get('/', requireRole(['Administrador', 'Veterinario', 'Empleado']), veterinariosController.getVeterinarios);
-router.get('/:id', requireRole(['Administrador', 'Veterinario', 'Empleado']), veterinariosController.getVeterinarioById);
-router.post('/', requireRole(['Administrador']), veterinariosController.createVeterinario);
-router.put('/:id', requireRole(['Administrador']), veterinariosController.updateVeterinario);
-router.delete('/:id', requireRole(['Administrador']), veterinariosController.deleteVeterinario);
+// Control de acceso RBAC estricto: El módulo de gestión de veterinarios es exclusivo para Administradores
+router.get('/', requireRole(['Administrador', 1]), veterinariosController.getVeterinarios);
+router.get('/:id', requireRole(['Administrador', 1]), veterinariosController.getVeterinarioById);
+router.post('/', requireRole(['Administrador', 1]), veterinariosController.createVeterinario);
+router.put('/:id', requireRole(['Administrador', 1]), veterinariosController.updateVeterinario);
+router.delete('/:id', requireRole(['Administrador', 1]), veterinariosController.deleteVeterinario);
 
 module.exports = router;

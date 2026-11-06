@@ -122,38 +122,19 @@ function validateCreateUser(req, res, next) {
     }
 
     // ─────────────────────────────────────────────────────────────
-    // 4️⃣ VALIDAR ID DEL ROL
+    // 4️⃣ VALIDAR O ASIGNAR ID DEL ROL POR DEFECTO (PRINCIPIO DE MENOR PRIVILEGIO)
     // ─────────────────────────────────────────────────────────────
+    let idRolNumero = 4; // Por defecto rol 4: Cliente (mínimos privilegios)
 
-    // Verificar que idRol existe
-    if (idRol === undefined || idRol === null || idRol === '') {
-      const error = new Error('El ID del rol es obligatorio');
-      error.statusCode = 400;
-      return next(error);
-    }
+    if (idRol !== undefined && idRol !== null && idRol !== '') {
+      idRolNumero = Number(idRol);
 
-    // Convertir a número
-    const idRolNumero = Number(idRol);
-
-    // Verificar que es un número válido (no NaN)
-    if (isNaN(idRolNumero)) {
-      const error = new Error('El ID del rol debe ser un número');
-      error.statusCode = 400;
-      return next(error);
-    }
-
-    // Verificar que es entero (sin decimales)
-    if (!Number.isInteger(idRolNumero)) {
-      const error = new Error('El ID del rol debe ser un número entero');
-      error.statusCode = 400;
-      return next(error);
-    }
-
-    // Verificar que es positivo (> 0)
-    if (idRolNumero <= 0) {
-      const error = new Error('El ID del rol debe ser un número positivo');
-      error.statusCode = 400;
-      return next(error);
+      // Verificar que es un número válido entero positivo
+      if (isNaN(idRolNumero) || !Number.isInteger(idRolNumero) || idRolNumero <= 0) {
+        const error = new Error('El ID del rol debe ser un número entero positivo');
+        error.statusCode = 400;
+        return next(error);
+      }
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -164,8 +145,11 @@ function validateCreateUser(req, res, next) {
       nombre: nombreNormalizado,
       correo: correoNormalizado,
       email: correoNormalizado, // 👈 Se agrega para compatibilidad con el Repository
+      usuario: req.body.usuario ? String(req.body.usuario).trim() : undefined,
       contraseña,
-      idRol: idRolNumero
+      idRol: idRolNumero,
+      telefono: req.body.telefono ? String(req.body.telefono).trim() : null,
+      requerirSMS: Boolean(req.body.requerirSMS)
     };
 
     next();
