@@ -70,7 +70,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // 5. Rutas principales de la aplicación
-app.use('/', indexRoutes);
+app.use('/api', indexRoutes);
 
 // 6. Capturador de 404 (Rutas no encontradas)
 app.use((req, res, next) => {
@@ -81,5 +81,7 @@ app.use((req, res, next) => {
 
 // 7. Middleware de errores centralizado (SIEMPRE AL FINAL)
 app.use(errorMiddleware);
+
+
 
 module.exports = app;
