@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificación de Logos - SIGEPOR</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #fff5f5 0%, #f3e8e8 100%);
+            font-family: 'Segoe UI', sans-serif;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: #2e1a16;
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 2.5rem;
+        }
+        
+        .checklist {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        
+        .check-item {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(61, 38, 33, 0.05);
+            border-left: 5px solid #ff8da1;
+        }
+        
+        .check-item h3 {
+            color: #2e1a16;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .check-item ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .check-item li {
+            color: #6e544f;
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .check-item li::before {
+            content: "✓";
+            color: #3db870;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .code-block {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            color: #2e1a16;
+        }
+        
+        .tip {
+            background: linear-gradient(135deg, rgba(61, 184, 112, 0.1) 0%, rgba(61, 184, 112, 0.05) 100%);
+            border-left: 4px solid #3db870;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #2e5f48;
+        }
+        
+        .warning {
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 152, 0, 0.05) 100%);
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            color: #665b00;
+        }
+        
+        .test-section {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            margin-top: 40px;
+            box-shadow: 0 4px 12px rgba(61, 38, 33, 0.05);
+        }
+        
+        .logo-test {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-top: 30px;
+            text-align: center;
+        }
+        
+        .logo-display {
+            padding: 20px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(255, 141, 161, 0.05) 0%, rgba(236, 104, 128, 0.02) 100%);
+        }
+        
+        .logo-display h4 {
+            color: #2e1a16;
+            margin-bottom: 15px;
+        }
+        
+        .logo-display p {
+            color: #6e544f;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .status-done {
+            background: #e8f5e9;
+            color: #1b5e20;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🐷 Verificación de Logos Mejorados</h1>
+        
+        <div class="checklist">
+            <div class="check-item">
+                <h3>📌 Página Principal</h3>
+                <ul>
+                    <li>Logo hero 280x280px</li>
+                    <li>Marco decorativo glassmorphism</li>
+                    <li>Partículas de cerdos orbitando</li>
+                    <li>Animación de flotación</li>
+                    <li>Brillo pulsante</li>
+                    <li>Hover interactivo</li>
+                </ul>
+                <div class="tip">
+                    <strong>✓ Estado:</strong> El logo principal debe flotar suavemente y tener cerdos alrededor
+                </div>
+            </div>
+            
+            <div class="check-item">
+                <h3>🔐 Recuperación</h3>
+                <ul>
+                    <li>Logo 140x140px</li>
+                    <li>Marco redondeado elegante</li>
+                    <li>Brillo dinámico</li>
+                    <li>Flotación sutil</li>
+                    <li>Centrado perfectamente</li>
+                </ul>
+                <div class="tip">
+                    <strong>✓ Estado:</strong> Logo debe flotar y tener brillo pulsante
+                </div>
+            </div>
+            
+            <div class="check-item">
+                <h3>📝 Formularios</h3>
+                <ul>
+                    <li>Logo sidebar 50x50px</li>
+                    <li>Marco decorativo</li>
+                    <li>Sombra suave</li>
+                    <li>Alineación perfecta</li>
+                    <li>Título con gradiente</li>
+                </ul>
+                <div class="tip">
+                    <strong>✓ Estado:</strong> Logo debe aparecer en el sidebar izquierdo
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🧪 Lista de Verificación</h2>
+            
+            <h3 style="color: #2e1a16; margin-top: 25px; margin-bottom: 15px;">1. Abre index.html</h3>
+            <ul style="color: #6e544f; line-height: 1.8; margin-left: 20px;">
+                <li>☐ ¿Se ve el logo grande en el centro?</li>
+                <li>☐ ¿Flota suavemente hacia arriba y abajo?</li>
+                <li>☐ ¿Hay 5 cerdos 🐷 alrededor?</li>
+                <li>☐ ¿Hay un brillo que pulsa?</li>
+                <li>☐ ¿Al pasar mouse, el logo se agranda?</li>
+                <li>☐ ¿También hay un logo pequeño en el login?</li>
+            </ul>
+            
+            <h3 style="color: #2e1a16; margin-top: 25px; margin-bottom: 15px;">2. Abre restaurar.html</h3>
+            <ul style="color: #6e544f; line-height: 1.8; margin-left: 20px;">
+                <li>☐ ¿Hay un logo en un marco decorativo?</li>
+                <li>☐ ¿Flota suavemente?</li>
+                <li>☐ ¿Tiene un brillo pulsante?</li>
+            </ul>
+            
+            <h3 style="color: #2e1a16; margin-top: 25px; margin-bottom: 15px;">3. Abre registro.html</h3>
+            <ul style="color: #6e544f; line-height: 1.8; margin-left: 20px;">
+                <li>☐ ¿Hay logo pequeño en el sidebar?</li>
+                <li>☐ ¿Está junto al texto "SIGEPOR"?</li>
+                <li>☐ ¿El texto tiene un gradiente de color?</li>
+            </ul>
+            
+            <h3 style="color: #2e1a16; margin-top: 25px; margin-bottom: 15px;">4. Abre registroporcino.html</h3>
+            <ul style="color: #6e544f; line-height: 1.8; margin-left: 20px;">
+                <li>☐ ¿Hay logo pequeño en el sidebar?</li>
+                <li>☐ ¿Es consistente con registro.html?</li>
+            </ul>
+            
+            <div class="warning" style="margin-top: 30px;">
+                <strong>⚠️ Importante:</strong> Si hay archivos llamados logo.png, cambia las referencias a logo.jpg en todos los HTML. Si usas logo.png, asegúrate de actualizar src="logo.png" en el código.
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>📊 Tamaños Esperados</h2>
+            
+            <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                <tr style="background: #f5f5f5;">
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2d6d4; color: #2e1a16;">Sección</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2d6d4; color: #2e1a16;">Tamaño</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2d6d4; color: #2e1a16;">Ubicación</th>
+                </tr>
+                <tr>
+                    <td style="padding: 12px; border-bottom: 1px solid #f0e6e4;">Hero Principal</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #f0e6e4;">280x280px</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #f0e6e4;">index.html (centro arriba)</td>
+                </tr>
+                <tr style="background: #fffbfb;">
+                    <td style="padding: 12px; border-bottom: 1px solid #f0e6e4;">Login</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #f0e6e4;">160x160px</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #f0e6e4;">index.html (formulario)</td>
+                </tr>
+                <tr>
+                    <td style="padding: 12px; border-bottom: 1px solid #f0e6e4;">Restaurar</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #f0e6e4;">140x140px</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #f0e6e4;">restaurar.html</td>
+                </tr>
+                <tr style="background: #fffbfb;">
+                    <td style="padding: 12px; border-bottom: 1px solid #f0e6e4;">Sidebar</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #f0e6e4;">50x50px</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #f0e6e4;">registro.html, registroporcino.html</td>
+                </tr>
+            </table>
+        </div>
+        
+        <div class="test-section">
+            <h2>✨ Animaciones que Deberías Ver</h2>
+            
+            <div class="logo-test">
+                <div class="logo-display">
+                    <h4>Flotación 🔄</h4>
+                    <p>El logo sube y baja continuamente</p>
+                    <span class="status-badge status-done">✓ Implementado</span>
+                </div>
+                <div class="logo-display">
+                    <h4>Brillo 🌟</h4>
+                    <p>Efecto pulsante alrededor del logo</p>
+                    <span class="status-badge status-done">✓ Implementado</span>
+                </div>
+                <div class="logo-display">
+                    <h4>Partículas 🐷</h4>
+                    <p>Cerdos animados alrededor del hero</p>
+                    <span class="status-badge status-done">✓ Implementado</span>
+                </div>
+                <div class="logo-display">
+                    <h4>Hover 🎯</h4>
+                    <p>Logo se agranda al pasar mouse</p>
+                    <span class="status-badge status-done">✓ Implementado</span>
+                </div>
+                <div class="logo-display">
+                    <h4>Glassmorphism 🎨</h4>
+                    <p>Marco con efecto de vidrio esmerilado</p>
+                    <span class="status-badge status-done">✓ Implementado</span>
+                </div>
+                <div class="logo-display">
+                    <h4>Sombras 🌑</h4>
+                    <p>Sombras suaves y dinámicas</p>
+                    <span class="status-badge status-done">✓ Implementado</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🚀 Próximos Pasos</h2>
+            
+            <ol style="color: #6e544f; line-height: 2; margin-left: 20px;">
+                <li><strong>Verifica todos los logos</strong> usando la checklist anterior</li>
+                <li><strong>Prueba en diferentes navegadores:</strong> Chrome, Firefox, Safari, Edge</li>
+                <li><strong>Prueba en móvil</strong> para verificar responsive</li>
+                <li><strong>Ajusta tamaños</strong> si es necesario (edita width/height en CSS)</li>
+                <li><strong>Personaliza colores</strong> si deseas un estilo diferente</li>
+                <li><strong>Agrega imágenes reales</strong> de cerdos (opcional, ver GUIA_IMAGENES.md)</li>
+            </ol>
+        </div>
+        
+        <div class="tip" style="margin-top: 40px; padding: 25px; font-size: 1.05rem;">
+            <strong>💡 Si todo se ve bien:</strong> ¡Felicidades! Tus logos están perfectos. Si algo no funciona, revisa que logo.jpg exista en la carpeta, o cambia la extensión según tu archivo.
+        </div>
+    </div>
+</body>
+</html>

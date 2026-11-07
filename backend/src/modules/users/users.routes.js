@@ -77,3 +77,18 @@ router.patch('/:id', verifyToken, requireRole(['Administrador']), usersControlle
 router.delete('/:id', verifyToken, requireRole(['Administrador']), usersController.deleteUser);
 
 module.exports = router;
+
+/**
+ * POST / (POST /users)
+ * Endpoint de Registro de Usuarios (Acceso Exclusivo Administrativo)
+ * 
+ * 🔒 PROTECCIÓN:
+ * - Únicamente el Administrador autenticado puede crear nuevos usuarios en el sistema.
+ */
+router.post(
+  '/',
+  verifyToken,                     // 1. Fuerza a que exista un token JWT válido
+  requireRole(['Administrador']),  // 2. Fuerza a que el token pertenezca a un Administrador
+  userValidator.validateCreateUser,
+  usersController.createUser
+);

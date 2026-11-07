@@ -10,7 +10,7 @@ async function findByEmailOrUsername(email, usuario) {
               u.usuario, u.contraseña, u.idRol, COALESCE(r.nombre_rol, 'Cliente') AS rol_nombre, 
               u.telefono, u.fecha_registro, u.activo 
        FROM usuarios u
-       LEFT JOIN roles r ON u.idRol = r.id_rol
+       LEFT JOIN roles r ON u.idRol = r.idRol
        WHERE u.email = ? OR u.usuario = ? LIMIT 1`,
       [email, usuario]
     );
@@ -20,6 +20,48 @@ async function findByEmailOrUsername(email, usuario) {
     throw error;
   }
 }
+
+/**
+ * Buscar usuario por ID
+ */
+async function getUserById(id) {
+  try {
+    const [rows] = await pool.execute(
+      `SELECT u.id_usuario, u.id_usuario AS id, u.nombre, u.email AS correo, u.email, u.usuario, 
+              u.idRol, COALESCE(r.nombre_rol, 'Cliente') AS rol_nombre, 
+              u.telefono, u.fecha_registro, u.activo 
+       FROM usuarios u
+       LEFT JOIN roles r ON u.idRol = r.id
+       WHERE u.id_usuario = ? LIMIT 1`,
+      [id]
+    );
+    return rows[0] || null;
+  } catch (error) {
+    console.error('Error en getUserById:', error.message);
+    throw error;
+  }
+}
+
+/**
+ * Obtener todos los usuarios del sistema
+ */
+async function getAllUsers() {
+  try {
+    const [rows] = await pool.execute(
+      `SELECT u.id_usuario, u.id_usuario AS id, u.nombre, u.email AS correo, u.email, u.usuario, 
+              u.idRol, COALESCE(r.nombre_rol, 'Cliente') AS rol_nombre, 
+              u.telefono, u.fecha_registro, u.activo 
+       FROM usuarios u
+       LEFT JOIN roles r ON u.idRol = r.idRol
+       ORDER BY u.id_usuario DESC`
+    );
+    return rows;
+  } catch (error) {
+    console.error('Error en getAllUsers:', error.message);
+    throw error;
+  }
+}
+
 
 /**
  * 🔵 Lógica para el botón: CONSULTAR USUARIO MEJORADO
@@ -32,7 +74,7 @@ async function getUserById(id) {
               u.idRol, COALESCE(r.nombre_rol, 'Cliente') AS rol_nombre, 
               u.telefono, u.fecha_registro, u.activo 
        FROM usuarios u
-       LEFT JOIN roles r ON u.idRol = r.id_rol
+       LEFT JOIN roles r ON u.idRol = r.idRol
        WHERE u.id_usuario = ? LIMIT 1`,
       [id]
     );

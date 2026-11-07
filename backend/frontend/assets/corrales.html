@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIGEPOR| sistema de gestion porcina</title>
+    <!-- Fuentes Futuristas y Estilos Unificados -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/optipig-theme.css">
+</head>
+<body>
+    <!-- Barra Superior Unificada (Navbar) -->
+    <header class="top-navbar">
+        <div class="nav-left-group">
+            <a href="indexpruebados.html" class="logo-container-top">
+                <div class="logo-frame-top">
+                    <img src="images/logo.jpg" alt="SIGEPOR Logo">
+                </div>
+                <span class="brand-title">SIGEPOR <span style="font-size:0.75rem; color:var(--primary-emerald);">2026</span></span>
+            </a>
+            <div class="status-badge" id="syncStatus">
+                <div class="pulse-dot"></div>
+                <span>Inventario Activo • MySQL</span>
+            </div>
+        </div>
+        <div class="nav-right-actions">
+            <a href="javascript:void(0)" onclick="cerrarSesion()" class="btn-nav btn-logout">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                Cerrar Sesión
+            </a>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- Barra Lateral de Navegación -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <img src="images/logo.jpg" alt="SIGEPOR">
+                </div>
+                <h3>Panel Granja</h3>
+            </div>
+            <ul>
+                <li><a href="indexpruebados.html">🏠 Inicio</a></li>
+                <li><a href="registroporcino.html">🐖 Porcinos</a></li>
+                <li><a href="corrales.html" class="active">🏠 Corrales</a></li>
+                <li><a href="enfermedades.html">🦠 Enfermedades</a></li>
+                <li><a href="vacunas.html">💉 Vacunación</a></li>
+                <li><a href="reproduccion.html">🧬 Reproducción</a></li>
+                <li><a href="inventario.html">🌾 Inventario</a></li>
+                <li><a href="proveedores.html">🚚 Proveedores</a></li>
+                <li><a href="logs_actividad.html">📋 Logs de Actividad</a></li>
+                <li><a href="veterinarios.html">👨‍⚕️ Veterinarios</a></li>
+                <li><a href="reportes.html">📊 Reportes & Alertas</a></li>
+                <li><a href="gestion_usuarios.html">👥 Gestión de Usuarios</a></li>
+            </ul>
+        </nav>
+
+        <!-- Contenido Principal -->
+        <main class="content">
+            <div class="page-header">
+                <div class="header-icon">🏠</div>
+                <div class="header-content">
+                    <h2>GESTIÓN DE CORRALES Y ALOJAMIENTO</h2>
+                    <p>Administración de espacios físicos, capacidad, bioseguridad y tipo de dieta (MySQL: `corrales`)</p>
+                </div>
+            </div>
+
+            <div id="alertBox" class="alert-box"></div>
+
+            <!-- Estadísticas Rápidas de Corrales -->
+            <div class="stats-section" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                <div class="stat-card" style="background: var(--bg-card); border: 1px solid var(--border-glass); padding: 1.2rem; border-radius: 16px; text-align: center;">
+                    <h4 style="font-size: 0.82rem; color: var(--text-muted); text-transform: uppercase;">Total Corrales</h4>
+                    <div id="statTotalCorrales" style="font-size: 1.8rem; font-weight: 800; color: var(--primary-emerald); margin-top: 0.3rem;">0</div>
+                </div>
+                <div class="stat-card" style="background: var(--bg-card); border: 1px solid var(--border-glass); padding: 1.2rem; border-radius: 16px; text-align: center;">
+                    <h4 style="font-size: 0.82rem; color: var(--text-muted); text-transform: uppercase;">Capacidad Total (Cerdos)</h4>
+                    <div id="statCapacidadTotal" style="font-size: 1.8rem; font-weight: 800; color: var(--accent-cyan); margin-top: 0.3rem;">0</div>
+                </div>
+                <div class="stat-card" style="background: var(--bg-card); border: 1px solid var(--border-glass); padding: 1.2rem; border-radius: 16px; text-align: center;">
+                    <h4 style="font-size: 0.82rem; color: var(--text-muted); text-transform: uppercase;">Corrales Limpios</h4>
+                    <div id="statCorralesLimpios" style="font-size: 1.8rem; font-weight: 800; color: #34d399; margin-top: 0.3rem;">0</div>
+                </div>
+            </div>
+
+            <!-- Formulario CREATE -->
+            <div class="card-wrapper">
+                <div class="form-section-title">
+                    <span>➕</span>
+                    <h3>Registrar Nuevo Corral</h3>
+                </div>
+
+                <form id="corralForm" class="grid-form">
+                    <div class="field">
+                        <label for="nombre">Nombre o Código del Corral:</label>
+                        <input type="text" id="nombre" name="nombre" placeholder="Ej: Corral C-104 (Destete)" maxlength="50" required>
+                    </div>
+
+                    <div class="field">
+                        <label for="capacidad">Capacidad Máxima (Animales):</label>
+                        <input type="number" id="capacidad" name="capacidad" placeholder="Ej: 25" min="1" required>
+                    </div>
+
+                    <div class="field">
+                        <label for="tipo_alimentacion">Tipo de Alimentación / Dieta:</label>
+                        <input type="text" id="tipo_alimentacion" name="tipo_alimentacion" placeholder="Ej: Concentrado Fase 1" maxlength="50" required>
+                    </div>
+
+                    <div class="field">
+                        <label for="estado_limpieza">Estado de Limpieza / Sanidad:</label>
+                        <select id="estado_limpieza" name="estado_limpieza" required>
+                            <option value="Limpio">Limpio / Desinfectado</option>
+                            <option value="Regular">Regular / En uso</option>
+                            <option value="Sucio">Sucio / Requiere Aseo</option>
+                        </select>
+                    </div>
+
+                    <div class="field full-width">
+                        <label for="ubicacion">Ubicación / Sector en Granja:</label>
+                        <input type="text" id="ubicacion" name="ubicacion" placeholder="Ej: Sector Norte - Galpón 2 - Bahía A" maxlength="100" required>
+                    </div>
+
+                    <button type="submit" class="btn-submit">💾 GUARDAR CORRAL EN BASE DE DATOS</button>
+                </form>
+            </div>
+
+            <!-- Tabla READ -->
+            <div class="table-wrapper">
+                <div class="table-header">
+                    <h3>Corrales Registrados en el Sistema</h3>
+                    <button class="btn-secondary" onclick="cargarCorrales()">🔄 Actualizar Lista</button>
+                </div>
+                <div class="table-container">
+                    <table id="corralesTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Capacidad</th>
+                                <th>Tipo Alimentación</th>
+                                <th>Estado Limpieza</th>
+                                <th>Ubicación</th>
+                            </tr>
+                        </thead>
+                        <tbody id="corralesTableBody">
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">Cargando registros de corrales...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Pie de página -->
+    <footer class="footer">
+        <p>&copy; 2026 SIGEPOR - Sistema de Gestión Porcina. Todos los derechos reservados.</p>
+    </footer>
+
+    <!-- Scripts del Proyecto -->
+    <script src="js/auth_guard.js"></script>
+    <script src="js/offline_sync.js"></script>
+    <script>
+        const API_URL = 'http://localhost:3001/api/corrales';
+
+        function mostrarAlerta(mensaje, esError = false) {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.textContent = mensaje;
+            alertBox.className = 'alert-box ' + (esError ? 'alert-error' : 'alert-success');
+            alertBox.style.display = 'block';
+            setTimeout(() => { alertBox.style.display = 'none'; }, 5000);
+        }
+
+        // READ: Obtener todos los corrales
+        async function cargarCorrales() {
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+
+                const tbody = document.getElementById('corralesTableBody');
+                tbody.innerHTML = '';
+
+                const lista = data.data || data;
+
+                if (!Array.isArray(lista) || lista.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:2rem; color:var(--text-muted);">No hay corrales registrados en la base de datos.</td></tr>';
+                    actualizarContadoresCorrales([]);
+                    return;
+                }
+
+                actualizarContadoresCorrales(lista);
+
+                lista.forEach(item => {
+                    const tr = document.createElement('tr');
+                    const estadoClass = item.estado_limpieza?.toLowerCase() === 'limpio' ? 'pill-limpio' : 
+                                       (item.estado_limpieza?.toLowerCase() === 'regular' ? 'pill-regular' : 'pill-sucio');
+
+                    tr.innerHTML = `
+                        <td><strong>#${item.id_corral || item.id}</strong></td>
+                        <td style="font-weight:700; color:var(--primary-emerald);">${item.nombre}</td>
+                        <td>${item.capacidad} cerdos</td>
+                        <td>${item.tipo_alimentacion || 'N/A'}</td>
+                        <td><span class="pill ${estadoClass}">${item.estado_limpieza}</span></td>
+                        <td>${item.ubicacion || 'N/A'}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (error) {
+                console.error('Error al cargar corrales:', error);
+                document.getElementById('corralesTableBody').innerHTML = 
+                    '<tr><td colspan="6" style="text-align:center; color:var(--error-red); padding:2rem;">Error de conexión con el backend (http://localhost:3001). Asegúrate de tener el servidor encendido.</td></tr>';
+            }
+        }
+
+        // CREATE: Insertar un nuevo corral
+        document.getElementById('corralForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const payload = {
+                nombre: document.getElementById('nombre').value.trim(),
+                capacidad: parseInt(document.getElementById('capacidad').value, 10),
+                tipo_alimentacion: document.getElementById('tipo_alimentacion').value.trim(),
+                estado_limpieza: document.getElementById('estado_limpieza').value,
+                ubicacion: document.getElementById('ubicacion').value.trim()
+            };
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (response.ok || response.status === 201) {
+                    mostrarAlerta('✅ ' + (result.message || 'Corral guardado exitosamente en MySQL.'));
+                    document.getElementById('corralForm').reset();
+                    cargarCorrales();
+                } else {
+                    mostrarAlerta('❌ Error: ' + (result.message || 'No se pudo guardar el corral.'), true);
+                }
+            } catch (error) {
+                console.error('Error al guardar corral:', error);
+                mostrarAlerta('❌ Error de red al comunicarse con el backend.', true);
+            }
+        });
+
+        // Actualizar contadores KPI en tiempo real (DOM Reactivo)
+        function actualizarContadoresCorrales(datos) {
+            const lista = Array.isArray(datos) ? datos : [];
+            const total = lista.length;
+            const capacidadTotal = lista.reduce((acc, c) => acc + (parseInt(c.capacidad, 10) || 0), 0);
+            const limpios = lista.filter(c => (c.estado_limpieza || '').toLowerCase() === 'limpio').length;
+
+            const elTotal = document.getElementById('statTotalCorrales');
+            const elCapacidad = document.getElementById('statCapacidadTotal');
+            const elLimpios = document.getElementById('statCorralesLimpios');
+
+            if (elTotal) elTotal.textContent = total;
+            if (elCapacidad) elCapacidad.textContent = capacidadTotal;
+            if (elLimpios) elLimpios.textContent = limpios;
+        }
+
+        // Cargar registros al abrir la página
+        document.addEventListener('DOMContentLoaded', cargarCorrales);
+    </script>
+</body>
+</html>

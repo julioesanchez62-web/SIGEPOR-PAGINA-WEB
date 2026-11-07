@@ -10,11 +10,14 @@
   "directories": {
     "test": "test"
   },
+
+
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "test": "node --test --test-force-exit",
-    "test:e2e": "node --test --test-force-exit test/e2e-integration.test.js"
+    "test:e2e": "node --test --test-force-exit test/e2e-integration.test.js",
+  "test:unit": "jest --config jest.config.cjs --testMatch=\"**/test/unit/**/*.test.js\""
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

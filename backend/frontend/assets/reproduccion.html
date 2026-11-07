@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIGEPOR | Gestión Reproductiva</title>
+    <!-- Fuentes Futuristas y Estilos Unificados -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/optipig-theme.css">
+    <style>
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.2rem;
+            margin-top: 2rem;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            backdrop-filter: blur(14px);
+            padding: 1.5rem;
+            border-radius: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+        .stat-icon {
+            font-size: 1.8rem;
+        }
+        .stat-card h4 {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            font-family: 'Outfit', sans-serif;
+            color: var(--primary-emerald);
+        }
+    </style>
+</head>
+<body>
+    <!-- Barra Superior Unificada -->
+    <header class="top-navbar">
+        <div class="nav-left-group">
+            <a href="indexpruebados.html" class="logo-container-top">
+                <div class="logo-frame-top">
+                    <img src="images/logo.jpg" alt="SIGEPOR Logo">
+                </div>
+                <span class="brand-title">SIGEPOR <span style="font-size:0.75rem; color:var(--primary-emerald);">2026</span></span>
+            </a>
+            <div class="status-badge" id="syncStatus">
+                <div class="pulse-dot"></div>
+                <span>Inventario Activo • MySQL</span>
+            </div>
+        </div>
+        <div class="nav-right-actions">
+            <a href="javascript:void(0)" onclick="cerrarSesion()" class="btn-nav btn-logout">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                Cerrar Sesión
+            </a>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- Barra Lateral de Navegación -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <img src="images/logo.jpg" alt="SIGEPOR">
+                </div>
+                <h3>Panel Granja</h3>
+            </div>
+            <ul>
+                <li><a href="indexpruebados.html">🏠 Inicio</a></li>
+                <li><a href="registroporcino.html">🐖 Porcinos</a></li>
+                <li><a href="corrales.html">🏠 Corrales</a></li>
+                <li><a href="enfermedades.html">🦠 Enfermedades</a></li>
+                <li><a href="vacunas.html">💉 Vacunación</a></li>
+                <li><a href="reproduccion.html" class="active">🧬 Reproducción</a></li>
+                <li><a href="inventario.html">🌾 Inventario</a></li>
+                <li><a href="proveedores.html">🚚 Proveedores</a></li>
+                <li><a href="logs_actividad.html">📋 Logs de Actividad</a></li>
+                <li><a href="veterinarios.html">👨‍⚕️ Veterinarios</a></li>
+                <li><a href="reportes.html">📊 Reportes & Alertas</a></li>
+                <li><a href="gestion_usuarios.html">👥 Gestión de Usuarios</a></li>
+            </ul>
+        </nav>
+
+        <!-- Contenido Principal -->
+        <main class="content">
+            <div class="page-header">
+                <div class="header-icon">🍼</div>
+                <div class="header-content">
+                    <h2>TRAZABILIDAD Y EVENTOS REPRODUCTIVOS</h2>
+                    <p>Registro de cubriciones, gestaciones (cálculo a 114 días), partos y destetes</p>
+                </div>
+            </div>
+
+            <!-- Formulario CREATE -->
+            <div class="card-wrapper">
+                <div class="form-section-title">
+                    <span class="section-icon">💘</span>
+                    <h3>Registrar Evento Reproductivo</h3>
+                </div>
+
+                <form id="reproForm" class="grid-form">
+                    <div class="field">
+                        <label for="porcino_id">Porcino / Cerda Reproductora:</label>
+                        <select id="porcino_id" required>
+                            <option value="">Cargando porcinos...</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="tipo_evento">Tipo de Evento:</label>
+                        <select id="tipo_evento" required>
+                            <option value="Cubrición">💘 Cubrición (Monta / Inseminación)</option>
+                            <option value="Parto">🍼 Parto</option>
+                            <option value="Destete">🐖 Destete</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="fecha_evento">Fecha del Evento:</label>
+                        <input type="date" id="fecha_evento" required>
+                    </div>
+                    <div class="field">
+                        <label for="fecha_probable_parto">Fecha Probable Parto (Cálculo a 114 días):</label>
+                        <input type="date" id="fecha_probable_parto">
+                    </div>
+                    <div class="field">
+                        <label for="lechones_nacidos">Lechones Nacidos (Solo para Parto):</label>
+                        <input type="number" id="lechones_nacidos" placeholder="0" min="0">
+                    </div>
+                    <div class="field full-width">
+                        <label for="observaciones">Observaciones Técnicas:</label>
+                        <input type="text" id="observaciones" placeholder="Ej: Camada saludable, macho inseminador Duroc...">
+                    </div>
+
+                    <button type="submit" class="btn-submit">💾 REGISTRAR EVENTO REPRODUCTIVO</button>
+                </form>
+            </div>
+
+            <!-- Tabla READ -->
+            <div class="table-wrapper">
+                <div class="table-header">
+                    <h3>Historial Reproductivo en MySQL</h3>
+                </div>
+                
+                <div class="table-container">
+                    <table id="reproTable">
+                        <thead>
+                            <tr>
+                                <th>🆔 Porcino</th>
+                                <th>💖 Evento</th>
+                                <th>📅 Fecha Evento</th>
+                                <th>🍼 Parto Estimado</th>
+                                <th>🐷 Lechones</th>
+                                <th>📝 Observaciones</th>
+                                <th>⚙️ Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Filas dinámicas -->
+                        </tbody>
+                    </table>
+                    <div class="table-empty" id="tableEmpty" style="display: none; text-align: center; padding: 2rem; color: var(--text-muted);">
+                        <p>📭 Aún no hay eventos reproductivos registrados. ¡Registra la primera cubrición!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estadísticas -->
+            <div class="stats-section">
+                <div class="stat-card">
+                    <div class="stat-icon">🍼</div>
+                    <h4>Total Registros</h4>
+                    <p class="stat-number" id="statTotalRepro">0</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">💘</div>
+                    <h4>Cubriciones</h4>
+                    <p class="stat-number" id="statCubriciones">0</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🍼</div>
+                    <h4>Partos Registrados</h4>
+                    <p class="stat-number" id="statPartos">0</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🐖</div>
+                    <h4>Destetes</h4>
+                    <p class="stat-number" id="statDestetes">0</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Pie de página -->
+    <footer class="footer">
+        <p>&copy; 2026 SIGEPOR - Sistema de Gestión Porcina. Todos los derechos reservados.</p>
+    </footer>
+
+    <!-- Scripts de Lógica Intactos -->
+    <script src="js/auth_guard.js"></script>
+    <script src="js/script.js"></script>
+    <script src="js/offline_sync.js"></script>
+    <script src="js/reproduccion.js"></script>
+</body>
+</html>

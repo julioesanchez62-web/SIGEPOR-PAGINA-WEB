@@ -1,5 +1,13 @@
+# dependencias
 node_modules/
+
+# variables de entorno
+.env test
 .env
+
+# logs
 npm-debug.log*
+
+# archivos del sistema
 coverage/
 .DS_Store
