@@ -5,14 +5,17 @@ const { pool } = require('../../config/mysql');
  */
 async function findByEmailOrUsername(email, usuario) {
   try {
+    const emailSeguro = email !== undefined && email !== null ? email : null;
+    const usuarioSeguro = usuario !== undefined && usuario !== null ? usuario : null;
+
     const [rows] = await pool.execute(
       `SELECT u.id_usuario, u.id_usuario AS id, u.nombre, u.email, u.email AS correo, 
               u.usuario, u.contraseña, u.idRol, COALESCE(r.nombre_rol, 'Cliente') AS rol_nombre, 
               u.telefono, u.fecha_registro, u.activo 
        FROM usuarios u
-       LEFT JOIN roles r ON u.idRol = r.idRol
+       LEFT JOIN roles r ON u.idRol = r.id_rol
        WHERE u.email = ? OR u.usuario = ? LIMIT 1`,
-      [email, usuario]
+      [emailSeguro, usuarioSeguro]
     );
     return rows[0] || null;
   } catch (error) {
@@ -20,7 +23,6 @@ async function findByEmailOrUsername(email, usuario) {
     throw error;
   }
 }
-
 /**
  * Buscar usuario por ID
  */
