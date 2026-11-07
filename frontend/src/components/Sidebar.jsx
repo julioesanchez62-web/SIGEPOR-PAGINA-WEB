@@ -52,6 +52,7 @@ export const Sidebar = () => {
 
   return (
     <aside className="sidebar">
+      {/* Logo + Marca */}
       <div className="sidebar-header">
         <img src="/logo.jpg" alt="SIGEPOR" className="sidebar-logo" />
         <div>
@@ -60,6 +61,7 @@ export const Sidebar = () => {
         </div>
       </div>
 
+      {/* Navegación */}
       <nav className="sidebar-nav">
         {navItems
           .filter((item) => hasRole(item.roles))
@@ -76,6 +78,18 @@ export const Sidebar = () => {
             </NavLink>
           ))}
       </nav>
+
+      {/* Pie del sidebar */}
+      <div style={{
+        padding: '1rem 1.2rem',
+        borderTop: '1px solid rgba(255,255,255,0.07)',
+        fontSize: '0.72rem',
+        color: 'rgba(148,163,184,0.45)',
+        textAlign: 'center',
+        letterSpacing: '0.03em'
+      }}>
+        SIGEPOR v2.0 · 2026
+      </div>
     </aside>
   );
 };

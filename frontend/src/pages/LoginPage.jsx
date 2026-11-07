@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth, ROLES } from '../context/AuthContext';
 
 export const LoginPage = () => {
+  // ✅ TODA LA LÓGICA DE ESTADO INTACTA
   const [selectedRole, setSelectedRole] = useState(ROLES.ADMIN);
   const [identificador, setIdentificador] = useState('admin@sigepor.com');
   const [contraseña, setContraseña] = useState('');
@@ -14,12 +15,13 @@ export const LoginPage = () => {
   const location = useLocation();
 
   const roleConfigs = [
-    { id: ROLES.ADMIN, label: 'Administrador', icon: '👑', defaultUser: 'admin@sigepor.com' },
-    { id: ROLES.VETERINARIO, label: 'Veterinario', icon: '👨‍⚕️', defaultUser: 'vet@sigepor.com' },
-    { id: ROLES.EMPLEADO, label: 'Empleado', icon: '👷', defaultUser: 'operario@sigepor.com' },
-    { id: ROLES.CLIENTE, label: 'Cliente', icon: '🛒', defaultUser: 'cliente@sigepor.com' }
+    { id: ROLES.ADMIN,       label: 'Admin',      icon: '👑', defaultUser: 'admin@sigepor.com'    },
+    { id: ROLES.VETERINARIO, label: 'Veterinario', icon: '🩺', defaultUser: 'vet@sigepor.com'      },
+    { id: ROLES.EMPLEADO,    label: 'Empleado',    icon: '👷', defaultUser: 'operario@sigepor.com' },
+    { id: ROLES.CLIENTE,     label: 'Cliente',     icon: '👤', defaultUser: 'cliente@sigepor.com'  }
   ];
 
+  // ✅ LÓGICA INTACTA: handleRoleSelect, handleSubmit, login(), navigate()
   const handleRoleSelect = (roleId, defaultEmail) => {
     setSelectedRole(roleId);
     setIdentificador(defaultEmail);
@@ -37,7 +39,6 @@ export const LoginPage = () => {
       setLoading(true);
       const loggedUser = await login(identificador, contraseña);
 
-      // Redirigir al panel correspondiente según su rol o destino previo
       let defaultDestination = '/porcinos';
       if (Number(loggedUser?.idRol) === 3) {
         defaultDestination = '/vacunas';
@@ -58,18 +59,25 @@ export const LoginPage = () => {
   return (
     <div className="login-screen">
       <div className="login-card">
+        {/* Encabezado con logo */}
         <div className="login-header">
           <img src="/logo.jpg" alt="SIGEPOR" className="login-logo" />
-          <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--primary-dark)' }}>
-            SIGEPOR
-          </h1>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-            Sistema de Gestión Integral Porcícola
-          </p>
+          <h1>SIGEPOR</h1>
+          <p>Sistema de Gestión Integral Porcícola</p>
         </div>
 
+        {/* Cuerpo del formulario */}
         <div style={{ padding: '1.75rem 2rem 2.25rem' }}>
-          <p style={{ fontSize: '0.825rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.6rem' }}>
+
+          {/* Selector de roles */}
+          <p style={{
+            fontSize: '0.78rem',
+            fontWeight: 700,
+            color: 'var(--text-muted)',
+            marginBottom: '0.6rem',
+            textTransform: 'uppercase',
+            letterSpacing: '0.08em'
+          }}>
             Selecciona tu perfil de acceso:
           </p>
 
@@ -78,21 +86,23 @@ export const LoginPage = () => {
               <button
                 key={r.id}
                 type="button"
-                className={`role-tab-btn ${selectedRole === r.id ? 'active' : ''}`}
+                className={`role-tab-btn${selectedRole === r.id ? ' active' : ''}`}
                 onClick={() => handleRoleSelect(r.id, r.defaultUser)}
               >
-                <span>{r.icon}</span>
+                <span style={{ fontSize: '1.1rem' }}>{r.icon}</span>
                 <span>{r.label}</span>
               </button>
             ))}
           </div>
 
+          {/* Alerta de error */}
           {error && (
             <div className="alert alert-danger" style={{ marginBottom: '1.25rem' }}>
               <span>⚠️ {error}</span>
             </div>
           )}
 
+          {/* Formulario de autenticación */}
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label className="form-label">Correo electrónico o Usuario</label>
@@ -121,15 +131,22 @@ export const LoginPage = () => {
             <button
               type="submit"
               className="btn btn-primary"
-              style={{ width: '100%', marginTop: '0.75rem', padding: '0.75rem' }}
+              style={{ width: '100%', marginTop: '0.75rem', padding: '0.8rem' }}
               disabled={loading}
             >
-              {loading ? 'Ingresando...' : 'Iniciar Sesión'}
+              {loading ? '⏳ Verificando credenciales...' : '🔐 Iniciar Sesión'}
             </button>
           </form>
 
-          <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-            Control de Acceso Basado en Roles (RBAC) &bull; SIGEPOR 2026
+          {/* Footer del login */}
+          <div style={{
+            marginTop: '1.75rem',
+            textAlign: 'center',
+            fontSize: '0.75rem',
+            color: 'rgba(148,163,184,0.5)',
+            letterSpacing: '0.03em'
+          }}>
+            Control de Acceso RBAC · SIGEPOR 2026
           </div>
         </div>
       </div>

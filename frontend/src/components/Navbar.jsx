@@ -8,6 +8,7 @@ export const Navbar = () => {
   const { isOnline, pendingCount, isSyncing, syncPendingRequests } = useNetworkSync();
   const navigate = useNavigate();
 
+  // ✅ LÓGICA INTACTA: handleLogout, getRoleBadgeClass
   const handleLogout = () => {
     logout();
     navigate('/login');
@@ -25,15 +26,14 @@ export const Navbar = () => {
 
   return (
     <header className="navbar">
+      {/* Título de sección */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-        <span style={{ fontSize: '1.25rem' }}>🐖</span>
-        <h2 style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--text-main)' }}>
-          Panel de Control Porcícola
-        </h2>
+        <span style={{ fontSize: '1.2rem' }}>🐖</span>
+        <h2>Panel de Control Porcícola</h2>
       </div>
 
       <div className="user-menu">
-        {/* Indicador de Red y Sincronización PWA */}
+        {/* ✅ LÓGICA INTACTA: Indicador de red PWA / Sincronización */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           {isSyncing ? (
             <span className="status-pill observacion" style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
@@ -41,34 +41,46 @@ export const Navbar = () => {
             </span>
           ) : !isOnline ? (
             <span className="status-pill enfermo" style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-              📡 Modo Offline {pendingCount > 0 ? `(${pendingCount} pend.)` : ''}
+              📡 Offline {pendingCount > 0 ? `(${pendingCount} pend.)` : ''}
             </span>
           ) : pendingCount > 0 ? (
             <button
               onClick={syncPendingRequests}
               className="btn btn-secondary btn-sm"
-              style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem', background: '#fef3c7', borderColor: '#fde68a', color: '#92400e' }}
+              style={{
+                fontSize: '0.75rem',
+                padding: '0.2rem 0.6rem',
+                background: 'rgba(245,158,11,0.15)',
+                borderColor: 'rgba(245,158,11,0.3)',
+                color: '#fbbf24'
+              }}
               title="Clic para sincronizar con MySQL"
             >
-              ⚠️ {pendingCount} pendiente(s) &bull; Sincronizar
+              ⚡ {pendingCount} pendiente(s) · Sincronizar
             </button>
           ) : (
-            <span className="status-pill saludable" style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.75rem' }}>
-              🟢 En línea
+            <span
+              className="status-pill saludable"
+              style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem' }}
+            >
+              <span className="pulse-dot" />
+              En línea
             </span>
           )}
         </div>
 
+        {/* Badge de usuario con rol */}
         <div className="user-badge">
-          <span style={{ fontWeight: 600 }}>{user?.nombre || 'Usuario'}</span>
+          <span style={{ fontWeight: 700 }}>{user?.nombre || 'Usuario'}</span>
           <span className={getRoleBadgeClass(user?.idRol)}>
             {user?.rolNombre || 'Empleado'}
           </span>
         </div>
 
+        {/* Botón de logout */}
         <button
           onClick={handleLogout}
-          className="btn btn-secondary btn-sm"
+          className="btn btn-danger btn-sm"
           title="Cerrar sesión"
         >
           🚪 Salir
